@@ -19,7 +19,7 @@ public class ChoisePane extends GridPane
 	{
 		UserManagementPane userManagementPane = new UserManagementPane();
 
-		Scene userManagementScene = new Scene(userManagementPane, 400, 600);
+		Scene userManagementScene = new Scene(userManagementPane, 800, 600);
 		primaryStage.setScene(userManagementScene);
 	}
 }
