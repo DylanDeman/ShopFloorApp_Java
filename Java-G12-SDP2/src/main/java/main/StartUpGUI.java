@@ -1,6 +1,6 @@
 package main;
 
-import gui.UserManagementPane;
+import gui.ChoisePane;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -10,11 +10,10 @@ public class StartUpGUI extends Application
 	@Override
 	public void start(Stage primaryStage)
 	{
-		UserManagementPane ump = new UserManagementPane();
+		ChoisePane pane = new ChoisePane(primaryStage);
 
-		Scene scene = new Scene(ump, 600, 200);
-		primaryStage.setResizable(false);
-		primaryStage.setTitle("User management pane");
+		Scene scene = new Scene(pane, 600, 200);
+		primaryStage.setTitle("Kies je paneel");
 		primaryStage.setScene(scene);
 		primaryStage.show();
 	}
