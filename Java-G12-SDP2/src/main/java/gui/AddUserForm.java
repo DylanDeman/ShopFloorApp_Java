@@ -1,5 +1,9 @@
 package gui;
 
+import java.time.LocalDate;
+
+import domain.Address;
+import domain.User;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -8,6 +12,7 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import utils.Role;
@@ -38,9 +43,20 @@ public class AddUserForm
 		row = makeAddressFields(formPane, row);
 		row = makeRoleAndStatusFields(formPane, row);
 
+		HBox buttonBox = new HBox(10);
+		buttonBox.setPadding(new Insets(10));
+		Button addButton = new Button("Toevoegen");
+		addButton.setStyle("-fx-background-color: green; -fx-text-fill: white;");
+		addButton.setOnAction(e -> addUser(formStage));
+
 		Button closeButton = new Button("Sluiten");
+		closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white;");
 		closeButton.setOnAction(e -> formStage.close());
-		formPane.add(closeButton, 1, row);
+
+		buttonBox.getChildren().addAll(closeButton, addButton);
+		buttonBox.setStyle("-fx-alignment: center-right;");
+
+		formPane.add(buttonBox, 1, row, 2, 1);
 
 		Scene scene = new Scene(formPane, 400, 550);
 		formStage.setScene(scene);
@@ -124,5 +140,67 @@ public class AddUserForm
 		pane.add(statusBox, 1, row++);
 
 		return row;
+	}
+
+	private void addUser(Stage formStage)
+	{
+		String firstName = firstNameField.getText();
+		String lastName = lastNameField.getText();
+		String email = emailField.getText();
+		String phone = phoneField.getText();
+		String street = streetField.getText();
+		String houseNumberStr = houseNumberField.getText();
+		String postalCodeStr = postalCodeField.getText();
+		String city = cityField.getText();
+		Role role = roleBox.getValue();
+		Status status = statusBox.getValue();
+		LocalDate birthdate = birthdatePicker.getValue();
+
+		if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || phone.isEmpty() || street.isEmpty()
+				|| houseNumberStr.isEmpty() || postalCodeStr.isEmpty() || city.isEmpty() || role == null
+				|| status == null || birthdate == null)
+		{
+			System.out.println("Een van de velden bij het toevoegen van deze gebruiker was leeg!");
+		}
+
+		int houseNumber = 0;
+		int postalCode = 0;
+		try
+		{
+			houseNumber = Integer.parseInt(houseNumberStr);
+			postalCode = Integer.parseInt(postalCodeStr);
+		} catch (NumberFormatException e)
+		{
+			e.printStackTrace();
+		}
+
+		Address newAddress = new Address(street, houseNumber, postalCode, city);
+
+		User newUser = new User(firstName, lastName, email, phone, generatePassword(), birthdate, newAddress, status,
+				role);
+
+		printUser(newUser);
+
+		formStage.close();
+	}
+
+	private String generatePassword()
+	{
+		return "123456789";
+	}
+
+	private void printUser(User user)
+	{
+		System.out.printf("Nieuwe gebruiker toegevoegd! --> %n");
+		System.out.printf("Voornaam: %s%n", user.getFirstName());
+		System.out.printf("Achternaam: %s%n", user.getLastName());
+		System.out.printf("Email: %s%n", user.getEmail());
+		System.out.printf("Telefoonnummer: %s%n", user.getPhoneNumber());
+		System.out.printf("Geboortedatum: %s%n", user.getBirthdate());
+		System.out.printf("Adres: %s %d, %s, %s%n", user.getAddress().getStreet(), user.getAddress().getNumber(),
+				user.getAddress().getPostalcode(), user.getAddress().getCity());
+		System.out.printf("Rol: %s%n", user.getRole());
+		System.out.printf("Status: %s%n", user.getStatus());
+
 	}
 }
