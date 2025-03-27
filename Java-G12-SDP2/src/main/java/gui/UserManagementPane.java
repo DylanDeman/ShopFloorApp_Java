@@ -1,6 +1,8 @@
 package gui;
 
-public class UserManagementPane
+import javafx.scene.layout.GridPane;
+
+public class UserManagementPane extends GridPane
 {
 
 }
