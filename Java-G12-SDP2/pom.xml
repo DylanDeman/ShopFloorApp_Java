@@ -1,4 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>be.hogent</groupId>
   <artifactId>Java-G12-SDP2</artifactId>
@@ -43,37 +43,17 @@
         <version>21</version>
     </dependency>
     
-    <!-- Other modules -->
+    <!-- Lombok -->
     
+    <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+        <version>1.18.24</version>
+        <scope>provided</scope>
+    </dependency>
+    
+    <!-- Other modules -->
+
 </dependencies>
-
-<build>
-    <plugins>
-        <!-- Maven Compiler Plugin om Java 17+ te forceren -->
-        <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-compiler-plugin</artifactId>
-            <version>3.8.1</version>
-            <configuration>
-                <release>17</release> <!-- Of 21, afhankelijk van je JDK -->
-            </configuration>
-        </plugin>
-
-        <!-- JavaFX Maven Plugin om de applicatie correct te starten -->
-        <plugin>
-    		<groupId>org.openjfx</groupId>
-    		<artifactId>javafx-maven-plugin</artifactId>
-    		<version>0.0.5</version>  <!-- Probeer deze versie -->
-   			<executions>
-        		<execution>
-            		<goals>
-                		<goal>run</goal>
-            		</goals>
-        		</execution>
-    		</executions>
-		</plugin>
-    </plugins>
-</build>
-
 
 </project>	

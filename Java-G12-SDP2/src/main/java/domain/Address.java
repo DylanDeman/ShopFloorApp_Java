@@ -1,6 +1,6 @@
 package domain;
 
-public class Adress
+public class Address
 {
 
 }
