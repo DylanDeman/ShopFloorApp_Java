@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import domain.Address;
 import domain.User;
+import jakarta.persistence.EntityManager;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -15,6 +16,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import util.JPAUtil;
 import util.Role;
 import util.Status;
 
@@ -27,8 +29,12 @@ public class AddUserForm
 	private ComboBox<Role> roleBox;
 	private ComboBox<Status> statusBox;
 
+	private EntityManager entityManager;
+
 	public AddUserForm(Stage formStage)
 	{
+		entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+
 		formStage.initModality(Modality.APPLICATION_MODAL);
 		formStage.setTitle("Nieuwe Gebruiker Toevoegen");
 
@@ -61,6 +67,7 @@ public class AddUserForm
 		Scene scene = new Scene(formPane, 400, 550);
 		formStage.setScene(scene);
 		formStage.showAndWait();
+
 	}
 
 	private int makeUserFields(GridPane pane, int row)
@@ -161,6 +168,7 @@ public class AddUserForm
 				|| status == null || birthdate == null)
 		{
 			System.out.println("Een van de velden bij het toevoegen van deze gebruiker was leeg!");
+			return;
 		}
 
 		int houseNumber = 0;
@@ -172,6 +180,7 @@ public class AddUserForm
 		} catch (NumberFormatException e)
 		{
 			e.printStackTrace();
+			return;
 		}
 
 		Address newAddress = new Address(street, houseNumber, postalCode, city);
@@ -179,7 +188,31 @@ public class AddUserForm
 		User newUser = new User(firstName, lastName, email, phone, generatePassword(), birthdate, newAddress, status,
 				role);
 
-		printUser(newUser);
+		entityManager.getTransaction().begin();
+
+		try
+		{
+			entityManager.persist(newUser);
+
+			entityManager.getTransaction().commit();
+
+			System.out.println("Gebruiker succesvol toegevoegd!");
+
+		} catch (Exception e)
+		{
+			if (entityManager.getTransaction().isActive())
+			{
+				entityManager.getTransaction().rollback();
+			}
+			e.printStackTrace();
+			System.out.println("Fout bij het toevoegen van de gebruiker.");
+		} finally
+		{
+			if (entityManager != null && entityManager.isOpen())
+			{
+				entityManager.close();
+			}
+		}
 
 		formStage.close();
 	}

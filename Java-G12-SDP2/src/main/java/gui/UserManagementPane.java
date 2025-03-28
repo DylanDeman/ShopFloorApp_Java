@@ -1,6 +1,10 @@
 package gui;
 
+import java.util.List;
+
 import domain.User;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
@@ -10,11 +14,14 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import util.JPAUtil;
 
 public class UserManagementPane extends GridPane
 {
 	private TableView<User> userTable;
 	private Button addButton;
+
+	private EntityManager entityManager;
 
 	public UserManagementPane()
 	{
@@ -31,6 +38,9 @@ public class UserManagementPane extends GridPane
 		addButton.setOnAction(e -> openAddUserForm());
 
 		add(addButton, 0, 1);
+
+		entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+		loadUsersFromDatabase();
 	}
 
 	private void buildColumns()
@@ -93,6 +103,29 @@ public class UserManagementPane extends GridPane
 
 	}
 
+	private void loadUsersFromDatabase()
+	{
+		entityManager.getTransaction().begin();
+
+		try
+		{
+			TypedQuery<User> userQuery = entityManager.createNamedQuery("User.getAllWithAddress", User.class);
+			List<User> userList = userQuery.getResultList();
+			userTable.getItems().setAll(userList);
+			entityManager.getTransaction().commit();
+		} catch (Exception e)
+		{
+			System.err.println("Error loading users: " + e.getMessage());
+			e.printStackTrace();
+		} finally
+		{
+			if (entityManager != null && entityManager.isOpen())
+			{
+				entityManager.close();
+			}
+		}
+	}
+
 	private void openAddUserForm()
 	{
 		Stage formStage = new Stage();
@@ -109,5 +142,8 @@ public class UserManagementPane extends GridPane
 	{
 		userTable.getItems().remove(user);
 		System.out.println("User deleted: " + user.getFirstName());
+		entityManager.getTransaction().begin();
+		entityManager.remove(user);
+		entityManager.getTransaction().commit();
 	}
 }

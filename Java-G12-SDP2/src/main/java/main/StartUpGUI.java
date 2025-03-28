@@ -1,7 +1,6 @@
 package main;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import domain.Address;
 import domain.User;
@@ -58,33 +57,36 @@ public class StartUpGUI extends Application
 
 		EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
 
-		entityManager.getTransaction().begin();
-
-		entityManager.persist(u1);
-		entityManager.persist(u2);
-		entityManager.persist(u3);
-		entityManager.persist(u4);
-		entityManager.persist(u5);
-		entityManager.persist(u6);
-		entityManager.persist(u7);
-		entityManager.persist(u8);
-		entityManager.persist(u9);
-		entityManager.persist(u10);
-
-		entityManager.getTransaction().commit();
-
-		List<User> users = entityManager.createQuery("SELECT u FROM User u JOIN u.address a", User.class)
-				.getResultList();
-
-		for (User user : users)
+		try
 		{
-			System.out.println(user);
+			entityManager.getTransaction().begin();
+
+			entityManager.persist(u1);
+			entityManager.persist(u2);
+			entityManager.persist(u3);
+			entityManager.persist(u4);
+			entityManager.persist(u5);
+			entityManager.persist(u6);
+			entityManager.persist(u7);
+			entityManager.persist(u8);
+			entityManager.persist(u9);
+			entityManager.persist(u10);
+
+			entityManager.getTransaction().commit();
+		} catch (Exception e)
+		{
+			System.err.println("Error during transaction: " + e.getMessage());
+			if (entityManager.getTransaction().isActive())
+			{
+				entityManager.getTransaction().rollback();
+			}
+		} finally
+		{
+			if (entityManager != null && entityManager.isOpen())
+			{
+				entityManager.close();
+			}
 		}
-
-		entityManager.close();
-
-		JPAUtil.getEntityManagerFactory().close();
-
 	}
 
 	public static void main(String[] args)
