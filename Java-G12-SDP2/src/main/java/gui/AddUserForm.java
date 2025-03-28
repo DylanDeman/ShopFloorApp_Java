@@ -15,8 +15,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import utils.Role;
-import utils.Status;
+import util.Role;
+import util.Status;
 
 public class AddUserForm
 {
