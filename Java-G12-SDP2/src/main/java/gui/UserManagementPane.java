@@ -7,12 +7,22 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 import util.JPAUtil;
 
@@ -29,15 +39,30 @@ public class UserManagementPane extends GridPane
 		setHgap(10);
 		setPadding(new Insets(20));
 
+		BackgroundImage backgroundImage = new BackgroundImage(
+				new Image(getClass().getResourceAsStream("/images/background.png")), BackgroundRepeat.NO_REPEAT,
+				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
+				new BackgroundSize(100, 100, true, true, true, true));
+		setBackground(new Background(backgroundImage));
+
 		userTable = new TableView<>();
 		buildColumns();
-
-		add(userTable, 0, 0, 2, 1);
 
 		addButton = new Button("Gebruiker toevoegen +");
 		addButton.setOnAction(e -> openAddUserForm());
 
-		add(addButton, 0, 1);
+		String buttonStyle = "-fx-background-color: #f0453c; " + "-fx-text-fill: white; " + "-fx-font-weight: bold; "
+				+ "-fx-padding: 8 15 8 15; " + "-fx-background-radius: 5;";
+		addButton.setStyle(buttonStyle);
+
+		GridPane.setHalignment(addButton, HPos.RIGHT);
+		GridPane.setMargin(addButton, new Insets(0, 0, 10, 0));
+
+		add(addButton, 0, 0);
+		add(userTable, 0, 1);
+
+		GridPane.setHgrow(userTable, Priority.ALWAYS);
+		GridPane.setVgrow(userTable, Priority.ALWAYS);
 
 		entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
 		loadUsersFromDatabase();
@@ -45,6 +70,8 @@ public class UserManagementPane extends GridPane
 
 	private void buildColumns()
 	{
+		userTable.getColumns().clear();
+
 		TableColumn<User, Integer> idColumn = new TableColumn<>("ID");
 		idColumn.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getId()).asObject());
 
@@ -65,10 +92,14 @@ public class UserManagementPane extends GridPane
 		TableColumn<User, Void> editColumn = new TableColumn<>("Bewerken");
 		editColumn.setCellFactory(param -> new TableCell<User, Void>()
 		{
-			private final Button editButton = new Button("✏️");
+			private final Button editButton = new Button();
 
 			{
-				editButton.setStyle("-fx-background-color: yellow;");
+				ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/edit.png")));
+				editIcon.setFitWidth(16);
+				editIcon.setFitHeight(16);
+				editButton.setGraphic(editIcon);
+				editButton.setBackground(Background.EMPTY);
 				editButton.setOnAction(event -> openEditUserForm(getTableRow().getItem()));
 			}
 
@@ -83,10 +114,14 @@ public class UserManagementPane extends GridPane
 		TableColumn<User, Void> deleteColumn = new TableColumn<>("Verwijderen");
 		deleteColumn.setCellFactory(param -> new TableCell<User, Void>()
 		{
-			private final Button deleteButton = new Button("🗑️");
+			private final Button deleteButton = new Button();
 
 			{
-				deleteButton.setStyle("-fx-background-color: red;");
+				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/delete.png")));
+				deleteIcon.setFitHeight(16);
+				deleteIcon.setFitWidth(16);
+				deleteButton.setGraphic(deleteIcon);
+				deleteButton.setBackground(Background.EMPTY);
 				deleteButton.setOnAction(event -> deleteUser(getTableRow().getItem()));
 			}
 
@@ -98,8 +133,17 @@ public class UserManagementPane extends GridPane
 			}
 		});
 
-		userTable.getColumns().addAll(editColumn, idColumn, nameColumn, emailColumn, roleColumn, statusColumn,
-				deleteColumn);
+		userTable.setPlaceholder(new Label("Geen gebruikers gevonden"));
+
+		userTable.getColumns().add(editColumn);
+
+		userTable.getColumns().add(idColumn);
+		userTable.getColumns().add(nameColumn);
+		userTable.getColumns().add(emailColumn);
+		userTable.getColumns().add(roleColumn);
+		userTable.getColumns().add(statusColumn);
+
+		userTable.getColumns().add(deleteColumn);
 
 	}
 
@@ -146,4 +190,5 @@ public class UserManagementPane extends GridPane
 		entityManager.remove(user);
 		entityManager.getTransaction().commit();
 	}
+
 }

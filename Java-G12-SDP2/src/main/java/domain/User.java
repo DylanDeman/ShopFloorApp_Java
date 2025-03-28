@@ -80,4 +80,9 @@ public class User implements Serializable
 				status != null ? status.toString() : "N/A", role != null ? role.toString() : "N/A");
 	}
 
+	public String getFullName()
+	{
+		return String.format("%s %s", firstName, lastName);
+	}
+
 }
