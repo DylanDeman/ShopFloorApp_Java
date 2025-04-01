@@ -32,9 +32,13 @@ public class UserManagementPane extends GridPane
 	private Button addButton;
 
 	private EntityManager entityManager;
+	private Stage primaryStage;
 
-	public UserManagementPane()
+	public UserManagementPane(Stage primaryStage)
 	{
+		this.primaryStage = primaryStage;
+		this.entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+
 		setVgap(10);
 		setHgap(10);
 		setPadding(new Insets(20));
@@ -49,7 +53,7 @@ public class UserManagementPane extends GridPane
 		buildColumns();
 
 		addButton = new Button("Gebruiker toevoegen +");
-		addButton.setOnAction(e -> openAddUserForm());
+		addButton.setOnAction(e -> openAddUserForm(primaryStage));
 
 		String buttonStyle = "-fx-background-color: #f0453c; " + "-fx-text-fill: white; " + "-fx-font-weight: bold; "
 				+ "-fx-padding: 8 15 8 15; " + "-fx-background-radius: 5;";
@@ -64,7 +68,6 @@ public class UserManagementPane extends GridPane
 		GridPane.setHgrow(userTable, Priority.ALWAYS);
 		GridPane.setVgrow(userTable, Priority.ALWAYS);
 
-		entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
 		loadUsersFromDatabase();
 	}
 
@@ -100,7 +103,7 @@ public class UserManagementPane extends GridPane
 				editIcon.setFitHeight(16);
 				editButton.setGraphic(editIcon);
 				editButton.setBackground(Background.EMPTY);
-				editButton.setOnAction(event -> openEditUserForm(getTableRow().getItem()));
+				editButton.setOnAction(event -> openEditUserForm(primaryStage, getTableRow().getItem()));
 			}
 
 			@Override
@@ -149,6 +152,10 @@ public class UserManagementPane extends GridPane
 
 	private void loadUsersFromDatabase()
 	{
+		if (!entityManager.isOpen())
+		{
+			entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+		}
 		entityManager.getTransaction().begin();
 
 		try
@@ -161,25 +168,23 @@ public class UserManagementPane extends GridPane
 		{
 			System.err.println("Error loading users: " + e.getMessage());
 			e.printStackTrace();
-		} finally
-		{
-			if (entityManager != null && entityManager.isOpen())
-			{
-				entityManager.close();
-			}
 		}
 	}
 
-	private void openAddUserForm()
+	private void openAddUserForm(Stage primaryStage)
 	{
-		Stage formStage = new Stage();
-		new AddUserForm(formStage);
+		primaryStage.getScene().setRoot(new AddUserForm(primaryStage, this));
 	}
 
-	private void openEditUserForm(User user)
+	private void openEditUserForm(Stage primaryStage, User user)
 	{
-		Stage formStage = new Stage();
-		new EditUserForm(formStage, user);
+		primaryStage.getScene().setRoot(new EditUserForm(primaryStage, user, this));
+	}
+
+	public void returnToUserManagement(Stage primaryStage)
+	{
+		primaryStage.getScene().setRoot(this);
+		loadUsersFromDatabase();
 	}
 
 	private void deleteUser(User user)

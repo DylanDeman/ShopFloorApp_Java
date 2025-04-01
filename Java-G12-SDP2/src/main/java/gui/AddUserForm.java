@@ -6,7 +6,6 @@ import domain.Address;
 import domain.User;
 import jakarta.persistence.EntityManager;
 import javafx.geometry.Insets;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -14,13 +13,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import util.JPAUtil;
 import util.Role;
 import util.Status;
 
-public class AddUserForm
+public class AddUserForm extends GridPane
 {
 
 	private TextField firstNameField, lastNameField, emailField, phoneField;
@@ -30,13 +28,12 @@ public class AddUserForm
 	private ComboBox<Status> statusBox;
 
 	private EntityManager entityManager;
+	private UserManagementPane userManagementPane;
 
-	public AddUserForm(Stage formStage)
+	public AddUserForm(Stage primaryStage, UserManagementPane userManagementPane)
 	{
+		this.userManagementPane = userManagementPane;
 		entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
-
-		formStage.initModality(Modality.APPLICATION_MODAL);
-		formStage.setTitle("Nieuwe Gebruiker Toevoegen");
 
 		GridPane formPane = new GridPane();
 		formPane.setPadding(new Insets(20));
@@ -45,29 +42,26 @@ public class AddUserForm
 
 		int row = 0;
 
+		Button backButton = new Button("← Terug");
+		backButton.setOnAction(e -> userManagementPane.returnToUserManagement(primaryStage));
+		add(backButton, 0, row++, 2, 1);
+
 		row = makeUserFields(formPane, row);
 		row = makeAddressFields(formPane, row);
 		row = makeRoleAndStatusFields(formPane, row);
+
+		add(formPane, 0, 1);
 
 		HBox buttonBox = new HBox(10);
 		buttonBox.setPadding(new Insets(10));
 		Button addButton = new Button("Toevoegen");
 		addButton.setStyle("-fx-background-color: green; -fx-text-fill: white;");
-		addButton.setOnAction(e -> addUser(formStage));
+		addButton.setOnAction(e -> addUser(primaryStage));
 
-		Button closeButton = new Button("Sluiten");
-		closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white;");
-		closeButton.setOnAction(e -> formStage.close());
-
-		buttonBox.getChildren().addAll(closeButton, addButton);
+		buttonBox.getChildren().add(addButton);
 		buttonBox.setStyle("-fx-alignment: center-right;");
 
 		formPane.add(buttonBox, 1, row, 2, 1);
-
-		Scene scene = new Scene(formPane, 400, 550);
-		formStage.setScene(scene);
-		formStage.showAndWait();
-
 	}
 
 	private int makeUserFields(GridPane pane, int row)
@@ -149,7 +143,7 @@ public class AddUserForm
 		return row;
 	}
 
-	private void addUser(Stage formStage)
+	private void addUser(Stage primaryStage)
 	{
 		String firstName = firstNameField.getText();
 		String lastName = lastNameField.getText();
@@ -197,6 +191,9 @@ public class AddUserForm
 			entityManager.getTransaction().commit();
 
 			System.out.println("Gebruiker succesvol toegevoegd!");
+			printUser(newUser);
+
+			userManagementPane.returnToUserManagement(primaryStage);
 
 		} catch (Exception e)
 		{
@@ -214,7 +211,6 @@ public class AddUserForm
 			}
 		}
 
-		formStage.close();
 	}
 
 	private String generatePassword()

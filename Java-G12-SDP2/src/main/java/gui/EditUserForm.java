@@ -2,7 +2,6 @@ package gui;
 
 import domain.User;
 import javafx.geometry.Insets;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
@@ -10,12 +9,11 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import util.Role;
 import util.Status;
 
-public class EditUserForm
+public class EditUserForm extends GridPane
 {
 
 	private TextField firstNameField, lastNameField, emailField, phoneField;
@@ -23,41 +21,39 @@ public class EditUserForm
 	private TextField streetField, houseNumberField, postalCodeField, cityField;
 	private ComboBox<Role> roleBox;
 	private ComboBox<Status> statusBox;
+	private UserManagementPane userManagementPane;
 
-	public EditUserForm(Stage formStage, User user)
+	public EditUserForm(Stage primaryStage, User user, UserManagementPane userManagementPane)
 	{
-		formStage.initModality(Modality.APPLICATION_MODAL);
-		formStage.setTitle("Bewerk Gebruiker");
+		this.userManagementPane = userManagementPane;
 
-		GridPane formPane = new GridPane();
-		formPane.setPadding(new Insets(20));
-		formPane.setHgap(10);
-		formPane.setVgap(10);
+		setPadding(new Insets(20));
+		setHgap(10);
+		setVgap(10);
 
 		int row = 0;
 
-		row = makeUserFields(formPane, row, user);
-		row = makeAddressFields(formPane, row, user);
-		row = makeRoleAndStatusFields(formPane, row, user);
+		Button backButton = new Button("← Terug");
+		backButton.setOnAction(e -> userManagementPane.returnToUserManagement(primaryStage));
+		add(backButton, 0, row++, 2, 1);
+
+		row = makeUserFields(this, row, user);
+		row = makeAddressFields(this, row, user);
+		row = makeRoleAndStatusFields(this, row, user);
 
 		HBox buttonBox = new HBox(10);
 		buttonBox.setPadding(new Insets(10));
 		Button saveButton = new Button("Opslaan");
 		saveButton.setStyle("-fx-background-color: green; -fx-text-fill: white;");
-		saveButton.setOnAction(e -> saveUser(formStage, user));
+		saveButton.setOnAction(e -> {
+			saveUser(user);
+			userManagementPane.returnToUserManagement(primaryStage);
+		});
 
-		Button closeButton = new Button("Sluiten");
-		closeButton.setStyle("-fx-background-color: red; -fx-text-fill: white;");
-		closeButton.setOnAction(e -> formStage.close());
-
-		buttonBox.getChildren().addAll(closeButton, saveButton);
+		buttonBox.getChildren().add(saveButton);
 		buttonBox.setStyle("-fx-alignment: center-right;");
 
-		formPane.add(buttonBox, 1, row, 2, 1);
-
-		Scene scene = new Scene(formPane, 400, 550);
-		formStage.setScene(scene);
-		formStage.showAndWait();
+		add(buttonBox, 1, row, 2, 1);
 	}
 
 	private int makeUserFields(GridPane pane, int row, User user)
@@ -141,7 +137,7 @@ public class EditUserForm
 		return row;
 	}
 
-	private void saveUser(Stage formStage, User user)
+	private void saveUser(User user)
 	{
 		user.setFirstName(firstNameField.getText());
 		user.setLastName(lastNameField.getText());
@@ -158,6 +154,5 @@ public class EditUserForm
 		user.setStatus(statusBox.getValue());
 
 		System.out.println("Gebruiker bijgewerkt!");
-		formStage.close();
 	}
 }
