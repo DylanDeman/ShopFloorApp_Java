@@ -12,7 +12,6 @@ import lombok.AllArgsConstructor;
 
 // In de service komt altijd de business-logica!
 // Dus als er bepaalde berekeningen moeten gedaan worden met de data 
-// Dit bv in de user zit, komt dit hier!
 @AllArgsConstructor
 public class UserService implements IUserService {
     private final EntityManagerFactory emf;

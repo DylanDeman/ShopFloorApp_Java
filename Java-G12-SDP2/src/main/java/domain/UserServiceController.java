@@ -1,15 +1,16 @@
 package domain;
 
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import interfaces.IUserService;
 import util.Role;
 import util.Status;
 
-// Deze klasse is zoals DC vroeger, GUI communiceert enkel met de controllers
-// controller is dus de facade
+// Deze klasse is zoals DC, maar nu enkel voor User, 
+// GUI communiceert enkel met de controllers = Facade dus
 public class UserServiceController {
-	private final IUserService userService;
+	private IUserService userService;
 
 	// Hier de currentUser meekrijgen is niet zo mooi, later aanpassen zodat hij
 	// zelf weet wie currentUser is!
@@ -36,7 +37,7 @@ public class UserServiceController {
 	}
 
 	public List<User> getAllUsers() {
-		return userService.getAll();
+		return Collections.unmodifiableList(userService.getAll());
 	}
 
 	public User getUserById(int id) {
@@ -59,5 +60,4 @@ public class UserServiceController {
 		// TODO
 		return false;
 	}
-
 }

@@ -1,10 +1,8 @@
 package domain;
 
 import java.io.Serializable;
-
 import java.time.LocalDate;
 import java.time.Period;
-
 import exceptions.InvalidUserException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
