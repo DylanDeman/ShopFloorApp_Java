@@ -46,7 +46,7 @@ public class ChoicePane extends GridPane
 		LoginPane loginPane = new LoginPane();
 		Scene loginPaneScene = new Scene(loginPane);
 		loginPane.getStylesheets().add(getClass().getResource("/css/loginstyles.css").toExternalForm());
-		primaryStage.setMaximized(true);
 		primaryStage.setScene(loginPaneScene);
+		primaryStage.setMaximized(true);
 	}
 }
