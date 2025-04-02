@@ -1,5 +1,6 @@
 package gui;
 
+import gui.login.LoginPane;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
@@ -17,7 +18,11 @@ public class ChoicePane extends GridPane
 		Button maintenanceListButton = new Button("Ga naar lijst onderhouden");
 		maintenanceListButton.setOnAction(e -> goToMaintenanceList(primaryStage));
 		
+		Button loginButton = new Button("Ga naar aanmelden");
+		loginButton.setOnAction(e -> goToLogin(primaryStage));
+		
 		this.add(maintenanceListButton, 0, 10);
+		this.add(loginButton, 0, 20);
 	}
 
 	private void goToUserManagement(Stage primaryStage)
@@ -33,5 +38,13 @@ public class ChoicePane extends GridPane
 		Scene maintenanceListScene = new Scene(maintenanceListComponent);
 		
 		primaryStage.setScene(maintenanceListScene);
+	}
+	
+	private void goToLogin(Stage primaryStage) {
+		LoginPane loginPane = new LoginPane();
+		Scene loginPaneScene = new Scene(loginPane);
+		loginPane.getStylesheets().add(getClass().getResource("/css/loginstyles.css").toExternalForm());
+		primaryStage.setMaximized(true);
+		primaryStage.setScene(loginPaneScene);
 	}
 }
