@@ -18,6 +18,6 @@ public class ChoisePane extends GridPane
 	private void goToUserManagement(Stage primaryStage)
 	{
 		UserManagementPane userManagementPane = new UserManagementPane(primaryStage);
-		primaryStage.setScene(new Scene(userManagementPane, 800, 600));
+		primaryStage.setScene(new Scene(userManagementPane, 800, 800));
 	}
 }

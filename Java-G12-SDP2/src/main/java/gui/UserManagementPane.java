@@ -190,7 +190,6 @@ public class UserManagementPane extends GridPane
 	private void deleteUser(User user)
 	{
 		userTable.getItems().remove(user);
-		System.out.println("User deleted: " + user.getFirstName());
 		entityManager.getTransaction().begin();
 		entityManager.remove(user);
 		entityManager.getTransaction().commit();
