@@ -15,8 +15,8 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
-import utils.Role;
-import utils.Status;
+import utils.Roles;
+import utils.Statusses;
 
 public class AddUserForm
 {
@@ -24,8 +24,8 @@ public class AddUserForm
 	private TextField firstNameField, lastNameField, emailField, phoneField;
 	private DatePicker birthdatePicker;
 	private TextField streetField, houseNumberField, postalCodeField, cityField;
-	private ComboBox<Role> roleBox;
-	private ComboBox<Status> statusBox;
+	private ComboBox<Roles> roleBox;
+	private ComboBox<Statusses> statusBox;
 
 	public AddUserForm(Stage formStage)
 	{
@@ -126,11 +126,11 @@ public class AddUserForm
 		pane.add(sectionLabel, 0, row++, 2, 1);
 
 		roleBox = new ComboBox<>();
-		roleBox.getItems().addAll(Role.values());
+		roleBox.getItems().addAll(Roles.values());
 		roleBox.setPromptText("Selecteer een rol");
 
 		statusBox = new ComboBox<>();
-		statusBox.getItems().addAll(Status.values());
+		statusBox.getItems().addAll(Statusses.values());
 		statusBox.setPromptText("Selecteer een status");
 
 		pane.add(new Label("Rol:"), 0, row);
@@ -152,8 +152,8 @@ public class AddUserForm
 		String houseNumberStr = houseNumberField.getText();
 		String postalCodeStr = postalCodeField.getText();
 		String city = cityField.getText();
-		Role role = roleBox.getValue();
-		Status status = statusBox.getValue();
+		Roles role = roleBox.getValue();
+		Statusses status = statusBox.getValue();
 		LocalDate birthdate = birthdatePicker.getValue();
 
 		if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || phone.isEmpty() || street.isEmpty()

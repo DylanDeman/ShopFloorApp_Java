@@ -1,6 +1,6 @@
 package utils;
 
-public enum Role
+public enum Roles
 {
 	ADMIN, MANAGER, VERANTWOORDELIJKE, TECHNIEKER
 }
