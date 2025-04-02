@@ -4,6 +4,8 @@ import java.time.LocalDate;
 
 import domain.Address;
 import domain.User;
+import exceptions.InvalidAddressException;
+import exceptions.InvalidUserException;
 import jakarta.persistence.EntityManager;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
@@ -13,6 +15,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import util.JPAUtil;
 import util.Role;
@@ -26,6 +29,7 @@ public class AddUserForm extends GridPane
 	private TextField streetField, houseNumberField, postalCodeField, cityField;
 	private ComboBox<Role> roleBox;
 	private ComboBox<Status> statusBox;
+	private Label errorLabel;
 
 	private EntityManager entityManager;
 	private UserManagementPane userManagementPane;
@@ -45,6 +49,11 @@ public class AddUserForm extends GridPane
 		Button backButton = new Button("← Terug");
 		backButton.setOnAction(e -> userManagementPane.returnToUserManagement(primaryStage));
 		add(backButton, 0, row++, 2, 1);
+
+		errorLabel = new Label();
+		errorLabel.setTextFill(Color.RED);
+		errorLabel.setWrapText(true);
+		formPane.add(errorLabel, 0, row++, 2, 1);
 
 		row = makeUserFields(formPane, row);
 		row = makeAddressFields(formPane, row);
@@ -145,6 +154,8 @@ public class AddUserForm extends GridPane
 
 	private void addUser(Stage primaryStage)
 	{
+		errorLabel.setText("");
+
 		String firstName = firstNameField.getText();
 		String lastName = lastNameField.getText();
 		String email = emailField.getText();
@@ -161,7 +172,7 @@ public class AddUserForm extends GridPane
 				|| houseNumberStr.isEmpty() || postalCodeStr.isEmpty() || city.isEmpty() || role == null
 				|| status == null || birthdate == null)
 		{
-			System.out.println("Een van de velden bij het toevoegen van deze gebruiker was leeg!");
+			showError("Alle velden zijn verplicht!");
 			return;
 		}
 
@@ -173,14 +184,31 @@ public class AddUserForm extends GridPane
 			postalCode = Integer.parseInt(postalCodeStr);
 		} catch (NumberFormatException e)
 		{
-			e.printStackTrace();
+			showError("Huisnummer en postcode moeten numerieke waarden zijn!");
 			return;
 		}
 
-		Address newAddress = new Address(street, houseNumber, postalCode, city);
+		Address newAddress;
 
-		User newUser = new User(firstName, lastName, email, phone, generatePassword(), birthdate, newAddress, status,
-				role);
+		try
+		{
+			newAddress = new Address(street, houseNumber, postalCode, city);
+		} catch (InvalidAddressException e)
+		{
+			showError("Ongeldig adres: " + e.getMessage());
+			return;
+		}
+
+		User newUser;
+		try
+		{
+			newUser = new User(firstName, lastName, email, phone, generatePassword(), birthdate, newAddress, status,
+					role);
+		} catch (InvalidUserException e)
+		{
+			showError("Ongeldige gebruikersgegevens: " + e.getMessage());
+			return;
+		}
 
 		entityManager.getTransaction().begin();
 
@@ -211,6 +239,11 @@ public class AddUserForm extends GridPane
 			}
 		}
 
+	}
+
+	private void showError(String message)
+	{
+		errorLabel.setText(message);
 	}
 
 	private String generatePassword()
