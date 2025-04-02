@@ -1,6 +1,6 @@
 package util;
 
-public enum Status
+public enum Statusses
 {
 	ACTIEF, INACTIEF
 }
