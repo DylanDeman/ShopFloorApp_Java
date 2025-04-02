@@ -15,31 +15,24 @@ import lombok.AllArgsConstructor;
 // Dit bv in de user zit, komt dit hier!
 @AllArgsConstructor
 public class UserService implements IUserService {
-    
     private final EntityManagerFactory emf;
     
     @Override
     public List<User> getAll() {
-        EntityManager em = emf.createEntityManager();
-        try {
+        try (EntityManager em = emf.createEntityManager()) {
             TypedQuery<User> query = em.createNamedQuery("User.getAllWithAddress", User.class);
             return query.getResultList();
-        } finally {
-            em.close();
         }
     }
     
     @Override
     public User getById(int id) {
-        EntityManager em = emf.createEntityManager();
-        try {
+        try (EntityManager em = emf.createEntityManager()) {
             User user = em.find(User.class, id);
             if (user == null) {
                 throw new InvalidUserException("User with ID " + id + " not found");
             }
             return user;
-        } finally {
-            em.close();
         }
     }
     
@@ -49,19 +42,16 @@ public class UserService implements IUserService {
             throw new InvalidUserException("User cannot be null");
         }
         
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        try {
-            tx.begin();
-            em.persist(entity);
-            tx.commit();
-        } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
+        try (EntityManager em = emf.createEntityManager()) {
+            EntityTransaction tx = em.getTransaction();
+            try {
+                tx.begin();
+                em.persist(entity);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx.isActive()) tx.rollback();
+                throw new InvalidUserException("Failed to create user: " + e.getMessage());
             }
-            throw new InvalidUserException("Failed to create user: " + e.getMessage());
-        } finally {
-            em.close();
         }
     }
     
@@ -71,48 +61,44 @@ public class UserService implements IUserService {
             throw new InvalidUserException("User cannot be null");
         }
         
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        try {
-            tx.begin();
-            User existingUser = em.find(User.class, entity.getId());
-            if (existingUser == null) {
-                throw new InvalidUserException("User with ID " + entity.getId() + " not found");
+        try (EntityManager em = emf.createEntityManager()) {
+            EntityTransaction tx = em.getTransaction();
+            try {
+                tx.begin();
+                User existingUser = em.find(User.class, entity.getId());
+                if (existingUser == null) {
+                    throw new InvalidUserException("User with ID " + entity.getId() + " not found");
+                }
+                
+                em.merge(entity);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx.isActive()) tx.rollback();
+                throw new InvalidUserException("Failed to update user: " + e.getMessage());
             }
-            
-            em.merge(entity);
-            tx.commit();
-        } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
-            }
-            throw new InvalidUserException("Failed to update user: " + e.getMessage());
-        } finally {
-            em.close();
         }
     }
     
     @Override
     public void delete(int id) {
-        EntityManager em = emf.createEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        try {
-            tx.begin();
-            User user = em.find(User.class, id);
-            if (user == null) {
-                throw new InvalidUserException("User with ID " + id + " not found");
+        try (EntityManager em = emf.createEntityManager()) {
+            EntityTransaction tx = em.getTransaction();
+            try {
+                tx.begin();
+                User user = em.find(User.class, id);
+                if (user == null) {
+                    throw new InvalidUserException("User with ID " + id + " not found");
+                }
+                
+                em.remove(user);
+                tx.commit();
+            } catch (Exception e) {
+                if (tx.isActive()) tx.rollback();
+                throw new InvalidUserException("Failed to delete user: " + e.getMessage());
             }
-            
-            em.remove(user);
-            tx.commit();
-        } catch (Exception e) {
-            if (tx.isActive()) {
-                tx.rollback();
-            }
-            throw new InvalidUserException("Failed to delete user: " + e.getMessage());
-        } finally {
-            em.close();
         }
     }
+    
+    // TODO methode(n) voor authenticatie van gebruiker komen hier later:
     
 }

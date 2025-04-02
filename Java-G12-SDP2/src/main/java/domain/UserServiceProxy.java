@@ -6,7 +6,7 @@ import interfaces.IUserService;
 import util.Role;
 
 // TODO nu kan je alles doen zolang je admin bent -> veranderen naar juiste rollen
-// TODO mooie en juiste fouten teruggeven
+// TODO mooie en juiste excepties teruggeven overal
 public class UserServiceProxy implements IUserService {
 
 	private final IUserService realService;
@@ -16,7 +16,6 @@ public class UserServiceProxy implements IUserService {
 		this.realService = realService;
 		this.currentUser = currentUser;
 	}
-
 	
 	@Override
 	public List<User> getAll() {
@@ -39,10 +38,6 @@ public class UserServiceProxy implements IUserService {
 	@Override
 	public void create(User entity) {
 		if (currentUser == null || currentUser.getRole() == Role.ADMIN) {
-			if (currentUser == null && entity.getRole() == Role.ADMIN) {
-				throw new SecurityException("Deze actie mag niet!");
-			}
-
 			realService.create(entity);
 		} else {
 			throw new SecurityException("Deze actie mag niet!");
@@ -52,10 +47,6 @@ public class UserServiceProxy implements IUserService {
 	@Override
 	public void update(User entity) {
 		if (currentUser != null && (currentUser.getId() == entity.getId() || currentUser.getRole() == Role.ADMIN)) {
-			if (currentUser.getId() == entity.getId() && currentUser.getRole() != Role.ADMIN
-					&& entity.getRole() == Role.ADMIN) {
-				throw new SecurityException("Deze actie mag niet!");
-			}
 			realService.update(entity);
 		} else {
 			throw new SecurityException("Deze actie mag niet!");

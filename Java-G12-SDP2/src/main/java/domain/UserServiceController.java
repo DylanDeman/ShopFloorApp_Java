@@ -6,6 +6,8 @@ import interfaces.IUserService;
 import util.Role;
 import util.Status;
 
+// Deze klasse is zoals DC vroeger, GUI communiceert enkel met de controllers
+// controller is dus de facade
 public class UserServiceController {
 	private final IUserService userService;
 
