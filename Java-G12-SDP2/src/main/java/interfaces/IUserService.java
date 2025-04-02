@@ -11,7 +11,7 @@ import domain.User;
 public interface IUserService {
 	List<User> getAll();
 	User getById(int id);
-	void create(User entity);
-	void update(User entity);
+	void create(User user);
+	void update(User user);
     void delete(int id);
 }
