@@ -21,11 +21,9 @@ public class EditUserForm extends GridPane
 	private TextField streetField, houseNumberField, postalCodeField, cityField;
 	private ComboBox<Role> roleBox;
 	private ComboBox<Status> statusBox;
-	private UserManagementPane userManagementPane;
 
 	public EditUserForm(Stage primaryStage, User user, UserManagementPane userManagementPane)
 	{
-		this.userManagementPane = userManagementPane;
 
 		setPadding(new Insets(20));
 		setHgap(10);

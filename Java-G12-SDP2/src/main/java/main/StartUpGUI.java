@@ -4,7 +4,7 @@ import java.time.LocalDate;
 
 import domain.Address;
 import domain.User;
-import gui.ChoisePane;
+import gui.ChoicePane;
 import jakarta.persistence.EntityManager;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -20,9 +20,9 @@ public class StartUpGUI extends Application
 	public void start(Stage primaryStage)
 	{
 		ChoicePane pane = new ChoicePane(primaryStage);
-		
+
 		primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/images/favicon-32x32.png")));
-		
+
 		Scene scene = new Scene(pane, 600, 200);
 		primaryStage.setTitle("Kies je paneel");
 		primaryStage.setScene(scene);
