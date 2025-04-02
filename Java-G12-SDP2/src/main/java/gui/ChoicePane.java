@@ -22,10 +22,8 @@ public class ChoicePane extends GridPane
 
 	private void goToUserManagement(Stage primaryStage)
 	{
-		UserManagementPane userManagementPane = new UserManagementPane();
-
-		Scene userManagementScene = new Scene(userManagementPane, 400, 600);
-		primaryStage.setScene(userManagementScene);
+		UserManagementPane userManagementPane = new UserManagementPane(primaryStage);
+		primaryStage.setScene(new Scene(userManagementPane, 800, 800));
 	}
 	
 	private void goToMaintenanceList(Stage primaryStage)
