@@ -1,7 +1,6 @@
 package gui;
 
 import java.time.LocalDate;
-
 import domain.Address;
 import domain.User;
 import exceptions.InvalidAddressException;

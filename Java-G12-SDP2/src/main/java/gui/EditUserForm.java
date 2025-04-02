@@ -1,6 +1,7 @@
 package gui;
 
 import domain.User;
+
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
@@ -15,7 +16,6 @@ import util.Status;
 
 public class EditUserForm extends GridPane
 {
-
 	private TextField firstNameField, lastNameField, emailField, phoneField;
 	private DatePicker birthdatePicker;
 	private TextField streetField, houseNumberField, postalCodeField, cityField;
