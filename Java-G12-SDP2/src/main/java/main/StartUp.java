@@ -7,3 +7,7 @@ public class StartUp
 		StartUpGUI.main(args);
 	}
 }
+
+
+
+//test commit dogukan
