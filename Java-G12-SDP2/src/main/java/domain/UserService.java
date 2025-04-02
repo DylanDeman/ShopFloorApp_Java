@@ -99,6 +99,6 @@ public class UserService implements IUserService {
         }
     }
     
-    // TODO methode(n) voor authenticatie van gebruiker komen hier later:
+    // TODO methoden voor authenticatie van gebruiker komen hier later:
     
 }

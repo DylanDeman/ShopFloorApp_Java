@@ -209,12 +209,12 @@ public class AddUserForm extends GridPane
 		pane.add(sectionLabel, 0, 0, 2, 1);
 
 		roleBox = new ComboBox<>();
-		roleBox.getItems().addAll(Roles.values());
+		roleBox.getItems().addAll(Role.values());
 		roleBox.setPromptText("Selecteer een rol");
 		roleBox.setPrefWidth(200);
 
 		statusBox = new ComboBox<>();
-		statusBox.getItems().addAll(Statusses.values());
+		statusBox.getItems().addAll(Status.values());
 		statusBox.setPromptText("Selecteer een status");
 		statusBox.setPrefWidth(200);
 
@@ -240,8 +240,8 @@ public class AddUserForm extends GridPane
 		String houseNumberStr = houseNumberField.getText();
 		String postalCodeStr = postalCodeField.getText();
 		String city = cityField.getText();
-		Roles role = roleBox.getValue();
-		Statusses status = statusBox.getValue();
+		Role role = roleBox.getValue();
+		Status status = statusBox.getValue();
 		LocalDate birthdate = birthdatePicker.getValue();
 
 		if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || phone.isEmpty() || street.isEmpty()
