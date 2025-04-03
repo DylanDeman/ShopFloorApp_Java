@@ -3,18 +3,17 @@ package domain;
 import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
-import interfaces.IUserService;
 import util.Role;
 import util.Status;
 
 // Deze klasse is zoals DC, maar nu enkel voor User, 
 // GUI communiceert enkel met de controllers = Facade dus
 public class UserServiceController {
-	private IUserService userService;
+	private UserService userService;
 
 	// Hier de currentUser meekrijgen is niet zo mooi, later aanpassen zodat hij
 	// zelf weet wie currentUser is!
-	public UserServiceController(IUserService userService, User currentUser) {
+	public UserServiceController(UserService userService, User currentUser) {
 		if (userService == null) {
 			throw new IllegalArgumentException("User service cannot be null!");
 		}
@@ -22,14 +21,11 @@ public class UserServiceController {
 		if (currentUser == null) {
 			throw new IllegalArgumentException("Current user cannot be null!");
 		}
-
-		IUserService proxiedService = new UserServiceProxy(userService, currentUser);
-		this.userService = proxiedService;
 	}
 
 	// Dit is voor registratie (altijd echte service gebruiken en geen
 	// autorisatie/authenticatie nodig)
-	public UserServiceController(IUserService userService) {
+	public UserServiceController(UserService userService) {
 		if (userService == null) {
 			throw new IllegalArgumentException("User service cannot be null");
 		}
@@ -37,11 +33,11 @@ public class UserServiceController {
 	}
 
 	public List<User> getAllUsers() {
-		return Collections.unmodifiableList(userService.getAll());
+		return Collections.unmodifiableList(userService.findAll());
 	}
 
 	public User getUserById(int id) {
-		return userService.getById(id);
+		return userService.get(id);
 	}
 
 	public User createUser(String firstName, String lastName, String email, String phoneNumber, String password,
