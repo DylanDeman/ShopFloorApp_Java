@@ -1,6 +1,7 @@
 package gui;
 
 import java.time.LocalDate;
+
 import domain.Address;
 import domain.User;
 import exceptions.InvalidAddressException;
@@ -31,8 +32,9 @@ import util.JPAUtil;
 import util.Role;
 import util.Status;
 
-public class AddUserForm extends GridPane
+public class AddOrEditUserForm extends GridPane
 {
+	private User user;
 
 	private TextField firstNameField, lastNameField, emailField, phoneField;
 	private DatePicker birthdatePicker;
@@ -43,11 +45,16 @@ public class AddUserForm extends GridPane
 
 	private EntityManager entityManager;
 	private UserManagementPane userManagementPane;
+	private boolean isNewUser;
 
-	public AddUserForm(Stage primaryStage, UserManagementPane userManagementPane)
+	public AddOrEditUserForm(Stage primaryStage, UserManagementPane userManagementPane, User user)
 	{
 		this.userManagementPane = userManagementPane;
 		entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
+
+		this.user = user;
+
+		isNewUser = user == null;
 
 		this.setPadding(new Insets(20));
 		this.setHgap(20);
@@ -68,11 +75,11 @@ public class AddUserForm extends GridPane
 		errorLabel.setWrapText(true);
 		this.add(errorLabel, 0, 1, 2, 1);
 
-		Label headerLabel = new Label("NIEUWE GEBRUIKER TOEVOEGEN");
+		Label headerLabel = new Label(isNewUser ? "GEBRUIKER TOEVOEGEN" : "GEBRUIKER AANPASSEN");
 		headerLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: white;");
 		HBox headerBox = new HBox(headerLabel);
 		headerBox.setAlignment(Pos.CENTER);
-		headerBox.setStyle("-fx-background-color: rgb(200, 50, 50); " + "-fx-padding: 15px; "
+		headerBox.setStyle("-fx-background-color: rgb(240, 69, 60); " + "-fx-padding: 15px; "
 				+ "-fx-border-radius: 5 5 5 5; " + "-fx-background-radius: 5 5 5 5;");
 		headerBox.setMaxWidth(Double.MAX_VALUE);
 		headerBox.setMaxHeight(40);
@@ -105,20 +112,46 @@ public class AddUserForm extends GridPane
 		mainContent.getChildren().addAll(userFieldsBox, divider, rightFieldsBox);
 		this.add(mainContent, 0, 3, 2, 1);
 
-		Button addButton = new Button("Toevoegen");
-		addButton.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-size: 14px;");
-		addButton.setMaxWidth(Double.MAX_VALUE);
-		addButton.setPadding(new Insets(10, 30, 10, 30));
-		addButton.setOnAction(e -> addUser(primaryStage));
+		Button saveButton = new Button("Opslaan");
+		saveButton.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-size: 14px;");
+		saveButton.setMaxWidth(Double.MAX_VALUE);
+		saveButton.setPadding(new Insets(10, 30, 10, 30));
+		saveButton.setOnAction(e -> addUser(primaryStage));
 
-		HBox buttonBox = new HBox(addButton);
+		HBox buttonBox = new HBox(saveButton);
 		buttonBox.setAlignment(Pos.CENTER);
 		buttonBox.setPadding(new Insets(20, 0, 0, 0));
-		HBox.setHgrow(addButton, Priority.ALWAYS);
+		HBox.setHgrow(saveButton, Priority.ALWAYS);
 		buttonBox.setMaxWidth(400);
 
 		this.add(buttonBox, 0, 4, 2, 1);
 		GridPane.setHalignment(buttonBox, HPos.CENTER);
+
+		if (!isNewUser)
+		{
+			fillUserData(user);
+		}
+	}
+
+	private void fillUserData(User user)
+	{
+		firstNameField.setText(user.getFirstName());
+		lastNameField.setText(user.getLastName());
+		emailField.setText(user.getEmail());
+		phoneField.setText(user.getPhoneNumber());
+		birthdatePicker.setValue(user.getBirthdate());
+
+		Address address = user.getAddress();
+		if (address != null)
+		{
+			streetField.setText(address.getStreet());
+			houseNumberField.setText(String.valueOf(address.getNumber()));
+			postalCodeField.setText(String.valueOf(address.getPostalcode()));
+			cityField.setText(address.getCity());
+		}
+
+		roleBox.setValue(user.getRole());
+		statusBox.setValue(user.getStatus());
 	}
 
 	private GridPane createUserFieldsSection()
@@ -286,14 +319,33 @@ public class AddUserForm extends GridPane
 			return;
 		}
 
-		entityManager.getTransaction().begin();
-
 		try
 		{
-			entityManager.persist(newUser);
+			entityManager.getTransaction().begin();
+
+			if (isNewUser)
+			{
+				entityManager.persist(newUser);
+			} else
+			{
+				User existingUser = entityManager.find(User.class, this.user.getId());
+
+				existingUser.setFirstName(firstName);
+				existingUser.setLastName(lastName);
+				existingUser.setEmail(email);
+				existingUser.setPhoneNumber(phone);
+				existingUser.setBirthdate(birthdate);
+				existingUser.setStatus(status);
+				existingUser.setRole(role);
+
+				Address existingAddress = existingUser.getAddress();
+				existingAddress.setStreet(street);
+				existingAddress.setNumber(houseNumber);
+				existingAddress.setPostalcode(postalCode);
+				existingAddress.setCity(city);
+			}
 
 			entityManager.getTransaction().commit();
-
 			userManagementPane.returnToUserManagement(primaryStage);
 
 		} catch (Exception e)

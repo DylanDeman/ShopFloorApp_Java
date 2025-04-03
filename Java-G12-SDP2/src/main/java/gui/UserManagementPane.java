@@ -152,6 +152,11 @@ public class UserManagementPane extends GridPane
 
 	private void loadUsersFromDatabase()
 	{
+		if (entityManager != null && entityManager.isOpen())
+		{
+			entityManager.close();
+		}
+
 		if (!entityManager.isOpen())
 		{
 			entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
@@ -173,12 +178,12 @@ public class UserManagementPane extends GridPane
 
 	private void openAddUserForm(Stage primaryStage)
 	{
-		primaryStage.getScene().setRoot(new AddUserForm(primaryStage, this));
+		primaryStage.getScene().setRoot(new AddOrEditUserForm(primaryStage, this, null));
 	}
 
 	private void openEditUserForm(Stage primaryStage, User user)
 	{
-		primaryStage.getScene().setRoot(new EditUserForm(primaryStage, user, this));
+		primaryStage.getScene().setRoot(new AddOrEditUserForm(primaryStage, this, user));
 	}
 
 	public void returnToUserManagement(Stage primaryStage)
