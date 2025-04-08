@@ -4,8 +4,9 @@ import java.time.LocalDate;
 
 import domain.Address;
 import domain.User;
+import domain.UserBuilder;
+import exceptions.InformationRequiredException;
 import exceptions.InvalidAddressException;
-import exceptions.InvalidUserException;
 import jakarta.persistence.EntityManager;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -277,50 +278,23 @@ public class AddOrEditUserForm extends GridPane
 		Status status = statusBox.getValue();
 		LocalDate birthdate = birthdatePicker.getValue();
 
-		if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || phone.isEmpty() || street.isEmpty()
-				|| houseNumberStr.isEmpty() || postalCodeStr.isEmpty() || city.isEmpty() || role == null
-				|| status == null || birthdate == null)
-		{
-			showError("Alle velden zijn verplicht!");
-			return;
-		}
-
-		int houseNumber = 0;
-		int postalCode = 0;
 		try
 		{
-			houseNumber = Integer.parseInt(houseNumberStr);
-			postalCode = Integer.parseInt(postalCodeStr);
-		} catch (NumberFormatException e)
-		{
-			showError("Huisnummer en postcode moeten numerieke waarden zijn!");
-			return;
-		}
+			int houseNumber = Integer.parseInt(houseNumberStr);
+			int postalCode = Integer.parseInt(postalCodeStr);
 
-		Address newAddress;
+			Address newAddress = new Address(street, houseNumber, postalCode, city);
 
-		try
-		{
-			newAddress = new Address(street, houseNumber, postalCode, city);
-		} catch (InvalidAddressException e)
-		{
-			showError("Ongeldig adres: " + e.getMessage());
-			return;
-		}
+			UserBuilder builder = new UserBuilder();
+			builder.createUser();
+			builder.buildName(firstName, lastName);
+			builder.buildContactInfo(email, phone);
+			builder.buildBirthdate(birthdate);
+			builder.buildAddress(street, houseNumber, postalCode, city);
+			builder.buildRoleAndStatus(role, status);
 
-		User newUser;
-		try
-		{
-			newUser = new User(firstName, lastName, email, phone, generatePassword(), birthdate, newAddress, status,
-					role);
-		} catch (InvalidUserException e)
-		{
-			showError("Ongeldige gebruikersgegevens: " + e.getMessage());
-			return;
-		}
+			User newUser = builder.getUser();
 
-		try
-		{
 			entityManager.getTransaction().begin();
 
 			if (isNewUser)
@@ -348,13 +322,22 @@ public class AddOrEditUserForm extends GridPane
 			entityManager.getTransaction().commit();
 			userManagementPane.returnToUserManagement(primaryStage);
 
+		} catch (NumberFormatException e)
+		{
+			showError("Huisnummer en postcode moeten numerieke waarden zijn!");
+		} catch (InvalidAddressException e)
+		{
+			showError("Ongeldig adres: " + e.getMessage());
+		} catch (InformationRequiredException e)
+		{
+			showError("Ontbrekende informatie: " + e.getInformationRequired());
 		} catch (Exception e)
 		{
 			if (entityManager.getTransaction().isActive())
 			{
 				entityManager.getTransaction().rollback();
 			}
-			System.err.println("Fout bij het toevoegen van de gebruiker:");
+			showError("Er is een fout opgetreden: " + e.getMessage());
 			e.printStackTrace();
 		} finally
 		{
@@ -369,11 +352,6 @@ public class AddOrEditUserForm extends GridPane
 	private void showError(String message)
 	{
 		errorLabel.setText(message);
-	}
-
-	private String generatePassword()
-	{
-		return "123456789";
 	}
 
 }
