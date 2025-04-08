@@ -57,24 +57,24 @@ public class UserBuilder
 	{
 		requiredElements = new HashMap<>();
 
-		if (user.getFirstName() == null)
+		if (user.getFirstName().isEmpty())
 		{
 			requiredElements.put("firstName", RequiredElement.FIRST_NAME_REQUIRED);
 		}
 
-		if (user.getLastName() == null)
+		if (user.getLastName().isEmpty())
 		{
 			requiredElements.put("lastName", RequiredElement.LAST_NAME_REQUIRED);
 		}
 
-		if (user.getEmail() == null)
+		if (user.getEmail().isEmpty())
 		{
 			requiredElements.put("email", RequiredElement.EMAIL_REQUIRED);
 		}
 
 		if (user.getBirthdate() == null)
 		{
-			requiredElements.put("firstName", RequiredElement.BIRTH_DATE_REQUIRED);
+			requiredElements.put("birthDate", RequiredElement.BIRTH_DATE_REQUIRED);
 		}
 
 		if (user.getAddress().getStreet() == null)
