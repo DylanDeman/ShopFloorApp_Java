@@ -40,10 +40,10 @@ public class UserBuilder
 		user.setBirthdate(birthdate);
 	}
 
-	public void buildAddress(String street, int number, int postalCode, String city)
+	public void buildAddress(Address address)
 	{
 		// validatie nog toevoegen
-		user.setAddress(new Address(street, number, postalCode, city));
+		user.setAddress(address);
 	}
 
 	public void buildRoleAndStatus(Role role, Status status)

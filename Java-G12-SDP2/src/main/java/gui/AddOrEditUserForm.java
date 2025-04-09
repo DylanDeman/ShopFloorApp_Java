@@ -3,10 +3,10 @@ package gui;
 import java.time.LocalDate;
 
 import domain.Address;
+import domain.AddressBuilder;
 import domain.User;
 import domain.UserBuilder;
 import exceptions.InformationRequiredException;
-import exceptions.InvalidAddressException;
 import jakarta.persistence.EntityManager;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -305,22 +305,43 @@ public class AddOrEditUserForm extends GridPane
 		String city = cityField.getText();
 		Role role = roleBox.getValue();
 		Status status = statusBox.getValue();
+
 		LocalDate birthdate = birthdatePicker.getValue();
+
+		int houseNumber = 0;
+		int postalCode = 0;
 
 		try
 		{
-			int houseNumber = Integer.parseInt(houseNumberStr);
-			int postalCode = Integer.parseInt(postalCodeStr);
+			houseNumber = Integer.parseInt(houseNumberStr);
+			postalCode = Integer.parseInt(postalCodeStr);
 
-			UserBuilder builder = new UserBuilder();
-			builder.createUser();
-			builder.buildName(firstName, lastName);
-			builder.buildContactInfo(email, phone);
-			builder.buildBirthdate(birthdate);
-			builder.buildAddress(street, houseNumber, postalCode, city);
-			builder.buildRoleAndStatus(role, status);
+		} catch (NumberFormatException e)
+		{
 
-			User newUser = builder.getUser();
+		}
+
+		try
+		{
+
+			AddressBuilder addressBuilder = new AddressBuilder();
+			addressBuilder.createAddress();
+			addressBuilder.buildStreet(street);
+			addressBuilder.buildNumber(houseNumber);
+			addressBuilder.buildPostalcode(postalCode);
+			addressBuilder.buildCity(city);
+
+			Address newAddress = addressBuilder.getAddress();
+
+			UserBuilder userBuilder = new UserBuilder();
+			userBuilder.createUser();
+			userBuilder.buildName(firstName, lastName);
+			userBuilder.buildContactInfo(email, phone);
+			userBuilder.buildBirthdate(birthdate);
+			userBuilder.buildAddress(newAddress);
+			userBuilder.buildRoleAndStatus(role, status);
+
+			User newUser = userBuilder.getUser();
 
 			entityManager.getTransaction().begin();
 
@@ -352,13 +373,6 @@ public class AddOrEditUserForm extends GridPane
 		} catch (InformationRequiredException e)
 		{
 			handleInformationRequiredException(e);
-		} catch (NumberFormatException e)
-		{
-			showFieldError("houseNumber", "Moet een nummer zijn");
-			showFieldError("postalCode", "Moet een nummer zijn");
-		} catch (InvalidAddressException e)
-		{
-			showError("Ongeldig adres: " + e.getMessage());
 		} catch (Exception e)
 		{
 			if (entityManager.getTransaction().isActive())
@@ -392,6 +406,7 @@ public class AddOrEditUserForm extends GridPane
 			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
 			showFieldError(field, errorMessage);
 		});
+
 	}
 
 	private String getErrorMessageForRequiredElement(RequiredElement element)
@@ -439,7 +454,7 @@ public class AddOrEditUserForm extends GridPane
 		case "phone":
 			phoneError.setText(message);
 			break;
-		case "birthdate":
+		case "birthDate":
 			birthdateError.setText(message);
 			break;
 		case "street":

@@ -14,13 +14,13 @@ public class ChoicePane extends GridPane
 		userManagementButton.setOnAction(e -> goToUserManagement(primaryStage));
 
 		this.add(userManagementButton, 0, 0);
-		
+
 		Button maintenanceListButton = new Button("Ga naar lijst onderhouden");
 		maintenanceListButton.setOnAction(e -> goToMaintenanceList(primaryStage));
-		
+
 		Button loginButton = new Button("Ga naar aanmelden");
 		loginButton.setOnAction(e -> goToLogin(primaryStage));
-		
+
 		this.add(maintenanceListButton, 0, 10);
 		this.add(loginButton, 0, 20);
 	}
@@ -30,21 +30,23 @@ public class ChoicePane extends GridPane
 		UserManagementPane userManagementPane = new UserManagementPane(primaryStage);
 		primaryStage.setScene(new Scene(userManagementPane, 800, 800));
 	}
-	
+
 	private void goToMaintenanceList(Stage primaryStage)
 	{
 		MaintenanceListComponent maintenanceListComponent = new MaintenanceListComponent(primaryStage);
-		
+
 		Scene maintenanceListScene = new Scene(maintenanceListComponent);
-		
+
 		primaryStage.setScene(maintenanceListScene);
 	}
-	
-	private void goToLogin(Stage primaryStage) {
+
+	private void goToLogin(Stage primaryStage)
+	{
 		LoginPane loginPane = new LoginPane();
 		Scene loginPaneScene = new Scene(loginPane);
 		loginPane.getStylesheets().add(getClass().getResource("/css/loginstyles.css").toExternalForm());
 		primaryStage.setScene(loginPaneScene);
 		primaryStage.setMaximized(true);
 	}
+
 }
