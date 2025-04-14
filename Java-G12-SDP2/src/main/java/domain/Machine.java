@@ -9,8 +9,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
@@ -18,6 +20,7 @@ import lombok.ToString;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Getter
 public class Machine implements Serializable {
     
     private static final long serialVersionUID = 1L;
@@ -25,13 +28,18 @@ public class Machine implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+   
     
     @ManyToOne
     private Site site;
     
-    private String status, productieStatus, location, productInfo;
+    @ManyToOne
+    private User technician;
+        
+    private String code, status, productieStatus, location, productInfo;
     private Date lastMaintenance, futureMaintenance;
     private int numberDaysSinceLastMaintenance;
+    private double upTimeInHours;
 
     public void setId(int id) {
         if (id < 0) {
@@ -101,6 +109,17 @@ public class Machine implements Serializable {
         }
         this.numberDaysSinceLastMaintenance = numberDaysSinceLastMaintenance;
     }
+    
+    public void setTechnician(User technician) {
+        if (technician == null) {
+            throw new InvalidMachineException("Technician cannot be null");
+        }
+        if (!"TECHNIEKER".equals(technician.getRole())) {
+            throw new InvalidMachineException("User is not a technician");
+        }
+        this.technician = technician;
+    }
+
 }
 
 
