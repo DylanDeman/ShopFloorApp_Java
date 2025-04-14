@@ -12,8 +12,10 @@ import jakarta.persistence.ManyToOne;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
+@ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class Machine implements Serializable {
@@ -27,9 +29,9 @@ public class Machine implements Serializable {
     @ManyToOne
     private Site site;
     
-    private String status, productieStatus, locatie, productInfo;
-    private Date laatsteOnderhoud, toekomstigOnderhoud;
-    private int aantalDagenSindsLaatsteOnderhoud;
+    private String status, productieStatus, location, productInfo;
+    private Date lastMaintenance, futureMaintenance;
+    private int numberDaysSinceLastMaintenance;
 
     public void setId(int id) {
         if (id < 0) {
@@ -59,11 +61,11 @@ public class Machine implements Serializable {
         this.productieStatus = productieStatus.trim();
     }
 
-    public void setLocatie(String locatie) {
-        if (locatie == null || locatie.isBlank()) {
+    public void setLocation(String location) {
+        if (location == null || location.isBlank()) {
             throw new InvalidMachineException("Location cannot be null or empty");
         }
-        this.locatie = locatie.trim();
+        this.location = location.trim();
     }
 
     public void setProductInfo(String productInfo) {
@@ -73,31 +75,31 @@ public class Machine implements Serializable {
         this.productInfo = productInfo.trim();
     }
 
-    public void setLaatsteOnderhoud(Date laatsteOnderhoud) {
-        if (laatsteOnderhoud == null) {
+    public void setLastMaintenance(Date lastMaintenance) {
+        if (lastMaintenance == null) {
             throw new InvalidMachineException("Last maintenance date cannot be null");
         }
-        if (laatsteOnderhoud.after(new Date())) {
+        if (lastMaintenance.after(new Date())) {
             throw new InvalidMachineException("Last maintenance date cannot be in the future");
         }
-        this.laatsteOnderhoud = laatsteOnderhoud;
+        this.lastMaintenance = lastMaintenance;
     }
 
-    public void setToekomstigOnderhoud(Date toekomstigOnderhoud) {
-        if (toekomstigOnderhoud == null) {
+    public void setFutureMaintenance(Date futureMaintenance) {
+        if (futureMaintenance == null) {
             throw new InvalidMachineException("Future maintenance date cannot be null");
         }
-        if (toekomstigOnderhoud.before(new Date())) {
+        if (futureMaintenance.before(new Date())) {
             throw new InvalidMachineException("Future maintenance date cannot be in the past");
         }
-        this.toekomstigOnderhoud = toekomstigOnderhoud;
+        this.futureMaintenance = futureMaintenance;
     }
 
-    public void setAantalDagenSindsLaatsteOnderhoud(int aantalDagenSindsLaatsteOnderhoud) {
-        if (aantalDagenSindsLaatsteOnderhoud < 0) {
+    public void setNumberDaysSinceLastMaintenance(int numberDaysSinceLastMaintenance) {
+        if (numberDaysSinceLastMaintenance < 0) {
             throw new InvalidMachineException("Days since last maintenance cannot be negative");
         }
-        this.aantalDagenSindsLaatsteOnderhoud = aantalDagenSindsLaatsteOnderhoud;
+        this.numberDaysSinceLastMaintenance = numberDaysSinceLastMaintenance;
     }
 }
 
