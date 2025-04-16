@@ -3,6 +3,7 @@ package domain;
 import java.io.Serializable;
 import java.util.Date;
 
+import domain.Site.Site;
 import exceptions.InvalidMachineException;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
