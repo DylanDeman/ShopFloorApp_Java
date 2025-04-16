@@ -1,4 +1,4 @@
-package domain.Site;
+package domain.site;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -42,7 +42,6 @@ public class Site implements Serializable, Subject {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
-	@Id
 	@Getter
 	private String siteName;
 
