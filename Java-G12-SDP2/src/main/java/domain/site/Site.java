@@ -7,6 +7,7 @@ import java.util.Set;
 
 import domain.Machine;
 import domain.User;
+import exceptions.InvalidInputException;
 import exceptions.InvalidUserException;
 import interfaces.Observer;
 import interfaces.Subject;
@@ -62,7 +63,7 @@ public class Site implements Serializable, Subject {
 
 	public void setSiteName(String siteName) {
 		if (siteName == null || siteName.isBlank()) {
-			throw new InvalidUserException("name of site cannot be null or empty");
+			throw new InvalidInputException("name of site cannot be null or empty");
 		}
 		this.siteName = siteName.trim();
 		notifyObservers();
@@ -70,7 +71,7 @@ public class Site implements Serializable, Subject {
 
 	public void setVerantwoordelijke(User verantwoordelijke) {
 		if (verantwoordelijke == null) {
-			throw new InvalidUserException("Verantwoordelijke of site cannot be null");
+			throw new InvalidInputException("Verantwoordelijke of site cannot be null");
 		}
 		this.verantwoordelijke = verantwoordelijke;
 		notifyObservers(); 
@@ -78,7 +79,7 @@ public class Site implements Serializable, Subject {
 
 	public void setStatus(Status status) {
 		if (status == null) {
-			throw new InvalidUserException("Status of site cannot be null");
+			throw new InvalidInputException("Status of site cannot be null");
 		}
 		this.status = status;
 		notifyObservers();
