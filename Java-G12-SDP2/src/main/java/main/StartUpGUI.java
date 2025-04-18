@@ -58,7 +58,7 @@ public class StartUpGUI extends Application
 
 		User u10 = new User("Kim", "De Vries", "kim@email.com", "0412345678", "password", LocalDate.of(1991, 4, 20),
 				new Address("Straat 10", 100, 9999, "Stad"), Status.INACTIEF, Role.MANAGER);
-		
+
 		Site s1 = new Site("A", u10, Status.ACTIEF);
 
 		EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();

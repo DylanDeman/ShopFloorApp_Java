@@ -2,6 +2,7 @@ package domain;
 
 import java.io.Serializable;
 import java.util.Date;
+
 import domain.site.Site;
 import exceptions.InvalidMachineException;
 import jakarta.persistence.Entity;
@@ -9,7 +10,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,20 +22,20 @@ import lombok.ToString;
 @AllArgsConstructor
 @Getter
 public class Machine implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-   
-    
+
+
     @ManyToOne
     private Site site;
-    
+
     @ManyToOne
     private User technician;
-        
+
     private String code, status, productieStatus, location, productInfo;
     private Date lastMaintenance, futureMaintenance;
     private int numberDaysSinceLastMaintenance;
@@ -109,7 +109,7 @@ public class Machine implements Serializable {
         }
         this.numberDaysSinceLastMaintenance = numberDaysSinceLastMaintenance;
     }
-    
+
     public void setTechnician(User technician) {
         if (technician == null) {
             throw new InvalidMachineException("Technician cannot be null");

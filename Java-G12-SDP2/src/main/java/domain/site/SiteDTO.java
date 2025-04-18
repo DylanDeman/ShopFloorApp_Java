@@ -2,7 +2,8 @@ package domain.site;
 
 import java.util.Set;
 
-import domain.*;
+import domain.Machine;
+import domain.User;
 import util.Status;
 
 // TODO van User nog een UserDTO maken!!!

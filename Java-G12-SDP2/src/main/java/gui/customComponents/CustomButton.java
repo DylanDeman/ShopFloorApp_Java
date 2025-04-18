@@ -1,11 +1,12 @@
 package gui.customComponents;
 
+import org.kordamp.ikonli.javafx.FontIcon;
+
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import org.kordamp.ikonli.javafx.FontIcon;
 
 public class CustomButton extends Button {
     private final FontIcon icon;
@@ -25,7 +26,7 @@ public class CustomButton extends Button {
         Text label = new Text(text);
         label.setFill(Color.WHITE);
         label.setStyle("-fx-font: 12 arial;");
-        
+
         HBox hBox = new HBox(8);
         hBox.setAlignment(Pos.CENTER_LEFT);
 
@@ -36,18 +37,18 @@ public class CustomButton extends Button {
         } else {
             hBox.getChildren().add(label);
         }
-        
+
         this.setGraphic(hBox); // -> Display the hBox inside this button!
-        
-        
+
+
         // TODO later in stylesheet zetten om overzicht van klasse te bewaren!
         this.setStyle(
-            "-fx-background-color: #e53935;" +  
-            "-fx-background-radius: 3;" +     
+            "-fx-background-color: #e53935;" +
+            "-fx-background-radius: 3;" +
             "-fx-text-fill: white;" +
             "-fx-padding: 6 12;"
         );
-        
+
         // For having hover:cursor-pointer
         this.setCursor(javafx.scene.Cursor.HAND);
     }

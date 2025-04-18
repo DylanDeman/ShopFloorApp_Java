@@ -25,7 +25,6 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class SitesListComponent extends VBox implements Observer {
-
     private SiteController sc;
     private Stage stage;
     private TableView<SiteDTO> table;
@@ -129,14 +128,14 @@ public class SitesListComponent extends VBox implements Observer {
     }
 
     private HBox createPagination() {
-    	HBox pagination = new HBox(10); 
-		pagination.setAlignment(Pos.CENTER); 
-		Button prevPage = new Button("Vorige Pagina"); 
-		Button nextPage = new Button("Volgende Pagina"); 
-		pagination.getChildren().addAll(prevPage, new Button("1"), new Button("2"), new Button("3"), new Button("7"), 
-				nextPage); 
- 
-		this.setSpacing(10); 
+    	HBox pagination = new HBox(10);
+		pagination.setAlignment(Pos.CENTER);
+		Button prevPage = new Button("Vorige Pagina");
+		Button nextPage = new Button("Volgende Pagina");
+		pagination.getChildren().addAll(prevPage, new Button("1"), new Button("2"), new Button("3"), new Button("7"),
+				nextPage);
+
+		this.setSpacing(10);
 		return pagination;
     }
 

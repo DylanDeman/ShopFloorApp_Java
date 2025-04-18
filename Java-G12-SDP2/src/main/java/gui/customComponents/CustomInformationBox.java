@@ -28,7 +28,7 @@ public class CustomInformationBox extends HBox {
 		icon.setIconSize(16);
 		icon.setIconColor(Color.BLACK);
 		this.getChildren().addAll(icon, label);
-		
+
 		// TODO later in stylesheet zetten om overzicht van klasse te bewaren!
 		this.setStyle(
 				"-fx-border-color: black;" + "-fx-border-width: 1;" + "-fx-border-radius: 4;" + "-fx-padding: 6 12;");
