@@ -21,6 +21,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import jakarta.persistence.JoinColumn;
 
 import lombok.AllArgsConstructor;
@@ -30,12 +31,13 @@ import lombok.Setter;
 import util.Status;
 
 @Getter
-@NoArgsConstructor
-@Entity
-@AllArgsConstructor
 @Table(name = "sites")
+@Entity
+@NoArgsConstructor
 public class Site implements Serializable, Subject {
 	private static final long serialVersionUID = 1L;
+	
+	@Transient
 	private Set<Observer> observers = new HashSet<>();
 
 	@Setter
@@ -47,7 +49,7 @@ public class Site implements Serializable, Subject {
 	private String siteName;
 
 	@ManyToOne(cascade = CascadeType.PERSIST)
-	@JoinColumn(name = "verantwoordelijke_id")
+	@JoinColumn(name = "VERANTWOORDELIJKE_ID")
 	private User verantwoordelijke;
 
 	@OneToMany(mappedBy = "site")
@@ -59,6 +61,7 @@ public class Site implements Serializable, Subject {
 	public Site(String siteName, User verantwoordelijke, Status status) {
 		this.siteName = siteName;
 		this.verantwoordelijke = verantwoordelijke;
+		this.status = status;
 	}
 
 	public void setSiteName(String siteName) {
@@ -107,7 +110,7 @@ public class Site implements Serializable, Subject {
 	@Override
 	public void notifyObservers() {
 		observers.forEach(observer -> {
-			observer.update(this);
+			observer.update();
 		});
 	}
 }

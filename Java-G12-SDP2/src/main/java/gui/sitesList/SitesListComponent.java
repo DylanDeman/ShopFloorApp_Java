@@ -1,16 +1,18 @@
 package gui.sitesList;
 
-import java.util.Collections;
+import java.util.List;
 
-import org.kordamp.ikonli.fontawesome5.FontAwesomeSolid;
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import gui.ChoicePane;
+import domain.site.SiteController;
+import domain.site.SiteDTO;
 import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
+import interfaces.Observer;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -20,103 +22,134 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.Screen;
 import javafx.stage.Stage;
 
-public class SitesListComponent extends VBox {
+public class SitesListComponent extends VBox implements Observer {
 
-	public SitesListComponent(Stage stage) {
-		stage.setMinWidth(800);
-		
-		// add padding to stage for responsiveness & readability:
-		updatePadding(stage);
-		stage.widthProperty().addListener((obs, oldWidth, newWidth) -> {
-	        updatePadding(stage);
-	    });
-		
-		// to make the title and site Add button
-		HBox windowHeader = createWindowHeader();
-		
-		// to make the information box 
-		HBox informationBox = createInformationBox();
-		
-		// To make the search
-		createTableHeaders();
-		
-		// To make filtering box
-		createTableFilterBox();
-		
-		// to make Table with pagination
-		createTable();
-	
-		VBox titleSection = new VBox(10, windowHeader, informationBox);
+    private SiteController sc;
+    private Stage stage;
+    private TableView<SiteDTO> table;
+    private TextField searchField;
+    private List<SiteDTO> allSites;
 
-		TextField searchField = new TextField();
-		searchField.setPromptText("Zoeken...");
-		searchField.setMaxWidth(300);
+    public SitesListComponent(Stage stage, SiteController sc) {
+        this.sc = sc;
+        this.stage = stage;
+        this.table = new TableView<>();
+        initializeGUI();
+    }
 
-		TableView<String> table = new TableView<>();
-		TableColumn<String, String> col1 = new TableColumn<>("Nr.");
-		TableColumn<String, String> col2 = new TableColumn<>("Naam");
-		TableColumn<String, String> col3 = new TableColumn<>("Verantwoordelijke");
-		TableColumn<String, String> col4 = new TableColumn<>("Status");
-		TableColumn<String, String> col5 = new TableColumn<>("Aantal machines");
+    private void initializeGUI() {
+        stage.setMinWidth(800);
+        allSites = sc.getSites();
+        updatePadding(stage);
+        stage.widthProperty().addListener((obs, oldWidth, newWidth) -> updatePadding(stage));
 
-		Collections.addAll(table.getColumns(), col1, col2, col3, col4, col5);
-		table.setPrefHeight(300);
+        VBox titleSection = createTitleSection();
+        VBox tableSection = createTableSection();
 
-		// Pagination Controls
-		HBox pagination = new HBox(10);
-		pagination.setAlignment(Pos.CENTER);
-		Button prevPage = new Button("Vorige Pagina");
-		Button nextPage = new Button("Volgende Pagina");
-		pagination.getChildren().addAll(prevPage, new Button("1"), new Button("2"), new Button("3"), new Button("7"),
-				nextPage);
+        this.setSpacing(20);
+        this.getChildren().addAll(titleSection, tableSection);
+        updateTable(allSites);
+    }
 
-		this.setSpacing(10);
-		this.getChildren().addAll(titleSection, searchField, table, pagination);
-	}
+    private void updatePadding(Stage stage) {
+        double amountOfPixels = stage.getWidth();
+        double calculatedPadding = amountOfPixels < 1200 ? amountOfPixels * 0.05 : amountOfPixels * 0.10;
+        this.setPadding(new Insets(50, calculatedPadding, 0, calculatedPadding));
+    }
 
-	private void updatePadding(Stage stage) {
-		// For a bit of responsiveness:
-		double amountOfPixels = stage.getWidth();
-		double calculatedPadding = amountOfPixels < 1200 ? amountOfPixels * 0.05 : amountOfPixels * 0.10;
-		this.setPadding(new Insets(50, calculatedPadding , 0, calculatedPadding));
-	}
+    private VBox createTitleSection() {
+        HBox windowHeader = createWindowHeader();
+        HBox informationBox = createInformationBox();
+        return new VBox(10, windowHeader, informationBox);
+    }
 
-	private HBox createWindowHeader() {
-		HBox hbox = new HBox();
-		hbox.setAlignment(Pos.CENTER_LEFT);
+    private HBox createWindowHeader() {
+        HBox hbox = new HBox();
+        hbox.setAlignment(Pos.CENTER_LEFT);
 
-		// Title
-		Label title = new Label("Sites");
-		title.setStyle("-fx-font: 40 arial;");
+        Label title = new Label("Sites");
+        title.setStyle("-fx-font: 40 arial;");
 
-		// Spacer
-		Region spacer = new Region();
-		HBox.setHgrow(spacer, Priority.ALWAYS);
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
 
-		// Site toevoegen button
-		Button button = new CustomButton(new FontIcon("fas-plus"), "Site toevoegen");
+        Button button = new CustomButton(new FontIcon("fas-plus"), "Site toevoegen");
+        button.setOnAction(e -> System.out.println("Open 'toevoegen' scherm"));
 
-		hbox.getChildren().addAll(title, spacer, button);
-		return hbox;
-	}
+        hbox.getChildren().addAll(title, spacer, button);
+        return hbox;
+    }
 
-	private void createTableFilterBox() {
-		// TODO Auto-generated method stub
-	}
+    private VBox createTableSection() {
+        HBox filterBox = createTableHeaders();
 
-	private void createTableHeaders() {
-		// TODO Auto-generated method stub
-	}
+        TableColumn<SiteDTO, Number> col1 = new TableColumn<>("Nr.");
+        col1.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().id()));
 
-	private void createTable() {
-		// TODO Auto-generated method stub
-	}
+        TableColumn<SiteDTO, String> col2 = new TableColumn<>("Naam");
+        col2.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().siteName()));
 
-	private HBox createInformationBox() {
-		return new CustomInformationBox(
-				"Hieronder vindt u een overzicht van alle sites. Klik op een site om de details van de site te bekijken!");
-	}
+        TableColumn<SiteDTO, String> col3 = new TableColumn<>("Verantwoordelijke");
+        col3.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().verantwoordelijke().getFullName()));
+
+        TableColumn<SiteDTO, String> col4 = new TableColumn<>("Status");
+        col4.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().status().toString()));
+
+        TableColumn<SiteDTO, Number> col5 = new TableColumn<>("Aantal machines");
+        col5.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().machines().size()));
+
+        table.getColumns().setAll(col1, col2, col3, col4, col5);
+        table.setPrefHeight(300);
+
+        HBox pagination = createPagination();
+        return new VBox(10, filterBox, table, pagination);
+    }
+
+    private HBox createTableHeaders() {
+        searchField = new TextField();
+        searchField.setPromptText("Zoeken...");
+        searchField.setMaxWidth(300);
+        searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable(newVal));
+
+        HBox filterBox = new HBox(searchField);
+        filterBox.setAlignment(Pos.CENTER_LEFT);
+        return filterBox;
+    }
+
+    private void filterTable(String searchQuery) {
+        String lowerCaseFilter = searchQuery.toLowerCase();
+        List<SiteDTO> filtered = allSites.stream()
+                .filter(site -> site.siteName().toLowerCase().contains(lowerCaseFilter)
+                        || site.verantwoordelijke().getFullName().contains(lowerCaseFilter)
+                        || site.status().toString().toLowerCase().contains(lowerCaseFilter))
+                .toList();
+        updateTable(filtered);
+    }
+
+    private HBox createPagination() {
+    	HBox pagination = new HBox(10); 
+		pagination.setAlignment(Pos.CENTER); 
+		Button prevPage = new Button("Vorige Pagina"); 
+		Button nextPage = new Button("Volgende Pagina"); 
+		pagination.getChildren().addAll(prevPage, new Button("1"), new Button("2"), new Button("3"), new Button("7"), 
+				nextPage); 
+ 
+		this.setSpacing(10); 
+		return pagination;
+    }
+
+    private void updateTable(List<SiteDTO> sites) {
+        table.getItems().setAll(sites);
+    }
+
+    private HBox createInformationBox() {
+        return new CustomInformationBox("Hieronder vindt u een overzicht van alle sites. Klik op een site om de details van de site te bekijken!");
+    }
+
+    @Override
+    public void update() {
+        initializeGUI();
+    }
 }

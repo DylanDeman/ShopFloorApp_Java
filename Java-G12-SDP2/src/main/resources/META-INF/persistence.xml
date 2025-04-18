@@ -10,11 +10,13 @@
     <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
     <class>domain.User</class>
     <class>domain.Address</class>
+    <class>domain.site.Site</class>
+    <class>domain.Machine</class>
     <properties>
-      <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/sdp2_2425_db_g12?serverTimezone=UTC"/>
+      <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/shopfloor-app-db?serverTimezone=UTC"/>
       <property name="jakarta.persistence.jdbc.user" value="root"/> 
       <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
-      <property name="jakarta.persistence.jdbc.password" value="IsedF16!"/>  
+      <property name="jakarta.persistence.jdbc.password" value="admin"/>  
       <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
     </properties>
   </persistence-unit>
