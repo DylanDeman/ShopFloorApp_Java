@@ -4,8 +4,8 @@ import java.time.LocalDate;
 
 import domain.Address;
 import domain.User;
-import exceptions.InvalidAddressException;
-import exceptions.InvalidUserException;
+import domain.UserBuilder;
+import exceptions.InformationRequiredException;
 import jakarta.persistence.EntityManager;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -29,6 +29,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
 import util.JPAUtil;
+import util.RequiredElement;
 import util.Role;
 import util.Status;
 
@@ -42,6 +43,9 @@ public class AddOrEditUserForm extends GridPane
 	private ComboBox<Role> roleBox;
 	private ComboBox<Status> statusBox;
 	private Label errorLabel;
+	private Label firstNameError, lastNameError, emailError, phoneError, birthdateError;
+	private Label streetError, houseNumberError, postalCodeError, cityError;
+	private Label roleError, statusError;
 
 	private EntityManager entityManager;
 	private UserManagementPane userManagementPane;
@@ -157,12 +161,18 @@ public class AddOrEditUserForm extends GridPane
 	private GridPane createUserFieldsSection()
 	{
 		GridPane pane = new GridPane();
-		pane.setVgap(15);
+		pane.setVgap(5);
 		pane.setHgap(10);
 
 		Label sectionLabel = new Label("Gebruikersgegevens");
 		sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 		pane.add(sectionLabel, 0, 0, 2, 1);
+
+		firstNameError = createErrorLabel();
+		lastNameError = createErrorLabel();
+		emailError = createErrorLabel();
+		phoneError = createErrorLabel();
+		birthdateError = createErrorLabel();
 
 		firstNameField = new TextField();
 		lastNameField = new TextField();
@@ -179,18 +189,23 @@ public class AddOrEditUserForm extends GridPane
 		int row = 1;
 		pane.add(new Label("Voornaam:"), 0, row);
 		pane.add(firstNameField, 1, row++);
+		pane.add(firstNameError, 1, row++);
 
 		pane.add(new Label("Achternaam:"), 0, row);
 		pane.add(lastNameField, 1, row++);
+		pane.add(lastNameError, 1, row++);
 
 		pane.add(new Label("Email:"), 0, row);
 		pane.add(emailField, 1, row++);
+		pane.add(emailError, 1, row++);
 
 		pane.add(new Label("Telefoonnummer:"), 0, row);
 		pane.add(phoneField, 1, row++);
+		pane.add(phoneError, 1, row++);
 
 		pane.add(new Label("Geboortedatum:"), 0, row);
 		pane.add(birthdatePicker, 1, row++);
+		pane.add(birthdateError, 1, row++);
 
 		return pane;
 	}
@@ -198,12 +213,17 @@ public class AddOrEditUserForm extends GridPane
 	private GridPane createAddressFieldsSection()
 	{
 		GridPane pane = new GridPane();
-		pane.setVgap(15);
+		pane.setVgap(5);
 		pane.setHgap(10);
 
 		Label sectionLabel = new Label("Adresgegevens");
 		sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 		pane.add(sectionLabel, 0, 0, 2, 1);
+
+		streetError = createErrorLabel();
+		houseNumberError = createErrorLabel();
+		postalCodeError = createErrorLabel();
+		cityError = createErrorLabel();
 
 		streetField = new TextField();
 		houseNumberField = new TextField();
@@ -218,15 +238,19 @@ public class AddOrEditUserForm extends GridPane
 		int row = 1;
 		pane.add(new Label("Straat:"), 0, row);
 		pane.add(streetField, 1, row++);
+		pane.add(streetError, 1, row++);
 
 		pane.add(new Label("Huisnummer:"), 0, row);
 		pane.add(houseNumberField, 1, row++);
+		pane.add(houseNumberError, 1, row++);
 
 		pane.add(new Label("Postcode:"), 0, row);
 		pane.add(postalCodeField, 1, row++);
+		pane.add(postalCodeError, 1, row++);
 
 		pane.add(new Label("Stad:"), 0, row);
 		pane.add(cityField, 1, row++);
+		pane.add(cityError, 1, row++);
 
 		return pane;
 	}
@@ -234,12 +258,15 @@ public class AddOrEditUserForm extends GridPane
 	private GridPane createRoleStatusSection()
 	{
 		GridPane pane = new GridPane();
-		pane.setVgap(15);
+		pane.setVgap(5);
 		pane.setHgap(10);
 
 		Label sectionLabel = new Label("Rol en Status");
 		sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 		pane.add(sectionLabel, 0, 0, 2, 1);
+
+		roleError = createErrorLabel();
+		statusError = createErrorLabel();
 
 		roleBox = new ComboBox<>();
 		roleBox.getItems().addAll(Role.values());
@@ -254,16 +281,18 @@ public class AddOrEditUserForm extends GridPane
 		int row = 1;
 		pane.add(new Label("Rol:"), 0, row);
 		pane.add(roleBox, 1, row++);
+		pane.add(roleError, 1, row++);
 
 		pane.add(new Label("Status:"), 0, row);
 		pane.add(statusBox, 1, row++);
+		pane.add(statusError, 1, row++);
 
 		return pane;
 	}
 
 	private void addUser(Stage primaryStage)
 	{
-		errorLabel.setText("");
+		resetErrorLabels();
 
 		String firstName = firstNameField.getText();
 		String lastName = lastNameField.getText();
@@ -275,52 +304,40 @@ public class AddOrEditUserForm extends GridPane
 		String city = cityField.getText();
 		Role role = roleBox.getValue();
 		Status status = statusBox.getValue();
-		LocalDate birthdate = birthdatePicker.getValue();
 
-		if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || phone.isEmpty() || street.isEmpty()
-				|| houseNumberStr.isEmpty() || postalCodeStr.isEmpty() || city.isEmpty() || role == null
-				|| status == null || birthdate == null)
-		{
-			showError("Alle velden zijn verplicht!");
-			return;
-		}
+		LocalDate birthdate = birthdatePicker.getValue();
 
 		int houseNumber = 0;
 		int postalCode = 0;
+
 		try
 		{
 			houseNumber = Integer.parseInt(houseNumberStr);
 			postalCode = Integer.parseInt(postalCodeStr);
+
 		} catch (NumberFormatException e)
 		{
-			showError("Huisnummer en postcode moeten numerieke waarden zijn!");
-			return;
-		}
 
-		Address newAddress;
-
-		try
-		{
-			newAddress = new Address(street, houseNumber, postalCode, city);
-		} catch (InvalidAddressException e)
-		{
-			showError("Ongeldig adres: " + e.getMessage());
-			return;
-		}
-
-		User newUser;
-		try
-		{
-			newUser = new User(firstName, lastName, email, phone, generatePassword(), birthdate, newAddress, status,
-					role);
-		} catch (InvalidUserException e)
-		{
-			showError("Ongeldige gebruikersgegevens: " + e.getMessage());
-			return;
 		}
 
 		try
 		{
+
+			UserBuilder userBuilder = new UserBuilder();
+			userBuilder.createUser();
+			userBuilder.buildName(firstName, lastName);
+			userBuilder.buildContactInfo(email, phone);
+			userBuilder.buildBirthdate(birthdate);
+			userBuilder.createAddress();
+			userBuilder.buildStreet(street);
+			userBuilder.buildNumber(houseNumber);
+			userBuilder.buildPostalcode(postalCode);
+			userBuilder.buildCity(city);
+
+			userBuilder.buildRoleAndStatus(role, status);
+
+			User newUser = userBuilder.getUser();
+
 			entityManager.getTransaction().begin();
 
 			if (isNewUser)
@@ -348,22 +365,29 @@ public class AddOrEditUserForm extends GridPane
 			entityManager.getTransaction().commit();
 			userManagementPane.returnToUserManagement(primaryStage);
 
+		} catch (InformationRequiredException e)
+		{
+			handleInformationRequiredException(e);
 		} catch (Exception e)
 		{
 			if (entityManager.getTransaction().isActive())
 			{
 				entityManager.getTransaction().rollback();
 			}
-			System.err.println("Fout bij het toevoegen van de gebruiker:");
+			showError("Er is een fout opgetreden: " + e.getMessage());
 			e.printStackTrace();
-		} finally
-		{
-			if (entityManager != null && entityManager.isOpen())
-			{
-				entityManager.close();
-			}
 		}
 
+	}
+
+	private Label createErrorLabel()
+	{
+		Label errorLabel = new Label();
+		errorLabel.setTextFill(Color.RED);
+		errorLabel.setStyle("-fx-font-size: 10px;");
+		errorLabel.setMaxWidth(150);
+		errorLabel.setWrapText(true);
+		return errorLabel;
 	}
 
 	private void showError(String message)
@@ -371,9 +395,99 @@ public class AddOrEditUserForm extends GridPane
 		errorLabel.setText(message);
 	}
 
-	private String generatePassword()
+	private void handleInformationRequiredException(InformationRequiredException e)
 	{
-		return "123456789";
+		e.getInformationRequired().forEach((field, requiredElement) -> {
+			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
+			showFieldError(field, errorMessage);
+		});
+
 	}
 
+	private String getErrorMessageForRequiredElement(RequiredElement element)
+	{
+		switch (element)
+		{
+		case FIRST_NAME_REQUIRED:
+			return "Voornaam is verplicht";
+		case LAST_NAME_REQUIRED:
+			return "Achternaam is verplicht";
+		case EMAIL_REQUIRED:
+			return "Email is verplicht";
+		case BIRTH_DATE_REQUIRED:
+			return "Geboortedatum is verplicht";
+		case STREET_REQUIRED:
+			return "Straat is verplicht";
+		case NUMBER_REQUIRED:
+			return "Huisnummer is verplicht";
+		case POSTAL_CODE_REQUIRED:
+			return "Postcode is verplicht";
+		case CITY_REQUIRED:
+			return "Stad is verplicht";
+		case ROLE_REQUIRED:
+			return "Rol is verplicht";
+		case STATUS_REQUIRED:
+			return "Status is verplicht";
+		default:
+			return "Verplicht veld";
+		}
+	}
+
+	private void showFieldError(String fieldName, String message)
+	{
+		switch (fieldName)
+		{
+		case "firstName":
+			firstNameError.setText(message);
+			break;
+		case "lastName":
+			lastNameError.setText(message);
+			break;
+		case "email":
+			emailError.setText(message);
+			break;
+		case "phone":
+			phoneError.setText(message);
+			break;
+		case "birthDate":
+			birthdateError.setText(message);
+			break;
+		case "street":
+			streetError.setText(message);
+			break;
+		case "number":
+			houseNumberError.setText(message);
+			break;
+		case "postalCode":
+			postalCodeError.setText(message);
+			break;
+		case "city":
+			cityError.setText(message);
+			break;
+		case "role":
+			roleError.setText(message);
+			break;
+		case "status":
+			statusError.setText(message);
+			break;
+		default:
+			errorLabel.setText(message);
+		}
+	}
+
+	private void resetErrorLabels()
+	{
+		errorLabel.setText("");
+		firstNameError.setText("");
+		lastNameError.setText("");
+		emailError.setText("");
+		phoneError.setText("");
+		birthdateError.setText("");
+		streetError.setText("");
+		houseNumberError.setText("");
+		postalCodeError.setText("");
+		cityError.setText("");
+		roleError.setText("");
+		statusError.setText("");
+	}
 }
