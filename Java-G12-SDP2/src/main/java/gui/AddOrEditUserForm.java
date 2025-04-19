@@ -179,6 +179,7 @@ public class AddOrEditUserForm extends GridPane
 		emailField = new TextField();
 		phoneField = new TextField();
 		birthdatePicker = new DatePicker();
+		birthdatePicker.setEditable(false);
 
 		firstNameField.setPrefWidth(200);
 		lastNameField.setPrefWidth(200);
