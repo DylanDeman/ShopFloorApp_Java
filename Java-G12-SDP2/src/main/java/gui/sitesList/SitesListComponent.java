@@ -75,7 +75,7 @@ public class SitesListComponent extends VBox implements Observer {
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
         Button button = new CustomButton(new FontIcon("fas-plus"), "Site toevoegen");
-        button.setOnAction(e -> System.out.println("Open 'toevoegen' scherm"));
+        button.setOnAction(e -> System.out.println("Open toevoegen scherm"));
 
         hbox.getChildren().addAll(title, spacer, button);
         return hbox;

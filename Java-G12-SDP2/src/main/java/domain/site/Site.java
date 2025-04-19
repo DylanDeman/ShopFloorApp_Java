@@ -63,7 +63,7 @@ public class Site implements Serializable, Subject {
 
 	public void setSiteName(String siteName) {
 		if (siteName == null || siteName.isBlank()) {
-			throw new InvalidInputException("name of site cannot be null or empty");
+			throw new InvalidInputException("Naam van de site mag niet leeg zijn!");
 		}
 		this.siteName = siteName.trim();
 		notifyObservers();
@@ -71,7 +71,7 @@ public class Site implements Serializable, Subject {
 
 	public void setVerantwoordelijke(User verantwoordelijke) {
 		if (verantwoordelijke == null) {
-			throw new InvalidInputException("Verantwoordelijke of site cannot be null");
+			throw new InvalidInputException("Site verantwoordelijke mag niet leeg zijn!");
 		}
 		this.verantwoordelijke = verantwoordelijke;
 		notifyObservers();
@@ -79,7 +79,7 @@ public class Site implements Serializable, Subject {
 
 	public void setStatus(Status status) {
 		if (status == null) {
-			throw new InvalidInputException("Status of site cannot be null");
+			throw new InvalidInputException("Site status mag niet leeg zijn!");
 		}
 		this.status = status;
 		notifyObservers();
