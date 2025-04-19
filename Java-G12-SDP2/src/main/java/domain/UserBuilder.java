@@ -12,6 +12,7 @@ import util.Status;
 public class UserBuilder
 {
 	private User user;
+	private Address address;
 
 	private Map<String, RequiredElement> requiredElements;
 
@@ -40,17 +41,40 @@ public class UserBuilder
 		user.setBirthdate(birthdate);
 	}
 
-	public void buildAddress(Address address)
-	{
-		// validatie nog toevoegen
-		user.setAddress(address);
-	}
-
 	public void buildRoleAndStatus(Role role, Status status)
 	{
 		// validatie nog toevoegen
 		user.setRole(role);
 		user.setStatus(status);
+	}
+
+	public void createAddress()
+	{
+		address = new Address();
+	}
+
+	public void buildStreet(String street)
+	{
+		// validatie nog toevoegen
+		address.setStreet(street);
+	}
+
+	public void buildNumber(int number)
+	{
+		// validatie nog toevoegen
+		address.setNumber(number);
+	}
+
+	public void buildPostalcode(int postalcode)
+	{
+		// validatie nog toevoegen
+		address.setPostalcode(postalcode);
+	}
+
+	public void buildCity(String city)
+	{
+		// validatie nog toevoegen
+		address.setCity(city);
 	}
 
 	public User getUser() throws InformationRequiredException
@@ -77,22 +101,22 @@ public class UserBuilder
 			requiredElements.put("birthDate", RequiredElement.BIRTH_DATE_REQUIRED);
 		}
 
-		if (user.getAddress().getStreet() == null)
+		if (address.getStreet().isEmpty())
 		{
 			requiredElements.put("street", RequiredElement.STREET_REQUIRED);
 		}
 
-		if (user.getAddress().getNumber() == 0)
+		if (address.getNumber() == 0)
 		{
 			requiredElements.put("number", RequiredElement.NUMBER_REQUIRED);
 		}
 
-		if (user.getAddress().getPostalcode() == 0)
+		if (address.getPostalcode() == 0)
 		{
 			requiredElements.put("postalCode", RequiredElement.POSTAL_CODE_REQUIRED);
 		}
 
-		if (user.getAddress().getCity() == null)
+		if (address.getCity().isEmpty())
 		{
 			requiredElements.put("city", RequiredElement.CITY_REQUIRED);
 		}
@@ -109,6 +133,8 @@ public class UserBuilder
 
 		if (!requiredElements.isEmpty())
 			throw new InformationRequiredException(requiredElements);
+
+		user.setAddress(address);
 
 		return this.user;
 	}

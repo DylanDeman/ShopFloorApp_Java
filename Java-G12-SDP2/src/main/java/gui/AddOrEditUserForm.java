@@ -3,7 +3,6 @@ package gui;
 import java.time.LocalDate;
 
 import domain.Address;
-import domain.AddressBuilder;
 import domain.User;
 import domain.UserBuilder;
 import exceptions.InformationRequiredException;
@@ -324,21 +323,17 @@ public class AddOrEditUserForm extends GridPane
 		try
 		{
 
-			AddressBuilder addressBuilder = new AddressBuilder();
-			addressBuilder.createAddress();
-			addressBuilder.buildStreet(street);
-			addressBuilder.buildNumber(houseNumber);
-			addressBuilder.buildPostalcode(postalCode);
-			addressBuilder.buildCity(city);
-
-			Address newAddress = addressBuilder.getAddress();
-
 			UserBuilder userBuilder = new UserBuilder();
 			userBuilder.createUser();
 			userBuilder.buildName(firstName, lastName);
 			userBuilder.buildContactInfo(email, phone);
 			userBuilder.buildBirthdate(birthdate);
-			userBuilder.buildAddress(newAddress);
+			userBuilder.createAddress();
+			userBuilder.buildStreet(street);
+			userBuilder.buildNumber(houseNumber);
+			userBuilder.buildPostalcode(postalCode);
+			userBuilder.buildCity(city);
+
 			userBuilder.buildRoleAndStatus(role, status);
 
 			User newUser = userBuilder.getUser();
