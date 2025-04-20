@@ -1,8 +1,12 @@
 package domain;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 
+import exceptions.InformationRequiredException;
 import exceptions.InvalidMachineException;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,11 +19,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import util.RequiredElementMachine;
 
 @Entity
 @ToString
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED) //?
 @Getter
 public class Machine implements Serializable {
     
@@ -31,93 +35,136 @@ public class Machine implements Serializable {
    
     
     @ManyToOne
-    private Site site;
+    private final Site site;
     
     @ManyToOne
-    private User technician;
+    private final User technician;
         
-    private String code, status, productieStatus, location, productInfo;
-    private Date lastMaintenance, futureMaintenance;
-    private int numberDaysSinceLastMaintenance;
-    private double upTimeInHours;
-
-    public void setId(int id) {
-        if (id < 0) {
-            throw new InvalidMachineException("ID cannot be negative");
-        }
-        this.id = id;
-    }
-
-    public void setSite(Site site) {
-        if (site == null) {
-            throw new InvalidMachineException("Site cannot be null");
-        }
-        this.site = site;
-    }
-
-    public void setStatus(String status) {
-        if (status == null || status.isBlank()) {
-            throw new InvalidMachineException("Status cannot be null or empty");
-        }
-        this.status = status.trim();
-    }
-
-    public void setProductieStatus(String productieStatus) {
-        if (productieStatus == null || productieStatus.isBlank()) {
-            throw new InvalidMachineException("Production status cannot be null or empty");
-        }
-        this.productieStatus = productieStatus.trim();
-    }
-
-    public void setLocation(String location) {
-        if (location == null || location.isBlank()) {
-            throw new InvalidMachineException("Location cannot be null or empty");
-        }
-        this.location = location.trim();
-    }
-
-    public void setProductInfo(String productInfo) {
-        if (productInfo == null || productInfo.isBlank()) {
-            throw new InvalidMachineException("Product info cannot be null or empty");
-        }
-        this.productInfo = productInfo.trim();
-    }
-
-    public void setLastMaintenance(Date lastMaintenance) {
-        if (lastMaintenance == null) {
-            throw new InvalidMachineException("Last maintenance date cannot be null");
-        }
-        if (lastMaintenance.after(new Date())) {
-            throw new InvalidMachineException("Last maintenance date cannot be in the future");
-        }
-        this.lastMaintenance = lastMaintenance;
-    }
-
-    public void setFutureMaintenance(Date futureMaintenance) {
-        if (futureMaintenance == null) {
-            throw new InvalidMachineException("Future maintenance date cannot be null");
-        }
-        if (futureMaintenance.before(new Date())) {
-            throw new InvalidMachineException("Future maintenance date cannot be in the past");
-        }
-        this.futureMaintenance = futureMaintenance;
-    }
-
-    public void setNumberDaysSinceLastMaintenance(int numberDaysSinceLastMaintenance) {
-        if (numberDaysSinceLastMaintenance < 0) {
-            throw new InvalidMachineException("Days since last maintenance cannot be negative");
-        }
-        this.numberDaysSinceLastMaintenance = numberDaysSinceLastMaintenance;
+    private final String code, status, productieStatus, location, productInfo;
+    private final LocalDateTime lastMaintenance, futureMaintenance;
+    private final int numberDaysSinceLastMaintenance;
+    private final double upTimeInHours;
+    
+    private Machine(Builder builder) {
+    	site = builder.site;
+    	technician = builder.technician;
+    	code = builder.code;
+    	status = builder.status;
+    	productieStatus = builder.productieStatus;
+    	location = builder.location;
+    	productInfo = builder.productInfo;
+    	lastMaintenance = builder.lastMaintenance;
+    	futureMaintenance = builder.futureMaintenance;
     }
     
-    public void setTechnician(User technician) {
-        if (technician == null) {
-            throw new InvalidMachineException("Technician cannot be null");
-        }
-        if (!"TECHNIEKER".equals(technician.getRole())) {
-            throw new InvalidMachineException("User is not a technician");
-        }
-        this.technician = technician;
+    public static Builder builder() {
+    	return new Builder();
+    }
+
+    
+    public static class Builder{
+    	   
+    	    
+    	    private Site site;
+    	    private User technician;
+    	    private String code, status, productieStatus, location, productInfo;
+    	    private LocalDateTime lastMaintenance, futureMaintenance;
+    	    private Set<RequiredElementMachine> requiredElements;
+    	    
+    	    public Builder site(Site site) {
+    	    	this.site = site;
+    	    	return this;
+    	    }
+    	    
+    	    public Builder technician(User technician) {
+    	    	this.technician = technician;
+    	    	return this;
+    	    }
+    	    
+    	    public Builder code(String code) {
+    	    	this.code = code;
+    	    	return this;
+    	    }
+    	    
+    	    public Builder status(String status) {
+    	    	this.status = status;
+    	    	return this;
+    	    }
+    	    
+    	    public Builder productieStatus(String productieStatus) {
+    	    	this.productieStatus = productieStatus;
+    	    	return this;
+    	    }
+    	    
+    	    public Builder location(String location) {
+    	    	this.location = location;
+    	    	return this;
+    	    }
+    	    
+    	    public Builder productInfo(String productInfo) {
+    	    	this.productInfo = productInfo;
+    	    	return this;
+    	    }
+    	    
+    	    public Builder lastMaintenance(LocalDateTime lastMaintenance) {
+    	    	this.lastMaintenance = lastMaintenance;
+    	    	return this;
+    	    }
+    	    
+    	    public Builder futureMaintenance(LocalDateTime futureMaintenance) {
+    	    	this.futureMaintenance = futureMaintenance;
+    	    	return this;
+    	    }
+    	    
+    	    
+    	    public Machine build() throws InformationRequiredException{
+    	    	requiredElements = new HashSet<>();
+    	    	
+    	    	Machine machine = new Machine(this);
+    	    	
+    	    	
+    	    	if(machine.site == null) {
+    	    		requiredElements.add(RequiredElementMachine.SITE_REQUIRED);
+    	    	}
+    	    	
+    	    	if(machine.technician == null) {
+    	    		requiredElements.add(RequiredElementMachine.TECHNICIAN_REQUIRED);
+    	    	}
+    	    	
+    	    	if(machine.code == null) {
+    	    		requiredElements.add(RequiredElementMachine.CODE_REQUIRED);
+    	    	}
+    	    	
+    	    	if(machine.status == null) {
+    	    		requiredElements.add(RequiredElementMachine.STATUS_REQUIRED);
+    	    	}
+    	    	
+    	    	
+    	    	if(machine.productieStatus == null) {
+    	    		requiredElements.add(RequiredElementMachine.PRODUCTIE_STATUS_REQUIRED);
+    	    	}
+    	    	
+    	    	if(machine.location == null) {
+    	    		requiredElements.add(RequiredElementMachine.LOCATION_REQUIRED);
+    	    	}
+    	    	
+    	    	if(machine.productInfo == null) {
+    	    		requiredElements.add(RequiredElementMachine.PRODUCT_INFO_REQUIRED);
+    	    	}
+    	    	
+    	    	if(machine.lastMaintenance == null) {
+    	    		requiredElements.add(RequiredElementMachine.LAST_MAINTENANCE_REQUIRED);
+    	    	}
+    	    	
+    	    	if(machine.futureMaintenance == null) {
+    	    		requiredElements.add(RequiredElementMachine.FUTURE_MAINTENANCE_REQUIRED);
+    	    	}
+    	    	
+    	    	return machine;
+    	    	
+    	    }
+    	 
+    	
     }
 
 }

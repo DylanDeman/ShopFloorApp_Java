@@ -16,9 +16,6 @@ public class MachineController {
 	}
 	
 	
-	
-	
-	
 	public List<Machine> getMachineList(){
 		if(machineList == null) {
 			machineList = machineRepo.findAll();
@@ -30,6 +27,12 @@ public class MachineController {
 	public void addNewMachine(Machine machine) {
 		machineRepo.startTransaction();
 		machineRepo.insert(machine);
+		machineRepo.commitTransaction();
+	}
+	
+	public void updateMachine(Machine machine) {
+		machineRepo.startTransaction();
+		machineRepo.update(machine);
 		machineRepo.commitTransaction();
 	}
 	
