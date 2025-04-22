@@ -33,7 +33,7 @@ public class SitesListComponent extends VBox implements Observer {
 	private TextField searchField;
 	private List<SiteDTO> allSites;
 	private List<SiteDTO> filteredSites;
-	
+
 	// Pagination variables
 	private int itemsPerPage = 10;
 	private int currentPage = 0;
@@ -48,6 +48,7 @@ public class SitesListComponent extends VBox implements Observer {
 	}
 
 	private void initializeGUI() {
+
 		stage.setMinWidth(800);
 		allSites = sc.getSites();
 		filteredSites = allSites;
@@ -125,13 +126,13 @@ public class SitesListComponent extends VBox implements Observer {
 		searchField.setPromptText("Zoeken...");
 		searchField.setMaxWidth(300);
 		searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable(newVal));
-		
+
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
-		
+
 		// Page selector component
 		HBox pageSelector = createPageSelector();
-		
+
 		HBox filterBox = new HBox(10, searchField, spacer, pageSelector);
 		filterBox.setAlignment(Pos.CENTER_LEFT);
 		return filterBox;
@@ -139,17 +140,15 @@ public class SitesListComponent extends VBox implements Observer {
 
 	private HBox createPageSelector() {
 		Label lblItemsPerPage = new Label("Aantal per pagina:");
-		
-		ComboBox<Integer> comboItemsPerPage = new ComboBox<>(
-			FXCollections.observableArrayList(10, 20, 50, 100)
-		);
-		
+
+		ComboBox<Integer> comboItemsPerPage = new ComboBox<>(FXCollections.observableArrayList(10, 20, 50, 100));
+
 		comboItemsPerPage.setValue(itemsPerPage); // Default value
 		comboItemsPerPage.setOnAction(e -> {
 			int selectedValue = comboItemsPerPage.getValue();
 			updateItemsPerPage(selectedValue);
 		});
-		
+
 		HBox pageSelector = new HBox(10, lblItemsPerPage, comboItemsPerPage);
 		pageSelector.setAlignment(Pos.CENTER_RIGHT);
 		return pageSelector;
@@ -169,7 +168,7 @@ public class SitesListComponent extends VBox implements Observer {
 						|| site.verantwoordelijke().getFullName().toLowerCase().contains(lowerCaseFilter)
 						|| site.status().toString().toLowerCase().contains(lowerCaseFilter))
 				.collect(Collectors.toList());
-		
+
 		currentPage = 0; // Reset to first page when filter changes
 		updatePagination();
 		updateTableItems();
@@ -203,12 +202,11 @@ public class SitesListComponent extends VBox implements Observer {
 	private void updateTableItems() {
 		int fromIndex = currentPage * itemsPerPage;
 		int toIndex = Math.min(fromIndex + itemsPerPage, filteredSites.size());
-		
+
 		if (filteredSites.isEmpty()) {
 			table.getItems().clear();
 		} else {
-			List<SiteDTO> currentPageItems = fromIndex < toIndex 
-					? filteredSites.subList(fromIndex, toIndex) 
+			List<SiteDTO> currentPageItems = fromIndex < toIndex ? filteredSites.subList(fromIndex, toIndex)
 					: List.of();
 			table.getItems().setAll(currentPageItems);
 		}

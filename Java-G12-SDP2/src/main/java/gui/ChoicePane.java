@@ -14,7 +14,6 @@ public class ChoicePane extends GridPane {
 		Button userManagementButton = new Button("Ga naar Gebruikersbeheer");
 		userManagementButton.setOnAction(e -> goToUserManagement(primaryStage));
 
-		this.add(userManagementButton, 0, 0);
 
 		Button maintenanceListButton = new Button("Ga naar lijst onderhouden");
 		maintenanceListButton.setOnAction(e -> goToMaintenanceList(primaryStage));
@@ -24,7 +23,6 @@ public class ChoicePane extends GridPane {
 
 		Button addRapportButton = new Button("Ga naar een rapport toevoegen");
 		addRapportButton.setOnAction(e -> goToAddRapport(primaryStage));
-
 
 		Button sitesButton = new Button("Ga naar sites overzicht");
 		sitesButton.setOnAction(e -> gotToSitesList(primaryStage));
