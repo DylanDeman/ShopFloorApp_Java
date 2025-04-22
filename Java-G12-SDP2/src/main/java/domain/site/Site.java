@@ -5,8 +5,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import domain.Machine;
-import domain.User;
+import domain.machine.Machine;
+import domain.user.User;
 import exceptions.InvalidInputException;
 import interfaces.Observer;
 import interfaces.Subject;

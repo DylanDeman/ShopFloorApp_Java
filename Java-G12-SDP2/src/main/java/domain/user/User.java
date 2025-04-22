@@ -1,9 +1,10 @@
-package domain;
+package domain.user;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Period;
 
+import domain.Address;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

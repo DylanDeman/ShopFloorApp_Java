@@ -14,12 +14,8 @@ public class ChoicePane extends GridPane {
 		Button userManagementButton = new Button("Ga naar Gebruikersbeheer");
 		userManagementButton.setOnAction(e -> goToUserManagement(primaryStage));
 
-
 		Button maintenanceListButton = new Button("Ga naar lijst onderhouden");
 		maintenanceListButton.setOnAction(e -> goToMaintenanceList(primaryStage));
-
-		Button loginButton = new Button("Ga naar aanmelden");
-		loginButton.setOnAction(e -> goToLogin(primaryStage));
 
 		Button addRapportButton = new Button("Ga naar een rapport toevoegen");
 		addRapportButton.setOnAction(e -> goToAddRapport(primaryStage));
@@ -28,10 +24,9 @@ public class ChoicePane extends GridPane {
 		sitesButton.setOnAction(e -> gotToSitesList(primaryStage));
 
 		this.add(userManagementButton, 0, 0);
-		this.add(maintenanceListButton, 0, 10);
-		this.add(loginButton, 0, 20);
-		this.add(addRapportButton, 0, 30);
-		this.add(sitesButton, 0, 40);
+		this.add(maintenanceListButton, 0, 20);
+		this.add(addRapportButton, 0, 40);
+		this.add(sitesButton, 0, 60);
 	}
 
 	private void goToUserManagement(Stage primaryStage) {
@@ -45,14 +40,6 @@ public class ChoicePane extends GridPane {
 		Scene maintenanceListScene = new Scene(maintenanceListComponent);
 
 		primaryStage.setScene(maintenanceListScene);
-	}
-
-	private void goToLogin(Stage primaryStage) {
-		LoginPane loginPane = new LoginPane();
-		Scene loginPaneScene = new Scene(loginPane);
-		loginPane.getStylesheets().add(getClass().getResource("/css/loginstyles.css").toExternalForm());
-		primaryStage.setScene(loginPaneScene);
-		primaryStage.setMaximized(true);
 	}
 
 	private void gotToSitesList(Stage primaryStage) {
