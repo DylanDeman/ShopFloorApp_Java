@@ -9,14 +9,14 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import domain.ConcreteRapportBuilder;
+import domain.Machine;
 import domain.Rapport;
 import domain.RapportBuilder;
 import domain.RapportDirector;
-import domain.RapportService;
 import domain.Site;
-import domain.SiteService;
 import domain.User;
-import domain.UserService;
+import exceptions.InvalidRapportException;
+import jakarta.persistence.TypedQuery;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -40,28 +40,38 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
+import repository.GenericDaoJpa;
 import util.Role;
 
 public class AddRapportForm extends BorderPane
 {
 
-	private TextField siteNaamField, verantwoordelijkeField, onderhoudsNrField;
-	private ComboBox<User> techniekerComboBox;
-	private DatePicker startDatePicker, eindDatePicker;
-	private TextField startTijdField, eindTijdField;
-	private TextField redenField;
-	private TextArea opmerkingenArea;
+	// Non-editable fields (pre-filled)
+	private Label siteNameLabel, responsiblePersonLabel, maintenanceNumberLabel;
+
+	// User input fields
+	private ComboBox<User> technicianComboBox;
+	private DatePicker startDatePicker, endDatePicker;
+	private TextField startTimeField, endTimeField;
+	private TextField reasonField;
+	private TextArea commentsArea;
+
 	private Label errorLabel;
 	private VBox formBox;
 
-	// Service references
-	private SiteService siteService;
-	private UserService userService;
-	private RapportService rapportService;
+	// Context information
+	private Machine selectedMachine;
+	private Site site;
 
-	public void start(Stage primaryStage)
+	// DAOs
+	private GenericDaoJpa<Site> siteDao;
+	private GenericDaoJpa<User> userDao;
+	private GenericDaoJpa<Rapport> rapportDao;
+	private GenericDaoJpa<Machine> machineDao;
+
+	public void start(Stage primaryStage, Machine machine)
 	{
-		AddRapportForm form = new AddRapportForm(primaryStage);
+		AddRapportForm form = new AddRapportForm(primaryStage, machine);
 
 		// Create scene without fixed dimensions
 		Scene scene = new Scene(form);
@@ -82,17 +92,23 @@ public class AddRapportForm extends BorderPane
 		primaryStage.show();
 	}
 
-	public AddRapportForm(Stage primaryStage)
+	public AddRapportForm(Stage primaryStage, Machine machine)
 	{
-		this(primaryStage, new SiteService(), new UserService(User.class), new RapportService(Rapport.class));
+		this(primaryStage, machine, new GenericDaoJpa<>(Site.class), new GenericDaoJpa<>(User.class),
+				new GenericDaoJpa<>(Rapport.class), new GenericDaoJpa<>(Machine.class));
 	}
 
-	public AddRapportForm(Stage primaryStage, SiteService siteService, UserService userService,
-			RapportService rapportService)
+	public AddRapportForm(Stage primaryStage, Machine machine, GenericDaoJpa<Site> siteDao, GenericDaoJpa<User> userDao,
+			GenericDaoJpa<Rapport> rapportDao, GenericDaoJpa<Machine> machineDao)
 	{
-		this.siteService = siteService;
-		this.userService = userService;
-		this.rapportService = rapportService;
+		this.siteDao = siteDao;
+		this.userDao = userDao;
+		this.rapportDao = rapportDao;
+		this.machineDao = machineDao;
+		this.selectedMachine = machine;
+
+		// Get site from the selected machine
+		this.site = machine.getSite();
 
 		this.getStyleClass().add("main-pane");
 
@@ -127,19 +143,22 @@ public class AddRapportForm extends BorderPane
 		formBox.setMaxWidth(900); // Maximum width on large screens
 		formBox.setMinWidth(400); // Minimum width on small screens
 
-		// Create form controls with responsive properties
-		siteNaamField = createResponsiveTextField();
-		verantwoordelijkeField = createResponsiveTextField();
-		onderhoudsNrField = createResponsiveTextField();
+		// Initialize display labels for pre-filled information
+		siteNameLabel = createInfoLabel(site.getSiteNaam());
+		responsiblePersonLabel = createInfoLabel(site.getVerantwoordelijke());
 
-		// Setup technieker combo box with actual User objects
-		techniekerComboBox = new ComboBox<>();
-		loadTechniekers();
-		techniekerComboBox.setPromptText("Selecteer technieker");
-		techniekerComboBox.setMaxWidth(Double.MAX_VALUE);
+		// Generate next maintenance number
+		String nextMaintenanceNumber = generateNextMaintenanceNumber();
+		maintenanceNumberLabel = createInfoLabel(nextMaintenanceNumber);
+
+		// Setup technician combo box with actual User objects
+		technicianComboBox = new ComboBox<>();
+		loadTechnicians();
+		technicianComboBox.setPromptText("Selecteer technieker");
+		technicianComboBox.setMaxWidth(Double.MAX_VALUE);
 
 		// Set up converter to display user names in the combobox
-		techniekerComboBox.setConverter(new StringConverter<User>()
+		technicianComboBox.setConverter(new StringConverter<User>()
 		{
 			@Override
 			public String toString(User user)
@@ -154,21 +173,23 @@ public class AddRapportForm extends BorderPane
 			}
 		});
 
-		redenField = createResponsiveTextField();
+		reasonField = createResponsiveTextField();
+		reasonField.setPromptText("Voer reden in");
 
-		opmerkingenArea = new TextArea();
-		opmerkingenArea.setPrefRowCount(5);
-		opmerkingenArea.setWrapText(true);
-		opmerkingenArea.setMaxWidth(Double.MAX_VALUE);
+		commentsArea = new TextArea();
+		commentsArea.setPrefRowCount(5);
+		commentsArea.setWrapText(true);
+		commentsArea.setMaxWidth(Double.MAX_VALUE);
+		commentsArea.setPromptText("Voer opmerkingen in (optioneel)");
 
-		// Add all form fields
-		formBox.getChildren().addAll(createLabeledField("SiteNaam:", siteNaamField),
-				createLabeledField("Verantwoordelijke:", verantwoordelijkeField),
-				createLabeledField("Onderhoudsnr:", onderhoudsNrField),
-				createLabeledField("Technieker:", techniekerComboBox),
+		// Add all form fields - pre-filled info displayed as labels
+		formBox.getChildren().addAll(createLabeledDisplayField("SiteNaam:", siteNameLabel),
+				createLabeledDisplayField("Verantwoordelijke:", responsiblePersonLabel),
+				createLabeledDisplayField("Onderhoudsnr:", maintenanceNumberLabel),
+				createLabeledField("Technieker:", technicianComboBox),
 				createLabeledField("Start (datum + tijd):", createDateTimeInput(true)),
 				createLabeledField("Einde (datum + tijd):", createDateTimeInput(false)),
-				createLabeledField("Reden:", redenField), createLabeledField("Opmerkingen:", opmerkingenArea));
+				createLabeledField("Reden:", reasonField), createLabeledField("Opmerkingen:", commentsArea));
 
 		// Button
 		Button createReportBtn = new Button("Rapport aanmaken");
@@ -198,14 +219,41 @@ public class AddRapportForm extends BorderPane
 		this.setCenter(content);
 	}
 
-	// Load techniekers from service
-	private void loadTechniekers()
+	// Create label for displaying pre-filled information
+	private Label createInfoLabel(String text)
 	{
-		List<User> techniekers = userService.findAll().stream().filter(user -> user.getRole() == Role.TECHNIEKER)
+		Label label = new Label(text);
+		label.getStyleClass().add("info-display-label");
+		label.setMaxWidth(Double.MAX_VALUE);
+		return label;
+	}
+
+	// Load technicians directly from userDao
+	private void loadTechnicians()
+	{
+		List<User> technicians = userDao.findAll().stream().filter(user -> user.getRole() == Role.TECHNIEKER)
 				.collect(Collectors.toList());
 
-		techniekerComboBox.getItems().clear();
-		techniekerComboBox.getItems().addAll(techniekers);
+		technicianComboBox.getItems().clear();
+		technicianComboBox.getItems().addAll(technicians);
+	}
+
+	// Generate the next maintenance number by counting existing reports for this
+	// site
+	private String generateNextMaintenanceNumber()
+	{
+		// Query to count reports for this site
+		TypedQuery<Long> query = GenericDaoJpa.em
+				.createQuery("SELECT COUNT(r) FROM Rapport r WHERE r.site.id = :siteId", Long.class);
+		query.setParameter("siteId", site.getId());
+		Long reportCount = query.getSingleResult();
+
+		// Format: SITE-XXX where XXX is a sequential number
+		String sitePrefix = site.getSiteNaam().substring(0, Math.min(site.getSiteNaam().length(), 4)).toUpperCase()
+				.replaceAll("[^A-Z0-9]", "");
+
+		// Increment by 1 for the new report
+		return String.format("%s-%03d", sitePrefix, reportCount + 1);
 	}
 
 	// Create a responsive text field
@@ -242,11 +290,17 @@ public class AddRapportForm extends BorderPane
 		if (isStart)
 		{
 			startDatePicker = datePicker;
-			startTijdField = timeField;
+			startTimeField = timeField;
+			// Default to current date and time
+			startDatePicker.setValue(LocalDate.now());
+			startTimeField.setText(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
 		} else
 		{
-			eindDatePicker = datePicker;
-			eindTijdField = timeField;
+			endDatePicker = datePicker;
+			endTimeField = timeField;
+			// Default to current date and time + 1 hour
+			endDatePicker.setValue(LocalDate.now());
+			endTimeField.setText(LocalTime.now().plusHours(1).format(DateTimeFormatter.ofPattern("HH:mm")));
 		}
 
 		HBox box = new HBox(10, datePicker, timeField);
@@ -256,6 +310,7 @@ public class AddRapportForm extends BorderPane
 		return box;
 	}
 
+	// For editable fields
 	private HBox createLabeledField(String labelText, Control field)
 	{
 		Label label = new Label(labelText);
@@ -268,6 +323,23 @@ public class AddRapportForm extends BorderPane
 
 		HBox box = new HBox(10, label, field);
 		box.getStyleClass().add("form-field-container");
+		box.setAlignment(Pos.CENTER_LEFT);
+		box.setMaxWidth(Double.MAX_VALUE);
+		return box;
+	}
+
+	// For read-only display fields
+	private HBox createLabeledDisplayField(String labelText, Label valueLabel)
+	{
+		Label label = new Label(labelText);
+		label.getStyleClass().add("form-label");
+		label.setMinWidth(150);
+		label.setPrefWidth(180);
+
+		HBox.setHgrow(valueLabel, Priority.ALWAYS);
+
+		HBox box = new HBox(10, label, valueLabel);
+		box.getStyleClass().add("form-field-container", "display-field-container");
 		box.setAlignment(Pos.CENTER_LEFT);
 		box.setMaxWidth(Double.MAX_VALUE);
 		return box;
@@ -289,6 +361,51 @@ public class AddRapportForm extends BorderPane
 		return box;
 	}
 
+	// Get reports by technician directly using JPQL
+	public List<Rapport> getRapportenByTechnieker(User technieker)
+	{
+		if (technieker == null)
+		{
+			throw new InvalidRapportException("Technieker cannot be null");
+		}
+
+		TypedQuery<Rapport> query = GenericDaoJpa.em.createNamedQuery("Rapport.findByTechnieker", Rapport.class);
+		query.setParameter("technieker", technieker);
+		return query.getResultList();
+	}
+
+	// Get reports by site directly using JPQL
+	public List<Rapport> getRapportenBySite(Site site)
+	{
+		if (site == null)
+		{
+			throw new InvalidRapportException("Site cannot be null");
+		}
+
+		TypedQuery<Rapport> query = GenericDaoJpa.em.createNamedQuery("Rapport.findBySite", Rapport.class);
+		query.setParameter("site", site);
+		return query.getResultList();
+	}
+
+	// Get reports by date range directly using JPQL
+	public List<Rapport> getRapportenByDateRange(LocalDate startDate, LocalDate endDate)
+	{
+		if (startDate == null || endDate == null)
+		{
+			throw new InvalidRapportException("Date range cannot be null");
+		}
+
+		if (endDate.isBefore(startDate))
+		{
+			throw new InvalidRapportException("End date cannot be before start date");
+		}
+
+		TypedQuery<Rapport> query = GenericDaoJpa.em.createNamedQuery("Rapport.findByDateRange", Rapport.class);
+		query.setParameter("startDate", startDate);
+		query.setParameter("endDate", endDate);
+		return query.getResultList();
+	}
+
 	private void createRapport()
 	{
 		try
@@ -296,58 +413,85 @@ public class AddRapportForm extends BorderPane
 			// Clear previous error messages
 			errorLabel.setVisible(false);
 
-			// Parse and validate form data
-			String siteNaam = siteNaamField.getText().trim();
-			String onderhoudsNr = onderhoudsNrField.getText().trim();
-			User selectedTechnieker = techniekerComboBox.getValue();
-			String reden = redenField.getText().trim();
-			String opmerkingen = opmerkingenArea.getText().trim();
+			// Get pre-filled values
+			String maintenanceNumber = maintenanceNumberLabel.getText();
+
+			// Get user input values
+			User selectedTechnician = technicianComboBox.getValue();
+			String reason = reasonField.getText().trim();
+			String comments = commentsArea.getText().trim();
+
+			// Validate required fields
+			if (selectedTechnician == null)
+			{
+				throw new IllegalStateException("Technieker moet geselecteerd worden");
+			}
+
+			if (reason.isEmpty())
+			{
+				throw new IllegalStateException("Reden mag niet leeg zijn");
+			}
 
 			// Validate dates and times
 			LocalDate startDate = startDatePicker.getValue();
-			LocalTime startTime = parseTime(startTijdField.getText());
-			LocalDate endDate = eindDatePicker.getValue();
-			LocalTime endTime = parseTime(eindTijdField.getText());
+			LocalTime startTime = parseTime(startTimeField.getText());
+			LocalDate endDate = endDatePicker.getValue();
+			LocalTime endTime = parseTime(endTimeField.getText());
 
-			// Get or create site
-			Site site = siteService.findBySiteNaam(siteNaam);
-			if (site == null)
+			if (startDate == null || endDate == null)
 			{
-				String verantwoordelijke = verantwoordelijkeField.getText().trim();
-				site = siteService.createSite(siteNaam, verantwoordelijke);
+				throw new IllegalStateException("Start- en einddatum moeten ingevuld worden");
 			}
 
-			// Generate unique ID for the new rapport
-			String rapportId = generateRapportId();
+			// Start transaction for database operations
+			rapportDao.startTransaction();
 
-			// Use the Builder pattern to create the rapport
-			RapportBuilder builder = new ConcreteRapportBuilder(rapportId);
-
-			// Either use director for standard flows or build directly for custom flows
-			Rapport newRapport;
-
-			if (reden.equalsIgnoreCase("Regulier onderhoud"))
+			try
 			{
-				// Use Director for standard maintenance rapport
-				RapportDirector director = new RapportDirector(builder);
-				newRapport = director.constructStandardMaintenanceRapport(rapportId, site, onderhoudsNr,
-						selectedTechnieker, startDate, startTime, endDate, endTime);
-			} else
+				// Generate unique ID for the new rapport
+				String rapportId = generateRapportId();
+
+				// Use the Builder pattern to create the rapport
+				RapportBuilder builder = new ConcreteRapportBuilder(rapportId);
+
+				// Either use director for standard flows or build directly for custom flows
+				Rapport newRapport;
+
+				if (reason.equalsIgnoreCase("Regulier onderhoud"))
+				{
+					// Use Director for standard maintenance rapport
+					RapportDirector director = new RapportDirector(builder);
+					newRapport = director.constructStandardMaintenanceRapport(rapportId, site, maintenanceNumber,
+							selectedTechnician, startDate, startTime, endDate, endTime);
+				} else
+				{
+					// Use builder directly for custom rapport
+					newRapport = builder.setSite(site).setOnderhoudsNr(maintenanceNumber)
+							.setTechnieker(selectedTechnician).setStartDate(startDate).setStartTime(startTime)
+							.setEndDate(endDate).setEndTime(endTime).setReden(reason).setOpmerkingen(comments).build();
+				}
+
+				// Save the new rapport
+				rapportDao.insert(newRapport);
+
+				// Commit the transaction
+				rapportDao.commitTransaction();
+
+				// Show success message
+				showSuccess("Rapport succesvol aangemaakt!");
+
+				// Clear user input fields only
+				clearUserInputFields();
+
+				// Update maintenance number for next report
+				maintenanceNumberLabel.setText(generateNextMaintenanceNumber());
+
+			} catch (Exception e)
 			{
-				// Use builder directly for custom rapport
-				newRapport = builder.setSite(site).setOnderhoudsNr(onderhoudsNr).setTechnieker(selectedTechnieker)
-						.setStartDate(startDate).setStartTime(startTime).setEndDate(endDate).setEndTime(endTime)
-						.setReden(reden).setOpmerkingen(opmerkingen).build();
+				// Rollback the transaction in case of any error
+				rapportDao.rollbackTransaction();
+				throw e;
 			}
-
-			// Save the new rapport
-			rapportService.insert(newRapport);
-
-			// Show success message or navigate to another screen
-			showSuccess("Rapport succesvol aangemaakt!");
-
-			// Clear form
-			clearForm();
 
 		} catch (IllegalStateException e)
 		{
@@ -394,17 +538,17 @@ public class AddRapportForm extends BorderPane
 		errorLabel.setVisible(true);
 	}
 
-	private void clearForm()
+	private void clearUserInputFields()
 	{
-		siteNaamField.clear();
-		verantwoordelijkeField.clear();
-		onderhoudsNrField.clear();
-		techniekerComboBox.setValue(null);
-		startDatePicker.setValue(null);
-		startTijdField.clear();
-		eindDatePicker.setValue(null);
-		eindTijdField.clear();
-		redenField.clear();
-		opmerkingenArea.clear();
+		technicianComboBox.setValue(null);
+
+		// Reset dates to current
+		startDatePicker.setValue(LocalDate.now());
+		startTimeField.setText(LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")));
+		endDatePicker.setValue(LocalDate.now());
+		endTimeField.setText(LocalTime.now().plusHours(1).format(DateTimeFormatter.ofPattern("HH:mm")));
+
+		reasonField.clear();
+		commentsArea.clear();
 	}
 }

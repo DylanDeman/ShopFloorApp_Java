@@ -6,8 +6,10 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
-public class ChoicePane extends GridPane {
-	public ChoicePane(Stage primaryStage) {
+public class ChoicePane extends GridPane
+{
+	public ChoicePane(Stage primaryStage)
+	{
 		Button userManagementButton = new Button("Ga naar Gebruikersbeheer");
 		userManagementButton.setOnAction(e -> goToUserManagement(primaryStage));
 
@@ -27,12 +29,14 @@ public class ChoicePane extends GridPane {
 		this.add(addRapportButton, 0, 30);
 	}
 
-	private void goToUserManagement(Stage primaryStage) {
+	private void goToUserManagement(Stage primaryStage)
+	{
 		UserManagementPane userManagementPane = new UserManagementPane(primaryStage);
 		primaryStage.setScene(new Scene(userManagementPane, 800, 800));
 	}
 
-	private void goToMaintenanceList(Stage primaryStage) {
+	private void goToMaintenanceList(Stage primaryStage)
+	{
 		MaintenanceListComponent maintenanceListComponent = new MaintenanceListComponent(primaryStage);
 
 		Scene maintenanceListScene = new Scene(maintenanceListComponent);
@@ -40,7 +44,8 @@ public class ChoicePane extends GridPane {
 		primaryStage.setScene(maintenanceListScene);
 	}
 
-	private void goToLogin(Stage primaryStage) {
+	private void goToLogin(Stage primaryStage)
+	{
 		LoginPane loginPane = new LoginPane();
 		Scene loginPaneScene = new Scene(loginPane);
 		loginPane.getStylesheets().add(getClass().getResource("/css/loginstyles.css").toExternalForm());
@@ -48,8 +53,9 @@ public class ChoicePane extends GridPane {
 		primaryStage.setMaximized(true);
 	}
 
-	private void goToAddRapport(Stage primaryStage) {
-		AddRapportForm addRapportForm = new AddRapportForm(primaryStage);
+	private void goToAddRapport(Stage primaryStage)
+	{
+		AddRapportForm addRapportForm = new AddRapportForm(primaryStage, null);
 		Scene addRapportScene = new Scene(addRapportForm);
 		addRapportForm.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
 		primaryStage.setScene(addRapportScene);
