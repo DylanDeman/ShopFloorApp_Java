@@ -46,7 +46,8 @@ public class ChoicePane extends GridPane {
 		primaryStage.setScene(new Scene(userManagementPane, 800, 800));
 	}
 
-	private void goToMaintenanceList(Stage primaryStage) {
+	private void goToMaintenanceList(Stage primaryStage)
+	{
 		MaintenanceListComponent maintenanceListComponent = new MaintenanceListComponent(primaryStage);
 
 		Scene maintenanceListScene = new Scene(maintenanceListComponent);
