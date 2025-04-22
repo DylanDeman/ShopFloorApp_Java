@@ -12,6 +12,7 @@
     <class>domain.Address</class>
     <class>domain.site.Site</class>
     <class>domain.Machine</class>
+    <class>domain.rapport.Rapport</class>
     <properties>
       <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/shopfloor-app-db?serverTimezone=UTC"/>
       <property name="jakarta.persistence.jdbc.user" value="root"/> 

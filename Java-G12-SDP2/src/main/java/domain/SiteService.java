@@ -1,5 +1,7 @@
 package domain;
 
+import domain.site.Site;
+
 public class SiteService
 {
 
