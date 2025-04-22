@@ -1,0 +1,83 @@
+/* Main pane styles */
+.main-pane {
+    /* Background image is set in Java code */
+}
+
+/* Error messaging */
+.error-label {
+    -fx-text-fill: red;
+}
+
+/* Header styling */
+.header-label {
+    -fx-font-weight: bold;
+    -fx-font-size: 20px;
+}
+
+.header-box {
+    -fx-padding: 20 0 10 0;
+}
+
+/* Form container */
+.form-box {
+    -fx-background-color: rgba(255, 255, 255, 0.9);
+    -fx-background-radius: 10;
+    -fx-border-color: #cccccc;
+    -fx-border-radius: 10;
+    -fx-border-width: 2;
+    -fx-spacing: 15;
+    -fx-padding: 30;
+}
+
+/* Content container */
+.content-container {
+    -fx-spacing: 10;
+    -fx-padding: 20;
+}
+
+/* Form labels */
+.form-label {
+    -fx-font-weight: bold;
+}
+
+/* Container for label + field pairs */
+.form-field-container {
+    -fx-spacing: 10;
+}
+
+/* Date and time input containers */
+.date-time-box {
+    -fx-spacing: 10;
+}
+
+/* Submit button */
+.create-report-button {
+    -fx-background-color: #ba68f1;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-padding: 10 30 10 30;
+}
+
+.create-report-button:hover {
+    -fx-background-color: #a047d8;
+}
+
+/* Responsive styling for different screen sizes */
+@media (max-width: 700px) {
+    .form-box {
+        -fx-padding: 15;
+    }
+    
+    .form-label {
+        -fx-min-width: 120;
+    }
+}
+
+/* Additional styles for form components */
+.text-field, .text-area, .combo-box, .date-picker {
+    -fx-background-radius: 5;
+}
+
+.text-area {
+    -fx-pref-row-count: 5;
+}

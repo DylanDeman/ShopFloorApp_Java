@@ -70,7 +70,7 @@
 		
 	<!-- JPA -->
 	
-	<dependency>
+	<dependency> 
    		<groupId>org.eclipse.persistence</groupId>
     	<artifactId>org.eclipse.persistence.jpa</artifactId>
     	<version>4.0.4</version>
@@ -85,6 +85,8 @@
 	</dependency>
 	
 	<!-- Other modules -->
+	
+
 
 </dependencies>
 

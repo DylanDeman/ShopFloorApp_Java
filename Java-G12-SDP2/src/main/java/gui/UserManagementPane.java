@@ -9,6 +9,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
@@ -48,6 +49,10 @@ public class UserManagementPane extends GridPane
 				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
 				new BackgroundSize(100, 100, true, true, true, true));
 		setBackground(new Background(backgroundImage));
+
+		Button backButton = new Button("← Terug");
+		backButton.setOnAction(e -> returnToChoicePane(primaryStage));
+		this.add(backButton, 0, 0, 2, 1);
 
 		userTable = new TableView<>();
 		buildColumns();
@@ -190,6 +195,13 @@ public class UserManagementPane extends GridPane
 	{
 		primaryStage.getScene().setRoot(this);
 		loadUsersFromDatabase();
+	}
+
+	private void returnToChoicePane(Stage stage)
+	{
+		ChoicePane choicePane = new ChoicePane(stage);
+		Scene choicePaneScene = new Scene(choicePane);
+		stage.setScene(choicePaneScene);
 	}
 
 	private void deleteUser(User user)
