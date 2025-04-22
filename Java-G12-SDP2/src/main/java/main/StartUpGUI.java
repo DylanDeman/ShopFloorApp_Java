@@ -1,6 +1,9 @@
 package main;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import domain.Address;
 import domain.User;
@@ -59,7 +62,11 @@ public class StartUpGUI extends Application
 		User u10 = new User("Kim", "De Vries", "kim@email.com", "0412345678", "password", LocalDate.of(1991, 4, 20),
 				new Address("Straat 10", 100, 9999, "Stad"), Status.INACTIEF, Role.MANAGER);
 
-		Site s1 = new Site("A", u10, Status.ACTIEF);
+
+		List<Site> sites = IntStream.range(0, 14)
+		    .mapToObj(i -> new Site("Site" + i, u10, i % 2 == 0 ? Status.ACTIEF : Status.INACTIEF))
+		    .collect(Collectors.toList());
+
 
 		EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
 
@@ -77,7 +84,7 @@ public class StartUpGUI extends Application
 			entityManager.persist(u8);
 			entityManager.persist(u9);
 			entityManager.persist(u10);
-			entityManager.persist(s1);
+			sites.forEach(site -> entityManager.persist(site));
 
 			entityManager.getTransaction().commit();
 		} catch (Exception e)
