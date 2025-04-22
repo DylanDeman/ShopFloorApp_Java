@@ -34,12 +34,14 @@ public class ChoicePane extends GridPane {
 		this.add(sitesButton, 0, 40);
 	}
 
-	private void goToUserManagement(Stage primaryStage) {
+	private void goToUserManagement(Stage primaryStage)
+	{
 		UserManagementPane userManagementPane = new UserManagementPane(primaryStage);
 		primaryStage.setScene(new Scene(userManagementPane, 800, 800));
 	}
 
-	private void goToMaintenanceList(Stage primaryStage) {
+	private void goToMaintenanceList(Stage primaryStage)
+	{
 		MaintenanceListComponent maintenanceListComponent = new MaintenanceListComponent(primaryStage);
 
 		Scene maintenanceListScene = new Scene(maintenanceListComponent);
@@ -47,7 +49,8 @@ public class ChoicePane extends GridPane {
 		primaryStage.setScene(maintenanceListScene);
 	}
 
-	private void goToLogin(Stage primaryStage) {
+	private void goToLogin(Stage primaryStage)
+	{
 		LoginPane loginPane = new LoginPane();
 		Scene loginPaneScene = new Scene(loginPane);
 		loginPane.getStylesheets().add(getClass().getResource("/css/loginstyles.css").toExternalForm());
