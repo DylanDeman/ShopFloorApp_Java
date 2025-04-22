@@ -63,16 +63,16 @@ public class LoginPane extends VBox {
 
 		// Right side: Image
 		ImageView delawareImage = new ImageView(new Image("/images/login_groepsfoto.jpg"));
-		delawareImage.setFitWidth(800); 
-		delawareImage.setFitHeight(500); 
+		delawareImage.setFitWidth(800);
+		delawareImage.setFitHeight(500);
 		delawareImage.getStyleClass().add("login-image");
 
 		hbox.getChildren().addAll(loginForm, delawareImage);
 		this.getChildren().addAll(hbox);
 	}
-	
+
 	private void loginForm() {
-		
+
 	}
 
 	private void handleLogin() {

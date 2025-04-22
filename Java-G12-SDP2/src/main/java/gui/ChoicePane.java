@@ -1,6 +1,8 @@
 package gui;
 
+import domain.site.SiteController;
 import gui.login.LoginPane;
+import gui.sitesList.SitesListComponent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
@@ -8,6 +10,7 @@ import javafx.stage.Stage;
 
 public class ChoicePane extends GridPane {
 	public ChoicePane(Stage primaryStage) {
+		primaryStage.setMinWidth(500);
 		Button userManagementButton = new Button("Ga naar Gebruikersbeheer");
 		userManagementButton.setOnAction(e -> goToUserManagement(primaryStage));
 
@@ -22,9 +25,15 @@ public class ChoicePane extends GridPane {
 		Button addRapportButton = new Button("Ga naar een rapport toevoegen");
 		addRapportButton.setOnAction(e -> goToAddRapport(primaryStage));
 
+
+		Button sitesButton = new Button("Ga naar sites overzicht");
+		sitesButton.setOnAction(e -> gotToSitesList(primaryStage));
+
+		this.add(userManagementButton, 0, 0);
 		this.add(maintenanceListButton, 0, 10);
 		this.add(loginButton, 0, 20);
 		this.add(addRapportButton, 0, 30);
+		this.add(sitesButton, 0, 40);
 	}
 
 	private void goToUserManagement(Stage primaryStage) {
@@ -46,6 +55,13 @@ public class ChoicePane extends GridPane {
 		loginPane.getStylesheets().add(getClass().getResource("/css/loginstyles.css").toExternalForm());
 		primaryStage.setScene(loginPaneScene);
 		primaryStage.setMaximized(true);
+	}
+
+	private void gotToSitesList(Stage primaryStage) {
+		SiteController sc = new SiteController();
+		SitesListComponent sitesListComponents = new SitesListComponent(primaryStage, sc);
+		Scene loginPaneScene = new Scene(sitesListComponents);
+		primaryStage.setScene(loginPaneScene);
 	}
 
 	private void goToAddRapport(Stage primaryStage) {
