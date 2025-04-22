@@ -1,8 +1,8 @@
 package main;
 
-public class StartUp
+public class StartUp 
 {
-	public static void main(String[] args)
+	public static void main(String[] args) 
 	{
 		StartUpGUI.main(args);
 	}

@@ -1,9 +1,10 @@
-package domain;
+package domain.user;
 
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
+import domain.Address;
 import exceptions.InformationRequiredException;
 import util.RequiredElement;
 import util.Role;

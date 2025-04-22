@@ -2,7 +2,7 @@ package gui;
 
 import java.util.List;
 
-import domain.User;
+import domain.user.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import javafx.beans.property.SimpleIntegerProperty;

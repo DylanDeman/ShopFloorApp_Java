@@ -1,4 +1,4 @@
-package domain;
+package domain.machine;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import domain.site.Site;
+import domain.user.User;
 import exceptions.InformationRequiredException;
 import exceptions.InvalidMachineException;
 import jakarta.persistence.Entity;

@@ -2,8 +2,8 @@ package domain.site;
 
 import java.util.Set;
 
-import domain.Machine;
-import domain.User;
+import domain.machine.Machine;
+import domain.user.User;
 import util.Status;
 
 

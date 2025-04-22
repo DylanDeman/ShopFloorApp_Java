@@ -6,36 +6,41 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import domain.Address;
-import domain.User;
 import domain.site.Site;
-import gui.ChoicePane;
+import domain.user.User;
+import gui.login.LoginPane;
 import jakarta.persistence.EntityManager;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import util.AuthenticationUtil;
 import util.JPAUtil;
+import util.PasswordHasher;
 import util.Role;
 import util.Status;
 
-public class StartUpGUI extends Application
-{
+public class StartUpGUI extends Application {
 	@Override
-	public void start(Stage primaryStage)
-	{
-		ChoicePane pane = new ChoicePane(primaryStage);
+	public void start(Stage primaryStage) {
+		// ChoicePane pane = new ChoicePane(primaryStage);
+
+		// Login pagina tonen:
+		LoginPane loginPane = new LoginPane(primaryStage);
 
 		primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/images/favicon-32x32.png")));
 
-		Scene scene = new Scene(pane, 600, 200);
+		Scene scene = new Scene(loginPane, 800, 800);
 		primaryStage.setTitle("Kies je paneel");
 		primaryStage.setScene(scene);
 		primaryStage.show();
 
-		User u1 = new User("Jan", "Janssen", "jan@email.com", "0412345678", "password", LocalDate.of(1990, 1, 1),
+		String gehashteWW = PasswordHasher.hash("password");
+
+		User u1 = new User("Jan", "Janssen", "jan@email.com", "0412345678", gehashteWW, LocalDate.of(1990, 1, 1),
 				new Address("Straat 1", 10, 1001, "Stad"), Status.INACTIEF, Role.TECHNIEKER);
 
-		User u2 = new User("Piet", "Pietersen", "piet@email.com", "0423456789", "password", LocalDate.of(1985, 5, 15),
+		User u2 = new User("Piet", "Pietersen", "piet@email.com", "0423456789", gehashteWW, LocalDate.of(1985, 5, 15),
 				new Address("Straat 2", 20, 2000, "Stad"), Status.INACTIEF, Role.ADMIN);
 
 		User u3 = new User("Anna", "Dekker", "anna@email.com", "0434567890", "password", LocalDate.of(1995, 3, 12),
@@ -62,16 +67,13 @@ public class StartUpGUI extends Application
 		User u10 = new User("Kim", "De Vries", "kim@email.com", "0412345678", "password", LocalDate.of(1991, 4, 20),
 				new Address("Straat 10", 100, 9999, "Stad"), Status.INACTIEF, Role.MANAGER);
 
-
 		List<Site> sites = IntStream.range(0, 14)
-		    .mapToObj(i -> new Site("Site" + i, u10, i % 2 == 0 ? Status.ACTIEF : Status.INACTIEF))
-		    .collect(Collectors.toList());
-
+				.mapToObj(i -> new Site("Site" + i, u10, i % 2 == 0 ? Status.ACTIEF : Status.INACTIEF))
+				.collect(Collectors.toList());
 
 		EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
 
-		try
-		{
+		try {
 			entityManager.getTransaction().begin();
 
 			entityManager.persist(u1);
@@ -87,24 +89,19 @@ public class StartUpGUI extends Application
 			sites.forEach(site -> entityManager.persist(site));
 
 			entityManager.getTransaction().commit();
-		} catch (Exception e)
-		{
+		} catch (Exception e) {
 			System.err.println("Error during transaction: " + e.getMessage());
-			if (entityManager.getTransaction().isActive())
-			{
+			if (entityManager.getTransaction().isActive()) {
 				entityManager.getTransaction().rollback();
 			}
-		} finally
-		{
-			if (entityManager != null && entityManager.isOpen())
-			{
+		} finally {
+			if (entityManager != null && entityManager.isOpen()) {
 				entityManager.close();
 			}
 		}
 	}
 
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
 		launch(args);
 	}
 }
