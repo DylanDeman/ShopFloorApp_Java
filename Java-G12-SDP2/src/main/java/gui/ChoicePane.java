@@ -8,9 +8,10 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 
-public class ChoicePane extends GridPane {
-	public ChoicePane(Stage primaryStage) {
-		primaryStage.setMaximized(false);
+public class ChoicePane extends GridPane
+{
+	public ChoicePane(Stage primaryStage)
+	{
 		primaryStage.setMinWidth(500);
 		Button userManagementButton = new Button("Ga naar Gebruikersbeheer");
 		userManagementButton.setOnAction(e -> goToUserManagement(primaryStage));
@@ -55,18 +56,30 @@ public class ChoicePane extends GridPane {
 		primaryStage.setScene(maintenanceListScene);
 	}
 
-	private void gotToSitesList(Stage primaryStage) {
+	private void goToLogin(Stage primaryStage)
+	{
+		LoginPane loginPane = new LoginPane();
+		Scene loginPaneScene = new Scene(loginPane);
+		loginPane.getStylesheets().add(getClass().getResource("/css/loginstyles.css").toExternalForm());
+		primaryStage.setScene(loginPaneScene);
+		primaryStage.setMaximized(true);
+	}
+
+	private void gotToSitesList(Stage primaryStage)
+	{
 		SiteController sc = new SiteController();
 		SitesListComponent sitesListComponents = new SitesListComponent(primaryStage, sc);
 		Scene loginPaneScene = new Scene(sitesListComponents);
 		primaryStage.setScene(loginPaneScene);
 	}
 
-	private void goToAddRapport(Stage primaryStage) {
-		AddRapportForm addRapportForm = new AddRapportForm(primaryStage);
+	private void goToAddRapport(Stage primaryStage)
+	{
+		AddRapportForm addRapportForm = new AddRapportForm(primaryStage, null);
 		Scene addRapportScene = new Scene(addRapportForm);
 		addRapportForm.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
 		primaryStage.setScene(addRapportScene);
 
 	}
+
 }

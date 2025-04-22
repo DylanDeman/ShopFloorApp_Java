@@ -1,9 +1,11 @@
-package domain;
+package domain.rapport;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import domain.User;
+import domain.site.Site;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;

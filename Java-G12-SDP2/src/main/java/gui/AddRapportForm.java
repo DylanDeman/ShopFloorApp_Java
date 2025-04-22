@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import domain.ConcreteRapportBuilder;
 import domain.Machine;
-import domain.Rapport;
-import domain.RapportBuilder;
-import domain.RapportDirector;
-import domain.Site;
 import domain.User;
+import domain.rapport.ConcreteRapportBuilder;
+import domain.rapport.Rapport;
+import domain.rapport.RapportBuilder;
+import domain.rapport.RapportDirector;
+import domain.site.Site;
 import exceptions.InvalidRapportException;
 import jakarta.persistence.TypedQuery;
 import javafx.geometry.Insets;
@@ -105,7 +105,14 @@ public class AddRapportForm extends BorderPane
 		this.userDao = userDao;
 		this.rapportDao = rapportDao;
 		this.machineDao = machineDao;
-		this.selectedMachine = machine;
+		if (this.selectedMachine != null && machine != null)
+		{
+			this.selectedMachine = machine;
+		} else
+		{
+			returnToChoicePane(primaryStage);
+			throw new IllegalArgumentException("de machine is ongeldig");
+		}
 
 		// Get site from the selected machine
 		this.site = machine.getSite();
@@ -118,6 +125,9 @@ public class AddRapportForm extends BorderPane
 				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
 				new BackgroundSize(100, 100, true, true, true, true));
 		this.setBackground(new Background(backgroundImage));
+
+		Button backButton = new Button("← Terug");
+		backButton.setOnAction(e -> returnToChoicePane(primaryStage));
 
 		// Error Label
 		errorLabel = new Label();
@@ -144,8 +154,8 @@ public class AddRapportForm extends BorderPane
 		formBox.setMinWidth(400); // Minimum width on small screens
 
 		// Initialize display labels for pre-filled information
-		siteNameLabel = createInfoLabel(site.getSiteNaam());
-		responsiblePersonLabel = createInfoLabel(site.getVerantwoordelijke());
+		siteNameLabel = createInfoLabel(site.getSiteName());
+		responsiblePersonLabel = createInfoLabel(site.getVerantwoordelijke().getFullName());
 
 		// Generate next maintenance number
 		String nextMaintenanceNumber = generateNextMaintenanceNumber();
@@ -249,7 +259,7 @@ public class AddRapportForm extends BorderPane
 		Long reportCount = query.getSingleResult();
 
 		// Format: SITE-XXX where XXX is a sequential number
-		String sitePrefix = site.getSiteNaam().substring(0, Math.min(site.getSiteNaam().length(), 4)).toUpperCase()
+		String sitePrefix = site.getSiteName().substring(0, Math.min(site.getSiteName().length(), 4)).toUpperCase()
 				.replaceAll("[^A-Z0-9]", "");
 
 		// Increment by 1 for the new report
@@ -339,7 +349,7 @@ public class AddRapportForm extends BorderPane
 		HBox.setHgrow(valueLabel, Priority.ALWAYS);
 
 		HBox box = new HBox(10, label, valueLabel);
-		box.getStyleClass().add("form-field-container", "display-field-container");
+		box.getStyleClass().addAll("form-field-container", "display-field-container");
 		box.setAlignment(Pos.CENTER_LEFT);
 		box.setMaxWidth(Double.MAX_VALUE);
 		return box;
@@ -550,5 +560,12 @@ public class AddRapportForm extends BorderPane
 
 		reasonField.clear();
 		commentsArea.clear();
+	}
+
+	private void returnToChoicePane(Stage stage)
+	{
+		ChoicePane choicePane = new ChoicePane(stage);
+		Scene choicePaneScene = new Scene(choicePane);
+		stage.setScene(choicePaneScene);
 	}
 }
