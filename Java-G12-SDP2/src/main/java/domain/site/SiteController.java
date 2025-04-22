@@ -1,5 +1,6 @@
 package domain.site;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,8 +17,18 @@ public class SiteController {
 	}
 
 	public List<SiteDTO> getSites() {
-		List<Site> sites = siteRepo.findAll();
-		return makeSiteDTOs(sites);
+		// Kijken of ingelogde user de rol ADMIN bevat
+		boolean hasRole = AuthenticationUtil.hasRole(Role.ADMIN);
+
+		// Als hij deze rol bevat kan hij deze actie dus uitvoeren en krijgen we alle
+		// sites terug
+		if (hasRole) {
+			List<Site> sites = siteRepo.findAll();
+			return makeSiteDTOs(sites);
+		}
+
+		// Als hij deze rol niet bevat geven we een lege lijst terug
+		return new ArrayList<>();
 	}
 
 	public void setSiteNaam(int id, String name) {
