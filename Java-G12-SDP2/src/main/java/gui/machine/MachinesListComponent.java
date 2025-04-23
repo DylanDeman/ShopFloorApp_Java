@@ -98,14 +98,10 @@ public class MachinesListComponent extends VBox {
         maintenanceCol.setCellValueFactory(data -> new SimpleStringProperty(
             data.getValue().futureMaintenance().toString()));
         
-     // Inside your initializeGUI() method:
 
-     // Create the Edit button column
-     TableColumn<MachineDTO, Void> editCol = new TableColumn<>("Bewerken");
-
-     // Use a cell factory to create the Edit button for each row
-     editCol.setCellFactory(param -> {
-         TableCell<MachineDTO, Void> cell = new TableCell<MachineDTO, Void>() {
+        TableColumn<MachineDTO, Void> editCol = new TableColumn<>("Bewerken");
+        editCol.setCellFactory(param -> {
+        TableCell<MachineDTO, Void> cell = new TableCell<MachineDTO, Void>() {
              private final Button editButton = new Button();
 
              {
@@ -132,12 +128,62 @@ public class MachinesListComponent extends VBox {
          };
          return cell;
      });
+        
+        TableColumn<MachineDTO, Void> onderhoudCol = new TableColumn<>("Onderhouden");
+        onderhoudCol.setCellFactory(param -> new TableCell<>() {
+            private final Button onderhoudButton = new Button("🔧");
 
-     // Add the Edit button column to the table
-     machineTable.getColumns().add(editCol);
+            {
+                onderhoudButton.setOnAction(event -> {
+                    MachineDTO selectedMachine = getTableView().getItems().get(getIndex());
+                    System.out.println("Onderhoud for machine: " + selectedMachine.code());
+                    // Later: open onderhoud scherm
+                });
+                onderhoudButton.setStyle("-fx-background-color: transparent;");
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(onderhoudButton);
+                }
+            }
+        });
+
+        TableColumn<MachineDTO, Void> rapportCol = new TableColumn<>("Rapporten");
+        rapportCol.setCellFactory(param -> new TableCell<>() {
+            private final Button rapportButton = new Button("📄");
+
+            {
+                rapportButton.setOnAction(event -> {
+                    MachineDTO selectedMachine = getTableView().getItems().get(getIndex());
+                    System.out.println("Rapporten for machine: " + selectedMachine.code());
+                    // Later: open rapport scherm
+                });
+                rapportButton.setStyle("-fx-background-color: transparent;");
+            }
+
+            @Override
+            protected void updateItem(Void item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                } else {
+                    setGraphic(rapportButton);
+                }
+            }
+        });
+
+        
+        
+
+     machineTable.getColumns().addAll(editCol, onderhoudCol, rapportCol);
 
 
-        machineTable.getColumns().addAll(
+     machineTable.getColumns().addAll(
         	    idCol, codeCol, locationCol, statusCol, prodStatusCol, maintenanceCol,
         	    siteCol, technicianCol, productInfoCol, lastMaintenanceCol,
         	    daysSinceMaintenanceCol, uptimeCol
@@ -147,23 +193,21 @@ public class MachinesListComponent extends VBox {
         List<MachineDTO> dtos = machineController.getMachineList();
         machineTable.getItems().setAll(dtos);
 
-        Button backButton = new Button("Back to ChoicePane");
+        Button backButton = new Button("Terug naar keuzescherm");
         backButton.setOnAction(event -> goBackToChoicePane());
 
         backButton.setPrefWidth(200); 
-        backButton.setStyle("-fx-font-size: 14px;"); // Optional: Increase font size for better visibility
+        backButton.setStyle("-fx-font-size: 14px;");
 
         HBox buttonSection = new HBox(backButton);
         buttonSection.setAlignment(Pos.CENTER);
         buttonSection.setSpacing(10);
 
-        // Ensure VBox has enough space
-        this.setPrefHeight(600); // Set a preferred height for the VBox
-        this.setPadding(new Insets(20, 20, 20, 20)); // Add padding (top, right, bottom, left)
+        this.setPrefHeight(600); 
+        this.setPadding(new Insets(20, 20, 20, 20));
         
 
 
-        // Add both the table and the button section
         this.getChildren().addAll(machineTable, backButton);
         
 
@@ -176,9 +220,8 @@ public class MachinesListComponent extends VBox {
     }
 
     private void goBackToChoicePane() {
-        // Assuming you have a ChoicePane class, you can switch to that scene
-        ChoicePane choicePane = new ChoicePane(stage); // Make sure ChoicePane takes Stage as constructor parameter
-        Scene choiceScene = new Scene(choicePane, 800, 600); // Adjust the size as needed
+        ChoicePane choicePane = new ChoicePane(stage); 
+        Scene choiceScene = new Scene(choicePane, 800, 600); 
         stage.setScene(choiceScene);
     }
 
@@ -191,7 +234,6 @@ public class MachinesListComponent extends VBox {
         Label title = new Label("Machines");
         title.setStyle("-fx-font-size: 30px; -fx-font-weight: bold;");
 
-        // Spacer to push the button to the right
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
@@ -217,7 +259,6 @@ public class MachinesListComponent extends VBox {
     }
     
     private void openEditMachineForm(MachineDTO machine) {
-        // Open the form for editing the selected machine
         AddOrEditMachineForm editForm = new AddOrEditMachineForm(stage, machineController, machine, siteController, userController);
         Scene editScene = new Scene(editForm, 800, 600);
         stage.setScene(editScene);

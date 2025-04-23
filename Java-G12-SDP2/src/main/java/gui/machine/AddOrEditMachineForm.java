@@ -66,11 +66,39 @@ public class AddOrEditMachineForm extends VBox {
         TextField locationField = new TextField();
         locationField.setPromptText("Locatie");
         
+        // ✅ ADD THIS DEBUG BLOCK HERE
+        List<SiteDTO> sites = siteController.getSites();
+        System.out.println("Loaded sites: " + sites); // Debugging line
         ChoiceBox<SiteDTO> siteCb = new ChoiceBox<>();
-        siteCb.setItems(FXCollections.observableArrayList(siteController.getSites()));
+        siteCb.setItems(FXCollections.observableArrayList(sites));
+        //om alleen sitenaam te tonen
+        siteCb.setConverter(new javafx.util.StringConverter<SiteDTO>() {
+            @Override
+            public String toString(SiteDTO site) {
+                return site == null ? "" : site.siteName(); // Or site.getSiteName() if using standard getter
+            }
+
+            @Override
+            public SiteDTO fromString(String string) {
+                return null;
+            }
+        });
 
         ChoiceBox<User> techniekerCb = new ChoiceBox<>();
         techniekerCb.setItems(FXCollections.observableArrayList(userController.getAllTechniekers()));
+        techniekerCb.setConverter(new javafx.util.StringConverter<User>() {
+
+			@Override
+			public String toString(User user) {
+				return user == null ? "" : user.getFullName();
+			}
+
+			@Override
+			public User fromString(String string) {
+				return null;
+			}
+        	
+        });
 
         TextField productInfoField = new TextField();
         productInfoField.setPromptText("Product info");
@@ -88,6 +116,7 @@ public class AddOrEditMachineForm extends VBox {
 
         Button saveButton = new Button("Opslaan");
         saveButton.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-size: 14px;");
+        
         saveButton.setOnAction(e -> {
             try {
                 String code = codeField.getText();
@@ -102,6 +131,14 @@ public class AddOrEditMachineForm extends VBox {
                     System.out.println("All fields must be filled.");
                     return;
                 }
+                
+                System.out.println("Saving machine with values:");
+                System.out.println("Code: " + code);
+                System.out.println("Location: " + location);
+                System.out.println("Site: " + selectedSite);
+                System.out.println("Technician: " + selectedTechnician);
+                System.out.println("Future maintenance: " + futureMaintenanceDate);
+                
 
                 // Build MachineDTO
                 MachineDTO newMachine = new MachineDTO(
@@ -120,6 +157,7 @@ public class AddOrEditMachineForm extends VBox {
                 );
 
                 machineController.addNewMachine(newMachine);
+                System.out.println("Machine saved successfully!");
                 goBack();
             } catch (Exception ex) {
                 ex.printStackTrace(); // For debugging
@@ -133,8 +171,8 @@ public class AddOrEditMachineForm extends VBox {
         HBox buttonBox = new HBox(10, cancelButton, saveButton);
         buttonBox.setAlignment(Pos.CENTER);
 
-        this.getChildren().addAll(title, codeField, locationField, buttonBox, siteCb, 
-        		techniekerCb, productInfoField, futureMaintenancePicker);
+        this.getChildren().addAll(title, codeField, locationField, siteCb, 
+        		techniekerCb, productInfoField, futureMaintenancePicker, buttonBox);
     }
 
     private void goBack() {
