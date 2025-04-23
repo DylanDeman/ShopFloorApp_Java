@@ -93,9 +93,8 @@ public class MachineController {
 	}
 	
 	public void addNewMachine(MachineDTO machineDTO) {
-	    // Convert MachineDTO to Machine (or directly handle DTO if necessary)
-	    Machine machine = convertDTOToMachine(machineDTO); // You need to implement this conversion
-	    // Now you can proceed with adding the machine to your data store
+	    Machine machine = convertDTOToMachine(machineDTO);
+	    addNewMachine(machine); // <-- now it actually saves it
 	}
 
 	
