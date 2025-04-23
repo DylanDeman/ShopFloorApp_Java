@@ -15,7 +15,9 @@ public class UserController {
 	public void authenticate(String email, String password) throws InvalidInputException {
 		AuthenticationUtil.authenticate(email, password, userRepo);
 	}
-	
+	public void logout() {
+		AuthenticationUtil.logout();
+	}
 	public List<User> getAllTechniekers(){
 		return userRepo.getAllTechniekers();
 	}
