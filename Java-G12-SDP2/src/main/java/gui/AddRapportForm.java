@@ -8,13 +8,13 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import domain.Machine;
-import domain.User;
+import domain.machine.Machine;
 import domain.rapport.ConcreteRapportBuilder;
 import domain.rapport.Rapport;
 import domain.rapport.RapportBuilder;
 import domain.rapport.RapportDirector;
 import domain.site.Site;
+import domain.user.User;
 import exceptions.InvalidRapportException;
 import jakarta.persistence.TypedQuery;
 import javafx.geometry.Insets;

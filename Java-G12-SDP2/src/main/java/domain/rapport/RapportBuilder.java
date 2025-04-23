@@ -3,8 +3,8 @@ package domain.rapport;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import domain.User;
 import domain.site.Site;
+import domain.user.User;
 
 /**
  * Builder interface for creating Rapport objects. Specifies all the steps

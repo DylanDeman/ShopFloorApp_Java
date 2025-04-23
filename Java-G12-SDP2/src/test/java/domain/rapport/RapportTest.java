@@ -14,8 +14,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import domain.User;
 import domain.site.Site;
+import domain.user.User;
 
 @ExtendWith(MockitoExtension.class)
 class RapportTest

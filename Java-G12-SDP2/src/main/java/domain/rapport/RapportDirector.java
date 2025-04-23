@@ -3,8 +3,10 @@ package domain.rapport;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import domain.User;
 import domain.site.Site;
+import domain.user.User;
+import util.AuthenticationUtil;
+import util.Role;
 
 public class RapportDirector
 {
@@ -18,9 +20,16 @@ public class RapportDirector
 	public Rapport constructStandardMaintenanceRapport(String rapportId, Site site, String onderhoudsNr,
 			User technieker, LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime)
 	{
+		boolean hasRole = AuthenticationUtil.hasRole(Role.ADMIN);
 
-		return builder.setSite(site).setOnderhoudsNr(onderhoudsNr).setTechnieker(technieker).setStartDate(startDate)
-				.setStartTime(startTime).setEndDate(endDate).setEndTime(endTime).setReden("Regulier onderhoud")
-				.setOpmerkingen("Standaard onderhoudsrapport").build();
+		if (hasRole)
+		{
+			return builder.setSite(site).setOnderhoudsNr(onderhoudsNr).setTechnieker(technieker).setStartDate(startDate)
+					.setStartTime(startTime).setEndDate(endDate).setEndTime(endTime).setReden("Regulier onderhoud")
+					.setOpmerkingen("Standaard onderhoudsrapport").build();
+		}
+
+		return null;
+
 	}
 }
