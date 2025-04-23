@@ -26,6 +26,16 @@ public class MachineController {
 	    }
 	    return makeMachineDTOs(machines);
 	}
+	
+	public List<Machine> getMachineList2()
+    {
+        List<Machine> machines = machineRepo.findAll();
+        if (machines == null)
+        {
+            return List.of();
+        }
+        return machines;
+    }
 
 
 	public List<MachineDTO> makeMachineDTOs(List<Machine> machines) {
@@ -81,6 +91,53 @@ public class MachineController {
 		machineRepo.update(machine);
 		machineRepo.commitTransaction();
 	}
+	
+	public void addNewMachine(MachineDTO machineDTO) {
+	    // Convert MachineDTO to Machine (or directly handle DTO if necessary)
+	    Machine machine = convertDTOToMachine(machineDTO); // You need to implement this conversion
+	    // Now you can proceed with adding the machine to your data store
+	}
+
+	
+	public Machine convertDTOToMachine(MachineDTO dto) {
+	    Machine machine = new Machine();
+	    
+	    // Convert SiteDTO to Site before setting it
+	    Site site = convertDTOToSite(dto.site());
+	    machine.setSite(site);
+	    machine.setTechnician(dto.technician());
+	    machine.setProductInfo(dto.productInfo());
+	    machine.setLastMaintenance(dto.lastMaintenance());
+	    machine.setNumberDaysSinceLastMaintenance(dto.numberDaysSinceLastMaintenance());
+	    machine.setUpTimeInHours(dto.upTimeInHours());
+	    machine.setCode(dto.code());
+	    machine.setLocation(dto.location());
+	    machine.setStatus(dto.status());
+	    machine.setProductieStatus(dto.productieStatus());
+	    machine.setFutureMaintenance(dto.futureMaintenance());
+
+	    return machine;
+	}
+
+
+	public Site convertDTOToSite(SiteDTO dto) {
+	    Site site = new Site();
+	    
+	    site.setId(dto.id()); 
+	    site.setSiteName(dto.siteName());
+	    site.setVerantwoordelijke(dto.verantwoordelijke()); 
+	    dto.machines().forEach(machineDTO -> {
+	        Machine machine = convertDTOToMachine(machineDTO); 
+	        site.addMachine(machine); 
+	    });
+	    
+	    site.setStatus(dto.status()); 
+
+	    return site;
+	}
+
+
+
 	
 
 

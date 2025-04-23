@@ -83,9 +83,7 @@ public class ChoicePane extends GridPane
 		primaryStage.setScene(loginPaneScene);
 	}
 	
-	private void goToMachinesList(Stage primaryStage) {
-		
-	}
+
 
 	private void goToAddRapport(Stage primaryStage)
 	{
