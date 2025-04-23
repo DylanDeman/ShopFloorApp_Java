@@ -1,4 +1,4 @@
-package domain;
+package domain.machine;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -6,6 +6,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
+import domain.site.Site;
+import domain.user.User;
 import exceptions.InformationRequiredException;
 import exceptions.InvalidMachineException;
 import jakarta.persistence.Entity;
@@ -23,7 +25,7 @@ import util.RequiredElementMachine;
 
 @Entity
 @ToString
-@NoArgsConstructor(access = AccessLevel.PROTECTED) //?
+@NoArgsConstructor(access = AccessLevel.PROTECTED) //?  Final weggedaan van attributen om noargsConstructor op te lossen!
 @Getter
 public class Machine implements Serializable {
     
@@ -35,15 +37,15 @@ public class Machine implements Serializable {
    
     
     @ManyToOne
-    private final Site site;
+    private Site site;
     
     @ManyToOne
-    private final User technician;
+    private User technician;
         
-    private final String code, status, productieStatus, location, productInfo;
-    private final LocalDateTime lastMaintenance, futureMaintenance;
-    private final int numberDaysSinceLastMaintenance;
-    private final double upTimeInHours;
+    private String code, status, productieStatus, location, productInfo;
+    private LocalDateTime lastMaintenance, futureMaintenance;
+    private int numberDaysSinceLastMaintenance;
+    private double upTimeInHours = 0.0;
     
     private Machine(Builder builder) {
     	site = builder.site;
@@ -55,6 +57,9 @@ public class Machine implements Serializable {
     	productInfo = builder.productInfo;
     	lastMaintenance = builder.lastMaintenance;
     	futureMaintenance = builder.futureMaintenance;
+    	numberDaysSinceLastMaintenance = (lastMaintenance != null)
+    	        ? (int) java.time.Duration.between(lastMaintenance, LocalDateTime.now()).toDays()
+    	        : 0;
     }
     
     public static Builder builder() {
@@ -117,8 +122,12 @@ public class Machine implements Serializable {
     	    }
     	    
     	    
-    	    public Machine build() throws InformationRequiredException{
+    	    public Machine build() throws InvalidMachineException{
     	    	requiredElements = new HashSet<>();
+    	    	
+    	    	if (this.lastMaintenance == null) {
+    	            this.lastMaintenance = LocalDateTime.now();  // Placeholder
+    	        }
     	    	
     	    	Machine machine = new Machine(this);
     	    	
@@ -151,14 +160,15 @@ public class Machine implements Serializable {
     	    	if(machine.productInfo == null) {
     	    		requiredElements.add(RequiredElementMachine.PRODUCT_INFO_REQUIRED);
     	    	}
-    	    	
-    	    	if(machine.lastMaintenance == null) {
-    	    		requiredElements.add(RequiredElementMachine.LAST_MAINTENANCE_REQUIRED);
-    	    	}
+    	    
     	    	
     	    	if(machine.futureMaintenance == null) {
     	    		requiredElements.add(RequiredElementMachine.FUTURE_MAINTENANCE_REQUIRED);
     	    	}
+    	    	
+    	    	if(!requiredElements.isEmpty()) {
+    				throw new InvalidMachineException(requiredElements);
+    			}
     	    	
     	    	return machine;
     	    	

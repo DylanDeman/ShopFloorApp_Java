@@ -1,9 +1,10 @@
-package domain;
+package domain.user;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Period;
 
+import domain.Address;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,6 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,10 +28,21 @@ import util.Status;
 @Setter
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "users")
 @NamedQueries({
-		@NamedQuery(name = "User.getAllWithAddress", query = "SELECT u FROM User u JOIN u.address a ORDER BY u.id") })
+		@NamedQuery(
+				name = "User.getAllWithAddress", 
+				query = "SELECT u FROM User u JOIN u.address a ORDER BY u.id"
+				),
+		@NamedQuery(
+				name = "User.getAllTechniekers",
+				query = """
+						SELECT u FROM User u
+						WHERE u.role = util.Role.TECHNIEKER
+						""")
+		})
 public class User implements Serializable
 {
 	private static final long serialVersionUID = 1L;

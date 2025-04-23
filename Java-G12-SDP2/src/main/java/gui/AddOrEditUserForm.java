@@ -3,8 +3,8 @@ package gui;
 import java.time.LocalDate;
 
 import domain.Address;
-import domain.User;
-import domain.UserBuilder;
+import domain.user.User;
+import domain.user.UserBuilder;
 import exceptions.InformationRequiredException;
 import jakarta.persistence.EntityManager;
 import javafx.geometry.HPos;
