@@ -1,7 +1,9 @@
-package gui;
+package gui.maintenance;
 
 import java.util.Collections;
 
+import gui.AddRapportForm;
+import gui.ChoicePane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;

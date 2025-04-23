@@ -69,7 +69,6 @@ public class Machine implements Serializable {
     
     public static class Builder{
     	   
-    	    
     	    private Site site;
     	    private User technician;
     	    private String code, status, productieStatus, location, productInfo;

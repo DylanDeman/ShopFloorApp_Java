@@ -4,6 +4,7 @@ import domain.machine.MachineController;
 import domain.site.SiteController;
 import gui.login.LoginPane;
 import gui.machine.MachinesListComponent;
+import gui.maintenance.MaintenanceListComponent;
 import gui.sitesList.SitesListComponent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -79,6 +80,10 @@ public class ChoicePane extends GridPane
 		SitesListComponent sitesListComponents = new SitesListComponent(primaryStage, sc);
 		Scene loginPaneScene = new Scene(sitesListComponents);
 		primaryStage.setScene(loginPaneScene);
+	}
+	
+	private void goToMachinesList(Stage primaryStage) {
+		
 	}
 
 	private void goToAddRapport(Stage primaryStage)
