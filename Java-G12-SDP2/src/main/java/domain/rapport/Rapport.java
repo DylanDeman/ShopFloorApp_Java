@@ -55,7 +55,6 @@ public class Rapport implements Serializable
 	@Getter
 	private String opmerkingen;
 
-	// Package-private constructor used by the builder
 	Rapport(String rapportId, Site site, String onderhoudsNr, User technieker, LocalDate startDate, LocalTime startTime,
 			LocalDate endDate, LocalTime endTime, String reden, String opmerkingen)
 	{
