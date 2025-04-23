@@ -110,8 +110,8 @@ public class AddRapportForm extends BorderPane
 			this.selectedMachine = machine;
 		} else
 		{
-			returnToChoicePane(primaryStage);
-			throw new IllegalArgumentException("de machine is ongeldig");
+			// returnToChoicePane(primaryStage);
+			// throw new IllegalArgumentException("de machine is ongeldig");
 		}
 
 		// Get site from the selected machine
@@ -126,9 +126,6 @@ public class AddRapportForm extends BorderPane
 				new BackgroundSize(100, 100, true, true, true, true));
 		this.setBackground(new Background(backgroundImage));
 
-		Button backButton = new Button("← Terug");
-		backButton.setOnAction(e -> returnToChoicePane(primaryStage));
-
 		// Error Label
 		errorLabel = new Label();
 		errorLabel.getStyleClass().add("error-label");
@@ -136,11 +133,18 @@ public class AddRapportForm extends BorderPane
 		errorLabel.setMaxWidth(Double.MAX_VALUE);
 		errorLabel.setVisible(false); // Initially hidden
 
+		// Create back button
+		Button backButton = new Button("← Terug");
+		backButton.setOnAction(e -> returnToChoicePane(primaryStage));
+		backButton.getStyleClass().add("back-button");
+
 		// Title
 		Label headerLabel = new Label("RAPPORT AANMAKEN");
 		headerLabel.getStyleClass().add("header-label");
 
-		HBox headerBox = new HBox(headerLabel);
+		// Update header box to include the back button
+		HBox headerBox = new HBox(20);
+		headerBox.getChildren().addAll(backButton, headerLabel);
 		headerBox.getStyleClass().add("header-box");
 		headerBox.setAlignment(Pos.CENTER);
 		headerBox.setPadding(new Insets(20, 0, 10, 0));
