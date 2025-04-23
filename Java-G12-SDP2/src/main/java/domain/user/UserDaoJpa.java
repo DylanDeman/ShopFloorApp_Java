@@ -13,8 +13,8 @@ public class UserDaoJpa extends GenericDaoJpa<User> implements UserDao {
 	@Override
 	public User getByEmail(String email) {
 	    try {
-	        return em.createQuery(
-	                "SELECT u FROM User u WHERE u.email = :email", User.class)
+	        return em.createNamedQuery(
+	                "User.getByEmail", User.class)
 	                .setParameter("email", email)
 	                .getSingleResult();
 	    } catch (Exception e) {

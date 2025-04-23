@@ -41,7 +41,11 @@ import util.Status;
 				query = """
 						SELECT u FROM User u
 						WHERE u.role = util.Role.TECHNIEKER
-						""")
+						"""),
+		@NamedQuery(
+				name= "User.getByEmail",
+				query= "SELECT u FROM User u WHERE u.email = :email ORDER BY u.id"
+				)
 		})
 public class User implements Serializable
 {
