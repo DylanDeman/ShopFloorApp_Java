@@ -14,6 +14,7 @@ import javafx.stage.Stage;
 
 public class ChoicePane extends GridPane
 {
+
 	public ChoicePane(Stage primaryStage)
 	{
 		primaryStage.setMinWidth(500);
@@ -28,7 +29,7 @@ public class ChoicePane extends GridPane
 
 		Button sitesButton = new Button("Ga naar sites overzicht");
 		sitesButton.setOnAction(e -> gotToSitesList(primaryStage));
-		
+
 		Button machinesButton = new Button("Ga naar machines overzicht");
 		machinesButton.setOnAction(e -> goToMachinesList(primaryStage));
 
@@ -82,26 +83,27 @@ public class ChoicePane extends GridPane
 		Scene loginPaneScene = new Scene(sitesListComponents);
 		primaryStage.setScene(loginPaneScene);
 	}
-	
 
 
 	private void goToAddRapport(Stage primaryStage)
 	{
-		AddRapportForm addRapportForm = new AddRapportForm(primaryStage, null);
+		MachineController mc = new MachineController();
+		AddRapportForm addRapportForm = new AddRapportForm(primaryStage, mc.getMachineList2().getFirst());
 		Scene addRapportScene = new Scene(addRapportForm);
 		addRapportForm.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
 		primaryStage.setScene(addRapportScene);
 
 	}
-	
-	private void goToMachinesList(Stage primaryStage) {
-	    MachineController mc = new MachineController(); // or however you get machine data
-	    SiteController sc = new SiteController();
-	    UserController uc = new UserController();
-	    MachinesListComponent machinesListComponent = new MachinesListComponent(primaryStage, mc, sc, uc);
-	    Scene machineListScene = new Scene(machinesListComponent, 1200, 800);
-	   
-	    primaryStage.setScene(machineListScene);
-	    primaryStage.show();
+
+	private void goToMachinesList(Stage primaryStage)
+	{
+		MachineController mc = new MachineController(); // or however you get machine data
+		SiteController sc = new SiteController();
+		UserController uc = new UserController();
+		MachinesListComponent machinesListComponent = new MachinesListComponent(primaryStage, mc, sc, uc);
+		Scene machineListScene = new Scene(machinesListComponent, 1200, 800);
+
+		primaryStage.setScene(machineListScene);
+		primaryStage.show();
 	}
 }
