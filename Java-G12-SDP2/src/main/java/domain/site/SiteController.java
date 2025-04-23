@@ -2,8 +2,11 @@ package domain.site;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import domain.machine.Machine;
+import domain.machine.MachineDTO;
 import util.AuthenticationUtil;
 import util.Role;
 
@@ -43,9 +46,44 @@ public class SiteController {
 		// TODO hier een exceptie voor verboden toegang gooien
 	}
 
-	public List<SiteDTO> makeSiteDTOs(List<Site> sites) {
+	/* public List<SiteDTO> makeSiteDTOs(List<Site> sites) {
 		return sites.stream().map(site -> new SiteDTO(site.getId(), site.getSiteName(), site.getVerantwoordelijke(),
 				site.getMachines(), site.getStatus())).collect(Collectors.toUnmodifiableList());
+	} */
+	
+	public List<SiteDTO> makeSiteDTOs(List<Site> sites) {
+	    return sites.stream().map(site -> {
+	        Set<MachineDTO> machineDTOs = toMachineDTOs(site.getMachines());
+
+	        return new SiteDTO(
+	            site.getId(),
+	            site.getSiteName(),
+	            site.getVerantwoordelijke(), // later UserDTO
+	            machineDTOs,
+	            site.getStatus()
+	        );
+	    }).collect(Collectors.toUnmodifiableList());
 	}
+
+	
+	private Set<MachineDTO> toMachineDTOs(Set<Machine> machines) {
+	    return machines.stream()
+	        .map(machine -> new MachineDTO(
+	            machine.getId(),
+	            null, // Or use a SiteDTO if available. Avoid circular references!
+	            machine.getTechnician(), // Later UserDTO
+	            machine.getCode(),
+	            machine.getStatus(),
+	            machine.getProductieStatus(),
+	            machine.getLocation(),
+	            machine.getProductInfo(),
+	            machine.getLastMaintenance(),
+	            machine.getFutureMaintenance(),
+	            machine.getNumberDaysSinceLastMaintenance(),
+	            machine.getUpTimeInHours()
+	        ))
+	        .collect(Collectors.toSet());
+	}
+
 
 }

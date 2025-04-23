@@ -20,6 +20,7 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import util.RequiredElementMachine;
 
@@ -27,6 +28,7 @@ import util.RequiredElementMachine;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED) //?  Final weggedaan van attributen om noargsConstructor op te lossen!
 @Getter
+@Setter
 public class Machine implements Serializable {
     
     private static final long serialVersionUID = 1L;

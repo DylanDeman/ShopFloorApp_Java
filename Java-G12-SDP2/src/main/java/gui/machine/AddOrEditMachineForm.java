@@ -89,10 +89,43 @@ public class AddOrEditMachineForm extends VBox {
         Button saveButton = new Button("Opslaan");
         saveButton.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-size: 14px;");
         saveButton.setOnAction(e -> {
-            // TODO: validation and saving logic here
-            // machineController.addMachine(new MachineDTO(...));
-            goBack();
+            try {
+                String code = codeField.getText();
+                String location = locationField.getText();
+                SiteDTO selectedSite = siteCb.getValue();
+                User selectedTechnician = techniekerCb.getValue();
+                String productInfo = productInfoField.getText();
+                LocalDate futureMaintenanceDate = futureMaintenancePicker.getValue();
+
+                if (code.isBlank() || location.isBlank() || selectedSite == null || selectedTechnician == null) {
+                    // Show an alert maybe?
+                    System.out.println("All fields must be filled.");
+                    return;
+                }
+
+                // Build MachineDTO
+                MachineDTO newMachine = new MachineDTO(
+                    0, // Assuming ID is auto-generated
+                    selectedSite,
+                    selectedTechnician,
+                    code,
+                    "Actief",           // Default status?
+                    "Productie OK",     // Default productieStatus?
+                    location,
+                    productInfo,
+                    LocalDateTime.now(),                      // lastMaintenance = now
+                    futureMaintenanceDate.atStartOfDay(),     // convert to LocalDateTime
+                    0,                                         // number of days since last maintenance
+                    0.0                                        // uptime in hours
+                );
+
+                machineController.addNewMachine(newMachine);
+                goBack();
+            } catch (Exception ex) {
+                ex.printStackTrace(); // For debugging
+            }
         });
+
 
         Button cancelButton = new Button("Annuleer");
         cancelButton.setOnAction(e -> goBack());
@@ -105,7 +138,7 @@ public class AddOrEditMachineForm extends VBox {
     }
 
     private void goBack() {
-        MachinesListComponent machineList = new MachinesListComponent(stage, machineController);
+        MachinesListComponent machineList = new MachinesListComponent(stage, machineController, siteController, userController);
         Scene machineScene = new Scene(machineList, 800, 600);
         stage.setScene(machineScene);
     }
