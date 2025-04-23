@@ -39,7 +39,7 @@ public class MachinesListComponent extends VBox {
     private UserController userController;
     private Stage stage;
 
-    public MachinesListComponent(Stage stage, MachineController machineController) {
+    public MachinesListComponent(Stage stage, MachineController machineController, SiteController siteController, UserController userController) {
         this.stage = stage;
         this.machineTable = new TableView<>();
         this.machineController = machineController;
