@@ -5,6 +5,7 @@ import java.util.stream.Collectors;
 import org.kordamp.ikonli.javafx.FontIcon;
 import domain.site.SiteController;
 import domain.site.SiteDTO;
+import gui.ChoicePane;
 import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;
@@ -13,6 +14,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -76,21 +78,31 @@ public class SitesListComponent extends VBox implements Observer {
 	}
 
 	private HBox createWindowHeader() {
-		HBox hbox = new HBox();
-		hbox.setAlignment(Pos.CENTER_LEFT);
+	    HBox hbox = new HBox();
+	    hbox.setAlignment(Pos.CENTER_LEFT);
+	    hbox.setSpacing(10);
 
-		Label title = new Label("Sites");
-		title.setStyle("-fx-font: 40 arial;");
+	    // Back button
+	    Button backButton = new Button();
+	    FontIcon icon = new FontIcon("fas-arrow-left");
+	    icon.setIconSize(20);
+	    backButton.setGraphic(icon);
+	    backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+	    backButton.setOnAction(e -> handleGoBack(stage));
 
-		Region spacer = new Region();
-		HBox.setHgrow(spacer, Priority.ALWAYS);
+	    Label title = new Label("Sites");
+	    title.setStyle("-fx-font: 40 arial;");
 
-		Button button = new CustomButton(new FontIcon("fas-plus"), "Site toevoegen");
-		button.setOnAction(e -> System.out.println("Open toevoegen scherm"));
+	    Region spacer = new Region();
+	    HBox.setHgrow(spacer, Priority.ALWAYS);
 
-		hbox.getChildren().addAll(title, spacer, button);
-		return hbox;
+	    Button addButton = new CustomButton(new FontIcon("fas-plus"), "Site toevoegen");
+	    addButton.setOnAction(e -> System.out.println("Open toevoegen scherm"));
+
+	    hbox.getChildren().addAll(backButton, title, spacer, addButton);
+	    return hbox;
 	}
+
 
 	private VBox createTableSection() {
 		HBox filterBox = createTableHeaders();
@@ -229,5 +241,11 @@ public class SitesListComponent extends VBox implements Observer {
 		filteredSites = allSites;
 		updatePagination();
 		updateTableItems();
+	}
+
+	private void handleGoBack(Stage stage) {
+		ChoicePane choicePane = new ChoicePane(stage);
+		Scene choicePaneScene = new Scene(choicePane);
+		stage.setScene(choicePaneScene);
 	}
 }
