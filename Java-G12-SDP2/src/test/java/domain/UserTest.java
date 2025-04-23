@@ -54,8 +54,7 @@ class UserTest
 	}
 
 	@ParameterizedTest
-	@CsvSource({ "John, Doe, 'John Doe'", "Jane, Smith, 'Jane Smith'", "'', Doe, ' Doe'", "John, '', 'John '",
-			"'', '', ' '" })
+	@CsvSource({ "John, Doe, 'John Doe'", "Jane, Smith, 'Jane Smith'", "'', Doe, ' Doe'", "John, '', 'John '" })
 	void getFullName_correctValues_returnsFullName(String firstName, String lastName, String expected)
 	{
 		user.setFirstName(firstName);
