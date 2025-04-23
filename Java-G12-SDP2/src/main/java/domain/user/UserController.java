@@ -1,5 +1,7 @@
 package domain.user;
 
+import java.util.List;
+
 import exceptions.InvalidInputException;
 import util.AuthenticationUtil;
 
@@ -12,5 +14,9 @@ public class UserController {
 
 	public void authenticate(String email, String password) throws InvalidInputException {
 		AuthenticationUtil.authenticate(email, password, userRepo);
+	}
+	
+	public List<User> getAllTechniekers(){
+		return userRepo.getAllTechniekers();
 	}
 }

@@ -30,7 +30,17 @@ import util.Status;
 @Entity
 @Table(name = "users")
 @NamedQueries({
-		@NamedQuery(name = "User.getAllWithAddress", query = "SELECT u FROM User u JOIN u.address a ORDER BY u.id") })
+		@NamedQuery(
+				name = "User.getAllWithAddress", 
+				query = "SELECT u FROM User u JOIN u.address a ORDER BY u.id"
+				),
+		@NamedQuery(
+				name = "User.getAllTechniekers",
+				query = """
+						SELECT u FROM User u
+						WHERE u.role = util.Role.TECHNIEKER
+						""")
+		})
 public class User implements Serializable
 {
 	private static final long serialVersionUID = 1L;

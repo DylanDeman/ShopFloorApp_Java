@@ -3,7 +3,7 @@ package gui;
 import domain.machine.MachineController;
 import domain.site.SiteController;
 import gui.login.LoginPane;
-import gui.machineList.MachinesListComponent;
+import gui.machine.MachinesListComponent;
 import gui.sitesList.SitesListComponent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -67,8 +67,11 @@ public class ChoicePane extends GridPane {
 	private void goToMachinesList(Stage primaryStage) {
 	    MachineController mc = new MachineController(); // or however you get machine data
 	    MachinesListComponent machinesListComponent = new MachinesListComponent(primaryStage, mc);
-	    Scene machineListScene = new Scene(machinesListComponent);
+	    Scene machineListScene = new Scene(machinesListComponent, 1200, 800);
+	   
 	    primaryStage.setScene(machineListScene);
+	    primaryStage.setFullScreen(true);
+	    primaryStage.show();
 	}
 
 	
