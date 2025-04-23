@@ -1,7 +1,9 @@
 package gui;
 
+import domain.machine.MachineController;
 import domain.site.SiteController;
 import gui.login.LoginPane;
+import gui.machineList.MachinesListComponent;
 import gui.sitesList.SitesListComponent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -22,11 +24,16 @@ public class ChoicePane extends GridPane {
 
 		Button sitesButton = new Button("Ga naar sites overzicht");
 		sitesButton.setOnAction(e -> gotToSitesList(primaryStage));
+		
+		Button machinesButton = new Button("Ga naar machines overzicht");
+		machinesButton.setOnAction(e -> goToMachinesList(primaryStage));
 
 		this.add(userManagementButton, 0, 0);
 		this.add(maintenanceListButton, 0, 20);
 		this.add(addRapportButton, 0, 40);
 		this.add(sitesButton, 0, 60);
+		this.add(machinesButton, 0, 80);
+
 	}
 
 	private void goToUserManagement(Stage primaryStage) {
@@ -56,4 +63,15 @@ public class ChoicePane extends GridPane {
 		primaryStage.setScene(addRapportScene);
 
 	}
+	
+	private void goToMachinesList(Stage primaryStage) {
+	    MachineController mc = new MachineController(); // or however you get machine data
+	    MachinesListComponent machinesListComponent = new MachinesListComponent(primaryStage, mc);
+	    Scene machineListScene = new Scene(machinesListComponent);
+	    primaryStage.setScene(machineListScene);
+	}
+
+	
+	
+	
 }

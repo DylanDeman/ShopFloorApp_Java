@@ -25,7 +25,7 @@ import util.RequiredElementMachine;
 
 @Entity
 @ToString
-@NoArgsConstructor(access = AccessLevel.PROTECTED) //?
+@NoArgsConstructor(access = AccessLevel.PROTECTED) //?  Final weggedaan van attributen om noargsConstructor op te lossen!
 @Getter
 public class Machine implements Serializable {
     
@@ -37,15 +37,15 @@ public class Machine implements Serializable {
    
     
     @ManyToOne
-    private final Site site;
+    private Site site;
     
     @ManyToOne
-    private final User technician;
+    private User technician;
         
-    private final String code, status, productieStatus, location, productInfo;
-    private final LocalDateTime lastMaintenance, futureMaintenance;
-    private final int numberDaysSinceLastMaintenance;
-    private final double upTimeInHours = 0.0;
+    private String code, status, productieStatus, location, productInfo;
+    private LocalDateTime lastMaintenance, futureMaintenance;
+    private int numberDaysSinceLastMaintenance;
+    private double upTimeInHours = 0.0;
     
     private Machine(Builder builder) {
     	site = builder.site;
