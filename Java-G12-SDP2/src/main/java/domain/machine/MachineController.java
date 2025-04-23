@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import domain.site.Site;
 import domain.site.SiteDTO;
+import exceptions.InvalidMachineException;
 import domain.machine.MachineDTO;
 import repository.GenericDao;
 
@@ -52,7 +53,6 @@ public class MachineController {
 	    );
 	}
 
-	// Convert Site to SiteDTO (helper method for nested conversion)
 	private SiteDTO convertToSiteDTO(Site site) {
 	    return new SiteDTO(
 	            site.getId(),
@@ -63,10 +63,9 @@ public class MachineController {
 	    );
 	}
 
-	// Convert Set<Machine> to Set<MachineDTO> (if needed)
 	private Set<MachineDTO> convertMachinesToMachineDTOs(Set<Machine> machines) {
 	    return machines.stream()
-	            .map(this::convertToMachineDTO) // Reuse the convertToMachineDTO method
+	            .map(this::convertToMachineDTO)
 	            .collect(Collectors.toSet());
 	}
 

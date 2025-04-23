@@ -2,6 +2,7 @@ package gui;
 
 import domain.machine.MachineController;
 import domain.site.SiteController;
+import domain.user.UserController;
 import gui.login.LoginPane;
 import gui.machine.MachinesListComponent;
 import gui.sitesList.SitesListComponent;
@@ -88,5 +89,16 @@ public class ChoicePane extends GridPane
 		addRapportForm.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
 		primaryStage.setScene(addRapportScene);
 
+	}
+	
+	private void goToMachinesList(Stage primaryStage) {
+	    MachineController mc = new MachineController(); // or however you get machine data
+	    SiteController sc = new SiteController();
+	    UserController uc = new UserController();
+	    MachinesListComponent machinesListComponent = new MachinesListComponent(primaryStage, mc, sc, uc);
+	    Scene machineListScene = new Scene(machinesListComponent, 1200, 800);
+	   
+	    primaryStage.setScene(machineListScene);
+	    primaryStage.show();
 	}
 }
