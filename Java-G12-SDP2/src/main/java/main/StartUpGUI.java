@@ -1,11 +1,13 @@
 package main;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import domain.Address;
+import domain.machine.Machine;
 import domain.site.Site;
 import domain.user.User;
 import gui.login.LoginPane;
@@ -70,11 +72,45 @@ public class StartUpGUI extends Application {
 		List<Site> sites = IntStream.range(0, 14)
 				.mapToObj(i -> new Site("Site" + i, u10, i % 2 == 0 ? Status.ACTIEF : Status.INACTIEF))
 				.collect(Collectors.toList());
+		
+		
+        Site site1 = sites.get(0);
+
+
 
 		EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
 
 		try {
 			entityManager.getTransaction().begin();
+			
+			Machine m1 = Machine.builder()
+	                 .site(site1)
+	                 .technician(u1)
+	                 .code("M1-1234")
+	                 .status("Active")
+	                 .productieStatus("Running")
+	                 .location("Line 1")
+	                 .productInfo("Product A")
+	                 .lastMaintenance(LocalDateTime.of(2025, 4, 20, 10, 0))
+	                 .futureMaintenance(LocalDateTime.of(2025, 5, 20, 10, 0))
+	                 .build();
+
+	        Machine m2 = Machine.builder()
+	                 .site(site1)
+	                 .technician(u2)
+	                 .code("M2-5678")
+	                 .status("Inactive")
+	                 .productieStatus("Idle")
+	                 .location("Line 2")
+	                 .productInfo("Product B")
+	                 .lastMaintenance(LocalDateTime.of(2025, 3, 15, 10, 0))
+	                 .futureMaintenance(LocalDateTime.of(2025, 6, 10, 10, 0))
+	                 .build();
+	        
+            entityManager.persist(m1);
+            entityManager.persist(m2);
+	        
+	        
 
 			entityManager.persist(u1);
 			entityManager.persist(u2);
@@ -87,6 +123,7 @@ public class StartUpGUI extends Application {
 			entityManager.persist(u9);
 			entityManager.persist(u10);
 			sites.forEach(site -> entityManager.persist(site));
+			
 
 			entityManager.getTransaction().commit();
 		} catch (Exception e) {

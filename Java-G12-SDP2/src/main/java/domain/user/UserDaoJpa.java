@@ -1,5 +1,7 @@
 package domain.user;
 
+import java.util.List;
+
 import repository.GenericDaoJpa;
 
 public class UserDaoJpa extends GenericDaoJpa<User> implements UserDao {
@@ -18,5 +20,11 @@ public class UserDaoJpa extends GenericDaoJpa<User> implements UserDao {
 	    } catch (Exception e) {
 	        return null; // TODO gooi een custom exception
 	    }
+	}
+	
+	@Override
+	public List<User> getAllTechniekers(){
+		return em.createNamedQuery("User.getAllTechniekers", User.class)
+				.getResultList();
 	}
 }
