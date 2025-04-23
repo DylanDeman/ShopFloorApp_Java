@@ -36,6 +36,10 @@ public class LoginPane extends VBox {
 	private final Label passwordValidationLabel = new Label();
 
 	public LoginPane(Stage stage) {
+		// TODO Tijdelijk terug wegdoen later
+		emailField.setText("jan@email.com");
+		passwordField.setText("password");
+		
 		this.stage = stage;
 		this.getStylesheets().add(getClass().getResource(CSS_PATH).toExternalForm());
 		this.getStyleClass().add("login-pane");
@@ -103,11 +107,11 @@ public class LoginPane extends VBox {
 		emailField.setPromptText("Example@delaware.com");
 		emailField.getStyleClass().add("login-field");
 
-		// Setup validation labels
+		// Validation labels
 		emailValidationLabel.getStyleClass().add("validation-label");
 		emailValidationLabel.setStyle("-fx-text-fill: red; -fx-font-size: 12px;");
 		emailValidationLabel.setVisible(false);
-		emailValidationLabel.setText("verplicht");
+		
 
 		// Password input
 		Label passwordLabel = new Label("Wachtwoord:");
@@ -180,9 +184,16 @@ public class LoginPane extends VBox {
 		emailValidationLabel.setVisible(false);
 		passwordValidationLabel.setVisible(false);
 
+		
+		// TODO beter in domein laag zetten:
 		boolean isValid = true;
 
 		if (email.isEmpty()) {
+			emailValidationLabel.setText("verplicht");
+			emailValidationLabel.setVisible(true);
+			isValid = false;
+		} else if (!isValidEmailFormat(email)) {
+			emailValidationLabel.setText("Gelieve een geldig E-mail adres in te voeren!");
 			emailValidationLabel.setVisible(true);
 			isValid = false;
 		}
@@ -203,6 +214,11 @@ public class LoginPane extends VBox {
 				errorLabel.setText(e.getMessage());
 			}
 		}
+	}
+
+	private boolean isValidEmailFormat(String email) {
+	    String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0]+\\.[A-Za-z]{2,}$";
+	    return email.matches(emailRegex);
 	}
 
 	private void navigateToChoicePane() {

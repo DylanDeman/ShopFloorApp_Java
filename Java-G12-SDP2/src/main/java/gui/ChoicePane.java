@@ -10,6 +10,7 @@ import javafx.stage.Stage;
 
 public class ChoicePane extends GridPane {
 	public ChoicePane(Stage primaryStage) {
+		primaryStage.setMaximized(false);
 		primaryStage.setMinWidth(500);
 		Button userManagementButton = new Button("Ga naar Gebruikersbeheer");
 		userManagementButton.setOnAction(e -> goToUserManagement(primaryStage));
@@ -22,11 +23,22 @@ public class ChoicePane extends GridPane {
 
 		Button sitesButton = new Button("Ga naar sites overzicht");
 		sitesButton.setOnAction(e -> gotToSitesList(primaryStage));
-
+		
+		// Logout button 
+		Button logoutButton = new Button("Uitloggen");
+		logoutButton.setOnAction(e -> GoToLoginPage(primaryStage));
+		
 		this.add(userManagementButton, 0, 0);
 		this.add(maintenanceListButton, 0, 20);
 		this.add(addRapportButton, 0, 40);
 		this.add(sitesButton, 0, 60);
+		this.add(logoutButton, 0, 100);
+	}
+
+	private void GoToLoginPage(Stage primaryStage) {
+		LoginPane loginPane = new LoginPane(primaryStage);
+		Scene loginPaneScene = new Scene(loginPane);
+		primaryStage.setScene(loginPaneScene);
 	}
 
 	private void goToUserManagement(Stage primaryStage) {
