@@ -31,9 +31,6 @@ public class AuthenticationUtil {
 	}
 
 	public static boolean hasRole(Role role) {
-		if (isAuth()) {
-			return authenticatedUser.getRole() == role;
-		}
-		return false;
+		return authenticatedUser.getRole() == role;
 	}
 }
