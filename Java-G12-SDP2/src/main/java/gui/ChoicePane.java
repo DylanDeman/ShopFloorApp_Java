@@ -1,6 +1,7 @@
 package gui;
 
 import domain.machine.MachineController;
+import domain.maintenance.MaintenanceController;
 import domain.site.SiteController;
 import domain.user.UserController;
 import gui.login.LoginPane;
@@ -60,7 +61,8 @@ public class ChoicePane extends GridPane
 
 	private void goToMaintenanceList(Stage primaryStage)
 	{
-		MaintenanceListComponent maintenanceListComponent = new MaintenanceListComponent(primaryStage);
+		MaintenanceController mc = new MaintenanceController();
+		MaintenanceListComponent maintenanceListComponent = new MaintenanceListComponent(primaryStage, mc);
 
 		Scene maintenanceListScene = new Scene(maintenanceListComponent);
 

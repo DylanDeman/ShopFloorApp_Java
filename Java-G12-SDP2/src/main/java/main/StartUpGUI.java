@@ -2,12 +2,15 @@ package main;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import domain.Address;
 import domain.machine.Machine;
+import domain.maintenance.Maintenance;
+import domain.rapport.Rapport;
 import domain.site.Site;
 import domain.user.User;
 import gui.login.LoginPane;
@@ -18,6 +21,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import util.AuthenticationUtil;
 import util.JPAUtil;
+import util.MaintenanceStatus;
 import util.PasswordHasher;
 import util.Role;
 import util.Status;
@@ -73,10 +77,34 @@ public class StartUpGUI extends Application {
 				.mapToObj(i -> new Site("Site" + i, u10, i % 2 == 0 ? Status.ACTIEF : Status.INACTIEF))
 				.collect(Collectors.toList());
 		
-		
         Site site1 = sites.get(0);
+        
+        Rapport r1 = new Rapport(
+        		"1", 
+        		site1, 
+        		"1", 
+        		u7, 
+        		LocalDate.now(),
+        		LocalTime.now(),
+        		LocalDate.now().plusDays(1),
+        		LocalTime.now().plusHours(6),
+        		"",
+        		""
+        		);
 
-
+		List<Maintenance> maintenances = IntStream.range(0, 14)
+				.mapToObj(i -> 
+				new Maintenance(
+						LocalDate.now().plusDays(i), 
+						LocalDateTime.now().plusDays(i), 
+						LocalDateTime.now().plusDays(i).plusHours(i), 
+						u7, 
+						"reason", 
+						String.format("reason %d", i), 
+						MaintenanceStatus.IN_PROGRESS, 
+						r1
+						))
+				.collect(Collectors.toList());
 
 		EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
 
@@ -123,6 +151,8 @@ public class StartUpGUI extends Application {
 			entityManager.persist(u9);
 			entityManager.persist(u10);
 			sites.forEach(site -> entityManager.persist(site));
+			
+			maintenances.forEach(maintenance -> entityManager.persist(maintenance));
 			
 
 			entityManager.getTransaction().commit();
