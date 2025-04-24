@@ -1,112 +1,266 @@
 package gui.maintenance;
 
-import java.util.Collections;
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import org.kordamp.ikonli.javafx.FontIcon;
+
+import domain.maintenance.MaintenanceController;
+import domain.maintenance.MaintenanceDTO;
 import gui.AddRapportForm;
 import gui.ChoicePane;
+import gui.customComponents.CustomButton;
+import gui.customComponents.CustomInformationBox;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Pagination;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
-public class MaintenanceListComponent extends VBox
-{
+public class MaintenanceListComponent extends VBox {
 
-	public MaintenanceListComponent(Stage stage)
-	{
+	private MaintenanceController mc;
+	private Stage stage;
+	private TableView<MaintenanceDTO> table;
+	private TextField searchField;
+	private List<MaintenanceDTO> allMaintenances;
+	private List<MaintenanceDTO> filteredMaintenances;
 
-		Button backButton = new Button("← Lijst alle onderhouden");
+	private int itemsPerPage = 10;
+	private int currentPage = 0;
+	private int totalPages = 0;
+	private Pagination pagination;
+
+	public MaintenanceListComponent(Stage stage, MaintenanceController mc) {
+		this.mc = mc;
+		this.stage = stage;
+		this.table = new TableView<>();
+		initializeGUI();
+	}
+
+	private void initializeGUI() {
+		stage.setMinWidth(800);
+		BackgroundImage backgroundImage = new BackgroundImage(
+				new Image(getClass().getResourceAsStream("/images/background.png")), BackgroundRepeat.NO_REPEAT,
+				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
+				new BackgroundSize(100, 100, true, true, true, true));
+		setBackground(new Background(backgroundImage));
+		
+		loadMaintenancesFromDatabase();
+		filteredMaintenances = allMaintenances;
+		updatePadding(stage);
+		stage.widthProperty().addListener((obs, oldWidth, newWidth) -> updatePadding(stage));
+
+		VBox titleSection = createTitleSection();
+		VBox tableSection = createTableSection();
+
+		this.setSpacing(20);
+		this.getChildren().addAll(titleSection, tableSection);
+		updateTable(filteredMaintenances);
+	}
+
+	private void updatePadding(Stage stage) {
+		double amountOfPixels = stage.getWidth();
+		double calculatedPadding = amountOfPixels < 1200 ? amountOfPixels * 0.05 : amountOfPixels * 0.10;
+		this.setPadding(new Insets(50, calculatedPadding, 0, calculatedPadding));
+	}
+
+	private VBox createTitleSection() {
+		HBox header = createWindowHeader();
+		HBox infoBox = new CustomInformationBox("Hieronder vindt u een overzicht van alle onderhoudswerken.");
+		return new VBox(10, header, infoBox);
+	}
+
+	private HBox createWindowHeader() {
+		HBox hbox = new HBox(10);
+		hbox.setAlignment(Pos.CENTER_LEFT);
+
+	    FontIcon icon = new FontIcon("fas-arrow-left");
+	    icon.setIconSize(20);
+		Button backButton = new Button();
+	    backButton.setGraphic(icon);
+		backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
 		backButton.setOnAction(e -> handleGoBack(stage));
 
-		Label subheading = new Label("Hieronder vindt u een overzicht van de recente onderhouden");
+		Label title = new Label("Onderhoudslijst");
+		title.setStyle("-fx-font: 40 arial;");
 
-		VBox titleSection = new VBox(5, backButton, subheading);
-		titleSection.setPadding(new Insets(10));
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-		TextField searchField = new TextField();
-		searchField.setPromptText("Zoeken...");
-		searchField.setMaxWidth(300);
+		hbox.getChildren().addAll(backButton, title, spacer);
+		return hbox;
+	}
 
-		TableView<String> table = new TableView<>();
-		TableColumn<String, String> col1 = new TableColumn<>("Nr.");
-		TableColumn<String, String> col2 = new TableColumn<>("Starttijdstip");
-		TableColumn<String, String> col3 = new TableColumn<>("Eindtijdstip");
-		TableColumn<String, String> col4 = new TableColumn<>("Naam technieker");
-		TableColumn<String, String> col5 = new TableColumn<>("Reden");
-		TableColumn<String, String> col6 = new TableColumn<>("Opmerkingen");
-		TableColumn<String, String> col7 = new TableColumn<>("Machine");
-		TableColumn<String, String> col8 = new TableColumn<>("Status");
-		TableColumn<String, Void> col9 = new TableColumn<>("Rapport toevoegen");
+	private VBox createTableSection() {
+		HBox filterBox = createTableHeaders();
 
-		col9.setCellFactory(new Callback<TableColumn<String, Void>, TableCell<String, Void>>()
-		{
-			@Override
-			public TableCell<String, Void> call(final TableColumn<String, Void> param)
-			{
-				return new TableCell<String, Void>()
-				{
-					private final Button btn = new Button("Toevoegen");
+		TableColumn<MaintenanceDTO, String> col1 = createColumn("Datum uitgevoerd", m -> m.executionDate().toString());
+		TableColumn<MaintenanceDTO, String> col2 = createColumn("Starttijdstip", m -> m.startDate().toLocalTime().toString());
+		TableColumn<MaintenanceDTO, String> col3 = createColumn("Eindtijdstip", m -> m.endDate().toLocalTime().toString());
+		TableColumn<MaintenanceDTO, String> col4 = createColumn("Naam technieker", m -> m.technician() != null ? m.technician().getFullName() : "Onbekend");
+		TableColumn<MaintenanceDTO, String> col5 = createColumn("Reden", MaintenanceDTO::reason);
+		TableColumn<MaintenanceDTO, String> col6 = createColumn("Opmerkingen", MaintenanceDTO::comments);
+		TableColumn<MaintenanceDTO, String> col7 = createColumn("Status", m -> m.status().toString());
+		TableColumn<MaintenanceDTO, Void> col8 = createAddRapportButtonColumn(stage);
 
-					{
-						btn.setOnAction(e ->
-						{
-							goToAddRapport(stage);
-						});
-					}
-
-					@Override
-					protected void updateItem(Void item, boolean empty)
-					{
-						super.updateItem(item, empty);
-						if (empty)
-						{
-							setGraphic(null);
-						} else
-						{
-							setGraphic(btn);
-						}
-					}
-				};
-			}
-		});
-
-		Collections.addAll(table.getColumns(), col1, col2, col3, col4, col5, col6, col7, col8, col9);
+		List<TableColumn<MaintenanceDTO, ?>> columns = List.of(col1, col2, col3, col4, col5, col6, col7, col8);
+		table.getColumns().addAll(columns);
 		table.setPrefHeight(300);
 
-		// Pagination Controls
-		HBox pagination = new HBox(10);
-		pagination.setAlignment(Pos.CENTER);
-		Button prevPage = new Button("Vorige Pagina");
-		Button nextPage = new Button("Volgende Pagina");
-		pagination.getChildren().addAll(prevPage, new Button("1"), new Button("2"), new Button("3"), new Button("7"),
-				nextPage);
+		pagination = createPagination();
 
-		this.setSpacing(10);
-		this.setPadding(new Insets(10));
-		this.getChildren().addAll(titleSection, searchField, table, pagination);
+		VBox tableWithPagination = new VBox(10, table, pagination);
+		VBox.setVgrow(table, Priority.ALWAYS);
+
+		return new VBox(10, filterBox, tableWithPagination);
 	}
 
-	private void handleGoBack(Stage stage)
-	{
-		ChoicePane choicePane = new ChoicePane(stage);
-		Scene choicePaneScene = new Scene(choicePane);
-		stage.setScene(choicePaneScene);
+	private HBox createTableHeaders() {
+		searchField = new TextField();
+		searchField.setPromptText("Zoeken...");
+		searchField.setMaxWidth(300);
+		searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable(newVal));
+
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+
+		HBox pageSelector = createPageSelector();
+
+		HBox filterBox = new HBox(10, searchField, spacer, pageSelector);
+		filterBox.setAlignment(Pos.CENTER_LEFT);
+		return filterBox;
 	}
 
-	private void goToAddRapport(Stage primaryStage)
-	{
-		AddRapportForm addRapportForm = new AddRapportForm(primaryStage, null);
-		Scene addRapportScene = new Scene(addRapportForm);
-		addRapportForm.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
-		primaryStage.setScene(addRapportScene);
+	private HBox createPageSelector() {
+		Label lbl = new Label("Aantal per pagina:");
+		ComboBox<Integer> combo = new ComboBox<>(FXCollections.observableArrayList(10, 20, 50, 100));
+		combo.setValue(itemsPerPage);
+		combo.setOnAction(e -> updateItemsPerPage(combo.getValue()));
+
+		HBox box = new HBox(10, lbl, combo);
+		box.setAlignment(Pos.CENTER_RIGHT);
+		return box;
+	}
+
+	private void updateItemsPerPage(int value) {
+		this.itemsPerPage = value;
+		this.currentPage = 0;
+		updatePagination();
+		updateTableItems();
+	}
+
+	private void filterTable(String query) {
+		String lowerCaseQuery = query.toLowerCase();
+		filteredMaintenances = allMaintenances.stream()
+				.filter(m -> m.reason().toLowerCase().contains(lowerCaseQuery)
+						|| m.comments().toLowerCase().contains(lowerCaseQuery)
+						|| (m.technician() != null && m.technician().getFullName().toLowerCase().contains(lowerCaseQuery)))
+				.collect(Collectors.toList());
+		currentPage = 0;
+		updatePagination();
+		updateTableItems();
+	}
+
+	private TableColumn<MaintenanceDTO, String> createColumn(String title, Function<MaintenanceDTO, String> mapper) {
+		TableColumn<MaintenanceDTO, String> col = new TableColumn<>(title);
+		col.setCellValueFactory(data -> new SimpleStringProperty(mapper.apply(data.getValue())));
+		return col;
+	}
+
+	private TableColumn<MaintenanceDTO, Void> createAddRapportButtonColumn(Stage stage) {
+		TableColumn<MaintenanceDTO, Void> col = new TableColumn<>("Rapport toevoegen");
+
+		col.setCellFactory(param -> new TableCell<>() {
+			private final CustomButton btn = new CustomButton("Toevoegen");
+			{
+				btn.setOnAction(e -> goToAddRapport(stage));
+			}
+
+			@Override
+			protected void updateItem(Void item, boolean empty) {
+				super.updateItem(item, empty);
+				setGraphic(empty ? null : btn);
+			}
+		});
+		return col;
+	}
+
+	private Pagination createPagination() {
+		updateTotalPages();
+		Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
+		pagination.setPageFactory(this::createPage);
+		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+			currentPage = newIndex.intValue();
+			updateTableItems();
+		});
+		return pagination;
+	}
+
+	private HBox createPage(int pageIndex) {
+		return new HBox();
+	}
+
+	private void updatePagination() {
+		updateTotalPages();
+		pagination.setPageCount(Math.max(1, totalPages));
+		pagination.setCurrentPageIndex(Math.min(currentPage, Math.max(0, totalPages - 1)));
+	}
+
+	private void updateTotalPages() {
+		totalPages = (int) Math.ceil((double) filteredMaintenances.size() / itemsPerPage);
+	}
+
+	private void updateTableItems() {
+		int fromIndex = currentPage * itemsPerPage;
+		int toIndex = Math.min(fromIndex + itemsPerPage, filteredMaintenances.size());
+
+		if (filteredMaintenances.isEmpty()) {
+			table.getItems().clear();
+		} else {
+			List<MaintenanceDTO> currentPageItems = fromIndex < toIndex ? filteredMaintenances.subList(fromIndex, toIndex) : List.of();
+			table.getItems().setAll(currentPageItems);
+		}
+	}
+
+	private void updateTable(List<MaintenanceDTO> list) {
+		filteredMaintenances = list;
+		updatePagination();
+		updateTableItems();
+	}
+
+	private void loadMaintenancesFromDatabase() {
+		allMaintenances = mc.getMaintenances();
+	}
+
+	private void handleGoBack(Stage stage) {
+		stage.setScene(new Scene(new ChoicePane(stage)));
+	}
+
+	private void goToAddRapport(Stage stage) {
+		AddRapportForm form = new AddRapportForm(stage, null);
+		Scene scene = new Scene(form);
+		form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
+		stage.setScene(scene);
 	}
 }

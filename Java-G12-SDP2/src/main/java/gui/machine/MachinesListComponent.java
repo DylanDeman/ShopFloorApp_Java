@@ -175,9 +175,7 @@ public class MachinesListComponent extends VBox {
                     setGraphic(rapportButton);
                 }
             }
-        });
-
-        
+        });       
         
 
      machineTable.getColumns().addAll(editCol, onderhoudCol, rapportCol);
