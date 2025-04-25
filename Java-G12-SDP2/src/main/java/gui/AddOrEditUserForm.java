@@ -41,11 +41,10 @@ public class AddOrEditUserForm extends GridPane
 	private DatePicker birthdatePicker;
 	private TextField streetField, houseNumberField, postalCodeField, cityField;
 	private ComboBox<Role> roleBox;
-	private ComboBox<Status> statusBox;
 	private Label errorLabel;
 	private Label firstNameError, lastNameError, emailError, phoneError, birthdateError;
 	private Label streetError, houseNumberError, postalCodeError, cityError;
-	private Label roleError, statusError;
+	private Label roleError;
 
 	private EntityManager entityManager;
 	private UserManagementPane userManagementPane;
@@ -155,7 +154,6 @@ public class AddOrEditUserForm extends GridPane
 		}
 
 		roleBox.setValue(user.getRole());
-		statusBox.setValue(user.getStatus());
 	}
 
 	private GridPane createUserFieldsSection()
@@ -262,31 +260,21 @@ public class AddOrEditUserForm extends GridPane
 		pane.setVgap(5);
 		pane.setHgap(10);
 
-		Label sectionLabel = new Label("Rol en Status");
+		Label sectionLabel = new Label("Rol");
 		sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 		pane.add(sectionLabel, 0, 0, 2, 1);
 
 		roleError = createErrorLabel();
-		statusError = createErrorLabel();
 
 		roleBox = new ComboBox<>();
 		roleBox.getItems().addAll(Role.values());
 		roleBox.setPromptText("Selecteer een rol");
 		roleBox.setPrefWidth(200);
 
-		statusBox = new ComboBox<>();
-		statusBox.getItems().addAll(Status.values());
-		statusBox.setPromptText("Selecteer een status");
-		statusBox.setPrefWidth(200);
-
 		int row = 1;
 		pane.add(new Label("Rol:"), 0, row);
 		pane.add(roleBox, 1, row++);
 		pane.add(roleError, 1, row++);
-
-		pane.add(new Label("Status:"), 0, row);
-		pane.add(statusBox, 1, row++);
-		pane.add(statusError, 1, row++);
 
 		return pane;
 	}
@@ -304,7 +292,7 @@ public class AddOrEditUserForm extends GridPane
 		String postalCodeStr = postalCodeField.getText();
 		String city = cityField.getText();
 		Role role = roleBox.getValue();
-		Status status = statusBox.getValue();
+		Status status = Status.ACTIEF;
 
 		LocalDate birthdate = birthdatePicker.getValue();
 
@@ -427,8 +415,6 @@ public class AddOrEditUserForm extends GridPane
 			return "Stad is verplicht";
 		case ROLE_REQUIRED:
 			return "Rol is verplicht";
-		case STATUS_REQUIRED:
-			return "Status is verplicht";
 		default:
 			return "Verplicht veld";
 		}
@@ -468,9 +454,6 @@ public class AddOrEditUserForm extends GridPane
 		case "role":
 			roleError.setText(message);
 			break;
-		case "status":
-			statusError.setText(message);
-			break;
 		default:
 			errorLabel.setText(message);
 		}
@@ -489,6 +472,5 @@ public class AddOrEditUserForm extends GridPane
 		postalCodeError.setText("");
 		cityError.setText("");
 		roleError.setText("");
-		statusError.setText("");
 	}
 }
