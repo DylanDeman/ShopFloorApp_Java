@@ -262,7 +262,10 @@ public class AddOrEditUserForm extends GridPane
 		pane.setVgap(5);
 		pane.setHgap(10);
 
-		Label sectionLabel = new Label("Rol en Status");
+		String labelString = isNewUser ? "Rol" : "Rol en Status";
+
+		Label sectionLabel = new Label(labelString);
+
 		sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 		pane.add(sectionLabel, 0, 0, 2, 1);
 
@@ -274,19 +277,22 @@ public class AddOrEditUserForm extends GridPane
 		roleBox.setPromptText("Selecteer een rol");
 		roleBox.setPrefWidth(200);
 
-		statusBox = new ComboBox<>();
-		statusBox.getItems().addAll(Status.values());
-		statusBox.setPromptText("Selecteer een status");
-		statusBox.setPrefWidth(200);
-
 		int row = 1;
 		pane.add(new Label("Rol:"), 0, row);
 		pane.add(roleBox, 1, row++);
 		pane.add(roleError, 1, row++);
 
-		pane.add(new Label("Status:"), 0, row);
-		pane.add(statusBox, 1, row++);
-		pane.add(statusError, 1, row++);
+		if (!isNewUser)
+		{
+			statusBox = new ComboBox<>();
+			statusBox.getItems().addAll(Status.values());
+			statusBox.setPromptText("Wijzig de status");
+			statusBox.setPrefWidth(200);
+
+			pane.add(new Label("Status:"), 0, row);
+			pane.add(statusBox, 1, row++);
+			pane.add(statusError, 1, row++);
+		}
 
 		return pane;
 	}
@@ -304,7 +310,7 @@ public class AddOrEditUserForm extends GridPane
 		String postalCodeStr = postalCodeField.getText();
 		String city = cityField.getText();
 		Role role = roleBox.getValue();
-		Status status = statusBox.getValue();
+		Status status = isNewUser ? Status.ACTIEF : statusBox.getValue();
 
 		LocalDate birthdate = birthdatePicker.getValue();
 
