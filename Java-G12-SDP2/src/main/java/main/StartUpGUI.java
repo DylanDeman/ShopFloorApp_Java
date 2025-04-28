@@ -10,7 +10,7 @@ import java.util.stream.IntStream;
 import domain.Address;
 import domain.machine.Machine;
 import domain.maintenance.Maintenance;
-import domain.rapport.Rapport;
+import domain.report.Report;
 import domain.site.Site;
 import domain.user.User;
 import gui.login.LoginPane;
@@ -79,7 +79,7 @@ public class StartUpGUI extends Application {
 		
         Site site1 = sites.get(0);
         
-        Rapport r1 = new Rapport(
+        Report r1 = new Report(
         		"1", 
         		site1, 
         		"1", 

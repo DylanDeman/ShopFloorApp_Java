@@ -1,22 +1,17 @@
-package gui;
+package gui.report;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 import domain.machine.Machine;
-import domain.rapport.ConcreteRapportBuilder;
-import domain.rapport.Rapport;
-import domain.rapport.RapportBuilder;
-import domain.rapport.RapportDirector;
+import domain.report.ReportController;
+import domain.report.ReportDTO;
 import domain.site.Site;
 import domain.user.User;
 import exceptions.InvalidRapportException;
-import jakarta.persistence.TypedQuery;
+import gui.ChoicePane;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -40,12 +35,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.StringConverter;
-import repository.GenericDaoJpa;
-import util.Role;
 
-public class AddRapportForm extends BorderPane
+public class AddReportForm extends BorderPane
 {
-
 	// Non-editable fields (pre-filled)
 	private Label siteNameLabel, responsiblePersonLabel, maintenanceNumberLabel;
 
@@ -63,15 +55,12 @@ public class AddRapportForm extends BorderPane
 	private Machine selectedMachine;
 	private Site site;
 
-	// DAOs
-	private GenericDaoJpa<Site> siteDao;
-	private GenericDaoJpa<User> userDao;
-	private GenericDaoJpa<Rapport> rapportDao;
-	private GenericDaoJpa<Machine> machineDao;
+	// Controller for business logic
+	private ReportController reportController;
 
 	public void start(Stage primaryStage, Machine machine)
 	{
-		AddRapportForm form = new AddRapportForm(primaryStage, machine);
+		AddReportForm form = new AddReportForm(primaryStage, machine);
 
 		// Create scene without fixed dimensions
 		Scene scene = new Scene(form);
@@ -92,28 +81,22 @@ public class AddRapportForm extends BorderPane
 		primaryStage.show();
 	}
 
-	public AddRapportForm(Stage primaryStage, Machine machine)
+	public AddReportForm(Stage primaryStage, Machine machine)
 	{
-		this(primaryStage, machine, new GenericDaoJpa<>(Site.class), new GenericDaoJpa<>(User.class),
-				new GenericDaoJpa<>(Rapport.class), new GenericDaoJpa<>(Machine.class));
+		this(primaryStage, machine, new ReportController());
 	}
 
-	public AddRapportForm(Stage primaryStage, Machine machine, GenericDaoJpa<Site> siteDao, GenericDaoJpa<User> userDao,
-			GenericDaoJpa<Rapport> rapportDao, GenericDaoJpa<Machine> machineDao)
+	public AddReportForm(Stage primaryStage, Machine machine, ReportController reportController)
 	{
-		this.siteDao = siteDao;
-		this.userDao = userDao;
-		this.rapportDao = rapportDao;
-		this.machineDao = machineDao;
-		if (this.selectedMachine != null && machine != null)
+		this.reportController = reportController;
+
+		if (machine == null)
 		{
-			this.selectedMachine = machine;
-		} else
-		{
-			// returnToChoicePane(primaryStage);
-			// throw new IllegalArgumentException("de machine is ongeldig");
+			returnToChoicePane(primaryStage);
+			throw new IllegalArgumentException("De machine is ongeldig");
 		}
 
+		this.selectedMachine = machine;
 		// Get site from the selected machine
 		this.site = machine.getSite();
 
@@ -161,8 +144,8 @@ public class AddRapportForm extends BorderPane
 		siteNameLabel = createInfoLabel(site.getSiteName());
 		responsiblePersonLabel = createInfoLabel(site.getVerantwoordelijke().getFullName());
 
-		// Generate next maintenance number
-		String nextMaintenanceNumber = generateNextMaintenanceNumber();
+		// Generate next maintenance number through controller
+		String nextMaintenanceNumber = reportController.generateNextMaintenanceNumber(site);
 		maintenanceNumberLabel = createInfoLabel(nextMaintenanceNumber);
 
 		// Setup technician combo box with actual User objects
@@ -210,8 +193,8 @@ public class AddRapportForm extends BorderPane
 		createReportBtn.getStyleClass().add("create-report-button");
 		createReportBtn.setPadding(new Insets(10, 30, 10, 30));
 
-		// Add action for the button using our Builder pattern
-		createReportBtn.setOnAction(e -> createRapport());
+		// Add action for the button using our controller
+		createReportBtn.setOnAction(e -> createReport());
 
 		HBox buttonBox = new HBox(createReportBtn);
 		buttonBox.setAlignment(Pos.CENTER);
@@ -242,32 +225,11 @@ public class AddRapportForm extends BorderPane
 		return label;
 	}
 
-	// Load technicians directly from userDao
+	// Load technicians from controller
 	private void loadTechnicians()
 	{
-		List<User> technicians = userDao.findAll().stream().filter(user -> user.getRole() == Role.TECHNIEKER)
-				.collect(Collectors.toList());
-
 		technicianComboBox.getItems().clear();
-		technicianComboBox.getItems().addAll(technicians);
-	}
-
-	// Generate the next maintenance number by counting existing reports for this
-	// site
-	private String generateNextMaintenanceNumber()
-	{
-		// Query to count reports for this site
-		TypedQuery<Long> query = GenericDaoJpa.em
-				.createQuery("SELECT COUNT(r) FROM Rapport r WHERE r.site.id = :siteId", Long.class);
-		query.setParameter("siteId", site.getId());
-		Long reportCount = query.getSingleResult();
-
-		// Format: SITE-XXX where XXX is a sequential number
-		String sitePrefix = site.getSiteName().substring(0, Math.min(site.getSiteName().length(), 4)).toUpperCase()
-				.replaceAll("[^A-Z0-9]", "");
-
-		// Increment by 1 for the new report
-		return String.format("%s-%03d", sitePrefix, reportCount + 1);
+		technicianComboBox.getItems().addAll(reportController.getTechnicians());
 	}
 
 	// Create a responsive text field
@@ -375,52 +337,7 @@ public class AddRapportForm extends BorderPane
 		return box;
 	}
 
-	// Get reports by technician directly using JPQL
-	public List<Rapport> getRapportenByTechnieker(User technieker)
-	{
-		if (technieker == null)
-		{
-			throw new InvalidRapportException("Technieker cannot be null");
-		}
-
-		TypedQuery<Rapport> query = GenericDaoJpa.em.createNamedQuery("Rapport.findByTechnieker", Rapport.class);
-		query.setParameter("technieker", technieker);
-		return query.getResultList();
-	}
-
-	// Get reports by site directly using JPQL
-	public List<Rapport> getRapportenBySite(Site site)
-	{
-		if (site == null)
-		{
-			throw new InvalidRapportException("Site cannot be null");
-		}
-
-		TypedQuery<Rapport> query = GenericDaoJpa.em.createNamedQuery("Rapport.findBySite", Rapport.class);
-		query.setParameter("site", site);
-		return query.getResultList();
-	}
-
-	// Get reports by date range directly using JPQL
-	public List<Rapport> getRapportenByDateRange(LocalDate startDate, LocalDate endDate)
-	{
-		if (startDate == null || endDate == null)
-		{
-			throw new InvalidRapportException("Date range cannot be null");
-		}
-
-		if (endDate.isBefore(startDate))
-		{
-			throw new InvalidRapportException("End date cannot be before start date");
-		}
-
-		TypedQuery<Rapport> query = GenericDaoJpa.em.createNamedQuery("Rapport.findByDateRange", Rapport.class);
-		query.setParameter("startDate", startDate);
-		query.setParameter("endDate", endDate);
-		return query.getResultList();
-	}
-
-	private void createRapport()
+	private void createReport()
 	{
 		try
 		{
@@ -435,77 +352,27 @@ public class AddRapportForm extends BorderPane
 			String reason = reasonField.getText().trim();
 			String comments = commentsArea.getText().trim();
 
-			// Validate required fields
-			if (selectedTechnician == null)
-			{
-				throw new IllegalStateException("Technieker moet geselecteerd worden");
-			}
-
-			if (reason.isEmpty())
-			{
-				throw new IllegalStateException("Reden mag niet leeg zijn");
-			}
-
-			// Validate dates and times
+			// Parse dates and times
 			LocalDate startDate = startDatePicker.getValue();
 			LocalTime startTime = parseTime(startTimeField.getText());
 			LocalDate endDate = endDatePicker.getValue();
 			LocalTime endTime = parseTime(endTimeField.getText());
 
-			if (startDate == null || endDate == null)
-			{
-				throw new IllegalStateException("Start- en einddatum moeten ingevuld worden");
-			}
+			// Create DTO with all needed data
+			ReportDTO reportDTO = new ReportDTO(maintenanceNumber, site, selectedTechnician, startDate, startTime,
+					endDate, endTime, reason, comments);
 
-			// Start transaction for database operations
-			rapportDao.startTransaction();
+			// Use controller to create the report
+			reportController.createReport(reportDTO);
 
-			try
-			{
-				// Generate unique ID for the new rapport
-				String rapportId = generateRapportId();
+			// Show success message
+			showSuccess("Rapport succesvol aangemaakt!");
 
-				// Use the Builder pattern to create the rapport
-				RapportBuilder builder = new ConcreteRapportBuilder(rapportId);
+			// Clear user input fields only
+			clearUserInputFields();
 
-				// Either use director for standard flows or build directly for custom flows
-				Rapport newRapport;
-
-				if (reason.equalsIgnoreCase("Regulier onderhoud"))
-				{
-					// Use Director for standard maintenance rapport
-					RapportDirector director = new RapportDirector(builder);
-					newRapport = director.constructStandardMaintenanceRapport(rapportId, site, maintenanceNumber,
-							selectedTechnician, startDate, startTime, endDate, endTime);
-				} else
-				{
-					// Use builder directly for custom rapport
-					newRapport = builder.setSite(site).setOnderhoudsNr(maintenanceNumber)
-							.setTechnieker(selectedTechnician).setStartDate(startDate).setStartTime(startTime)
-							.setEndDate(endDate).setEndTime(endTime).setReden(reason).setOpmerkingen(comments).build();
-				}
-
-				// Save the new rapport
-				rapportDao.insert(newRapport);
-
-				// Commit the transaction
-				rapportDao.commitTransaction();
-
-				// Show success message
-				showSuccess("Rapport succesvol aangemaakt!");
-
-				// Clear user input fields only
-				clearUserInputFields();
-
-				// Update maintenance number for next report
-				maintenanceNumberLabel.setText(generateNextMaintenanceNumber());
-
-			} catch (Exception e)
-			{
-				// Rollback the transaction in case of any error
-				rapportDao.rollbackTransaction();
-				throw e;
-			}
+			// Update maintenance number for next report
+			maintenanceNumberLabel.setText(reportController.generateNextMaintenanceNumber(site));
 
 		} catch (IllegalStateException e)
 		{
@@ -514,17 +381,13 @@ public class AddRapportForm extends BorderPane
 		} catch (DateTimeParseException e)
 		{
 			showError("Ongeldige tijdsindeling. Gebruik HH:MM format.");
+		} catch (InvalidRapportException e)
+		{
+			showError(e.getMessage());
 		} catch (Exception e)
 		{
 			showError("Er is een fout opgetreden: " + e.getMessage());
 		}
-	}
-
-	private String generateRapportId()
-	{
-		// Simple UUID-based ID generation, could be replaced with a more
-		// domain-specific ID
-		return "RPT-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 	}
 
 	private LocalTime parseTime(String timeStr)

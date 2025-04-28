@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import domain.rapport.Rapport;
+import domain.report.Report;
 import domain.user.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -55,7 +55,7 @@ public class Maintenance implements Serializable {
 	@OneToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "report_id")
 	@Getter
-	private Rapport report;
+	private Report report;
 	
 	public Maintenance(LocalDate executionDate, 
 			LocalDateTime startDate, LocalDateTime endDate, 
@@ -63,7 +63,7 @@ public class Maintenance implements Serializable {
 			String reason, 
 			String comments,
 			MaintenanceStatus status,
-			Rapport report
+			Report report
 			) {
 		this.executionDate = executionDate;
 		this.startDate = startDate;

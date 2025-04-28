@@ -8,10 +8,10 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.maintenance.MaintenanceController;
 import domain.maintenance.MaintenanceDTO;
-import gui.AddRapportForm;
 import gui.ChoicePane;
 import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
+import gui.report.AddReportForm;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -258,7 +258,7 @@ public class MaintenanceListComponent extends VBox {
 	}
 
 	private void goToAddRapport(Stage stage) {
-		AddRapportForm form = new AddRapportForm(stage, null);
+		AddReportForm form = new AddReportForm(stage, null);
 		Scene scene = new Scene(form);
 		form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
 		stage.setScene(scene);

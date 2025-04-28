@@ -1,4 +1,4 @@
-package domain.rapport;
+package domain.report;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -10,11 +10,11 @@ import domain.user.User;
  * Concrete implementation of the RapportBuilder interface. Builds and assembles
  * the parts of the Rapport object.
  */
-public class ConcreteRapportBuilder implements RapportBuilder
+public class ConcreteReportBuilder implements RapportBuilder
 {
 	private String rapportId;
 	private Site site;
-	private String onderhoudsNr;
+	private String maintenanceNr;
 	private User technieker;
 	private LocalDate startDate;
 	private LocalTime startTime;
@@ -23,7 +23,7 @@ public class ConcreteRapportBuilder implements RapportBuilder
 	private String reden;
 	private String opmerkingen;
 
-	public ConcreteRapportBuilder(String rapportId)
+	public ConcreteReportBuilder(String rapportId)
 	{
 		this.rapportId = rapportId;
 	}
@@ -36,14 +36,14 @@ public class ConcreteRapportBuilder implements RapportBuilder
 	}
 
 	@Override
-	public RapportBuilder setOnderhoudsNr(String onderhoudsNr)
+	public RapportBuilder setMaintenanceNr(String onderhoudsNr)
 	{
-		this.onderhoudsNr = onderhoudsNr;
+		this.maintenanceNr = onderhoudsNr;
 		return this;
 	}
 
 	@Override
-	public RapportBuilder setTechnieker(User technieker)
+	public RapportBuilder setTechnician(User technieker)
 	{
 		this.technieker = technieker;
 		return this;
@@ -78,26 +78,26 @@ public class ConcreteRapportBuilder implements RapportBuilder
 	}
 
 	@Override
-	public RapportBuilder setReden(String reden)
+	public RapportBuilder setReason(String reden)
 	{
 		this.reden = reden;
 		return this;
 	}
 
 	@Override
-	public RapportBuilder setOpmerkingen(String opmerkingen)
+	public RapportBuilder setRemarks(String opmerkingen)
 	{
 		this.opmerkingen = opmerkingen;
 		return this;
 	}
 
 	@Override
-	public Rapport build()
+	public Report build()
 	{
 		validateFields();
 
 		// Create Rapport instance using the package-private constructor
-		return new Rapport(rapportId, site, onderhoudsNr, technieker, startDate, startTime, endDate, endTime, reden,
+		return new Report(rapportId, site, maintenanceNr, technieker, startDate, startTime, endDate, endTime, reden,
 				opmerkingen);
 	}
 
@@ -107,7 +107,7 @@ public class ConcreteRapportBuilder implements RapportBuilder
 		{
 			throw new IllegalStateException("Site cannot be null");
 		}
-		if (onderhoudsNr == null || onderhoudsNr.trim().isEmpty())
+		if (maintenanceNr == null || maintenanceNr.trim().isEmpty())
 		{
 			throw new IllegalStateException("OnderhoudsNr cannot be null or empty");
 		}

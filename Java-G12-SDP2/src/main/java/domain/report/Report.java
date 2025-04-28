@@ -1,4 +1,4 @@
-package domain.rapport;
+package domain.report;
 
 import java.io.Serializable;
 import java.time.LocalDate;
@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(of = "rapportId")
-public class Rapport implements Serializable
+public class Report implements Serializable
 {
 
 	private static final long serialVersionUID = 1L;
@@ -56,7 +56,7 @@ public class Rapport implements Serializable
 	private String opmerkingen;
 
 	// Package-private constructor used by the builder
-	public Rapport(String rapportId, Site site, String onderhoudsNr, User technieker, LocalDate startDate, LocalTime startTime,
+	public Report(String rapportId, Site site, String onderhoudsNr, User technieker, LocalDate startDate, LocalTime startTime,
 			LocalDate endDate, LocalTime endTime, String reden, String opmerkingen)
 	{
 		this.rapportId = rapportId;

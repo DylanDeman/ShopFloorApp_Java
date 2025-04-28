@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import domain.report.Report;
 import domain.site.Site;
 import domain.user.User;
 
@@ -36,12 +37,12 @@ class RapportTest
 	@Mock
 	private User mockTechnieker;
 
-	private Rapport rapport;
+	private Report rapport;
 
 	@BeforeEach
 	void setUp()
 	{
-		rapport = new Rapport(VALID_RAPPORT_ID, mockSite, VALID_ONDERHOUDS_NR, mockTechnieker, VALID_START_DATE,
+		rapport = new Report(VALID_RAPPORT_ID, mockSite, VALID_ONDERHOUDS_NR, mockTechnieker, VALID_START_DATE,
 				VALID_START_TIME, VALID_END_DATE, VALID_END_TIME, VALID_REDEN, VALID_OPMERKINGEN);
 	}
 
@@ -63,7 +64,7 @@ class RapportTest
 	@Test
 	void equalsAndHashCode_sameId_areEqual()
 	{
-		Rapport sameIdRapport = new Rapport(VALID_RAPPORT_ID, mock(Site.class), "Different", mock(User.class),
+		Report sameIdRapport = new Report(VALID_RAPPORT_ID, mock(Site.class), "Different", mock(User.class),
 				LocalDate.now(), LocalTime.now(), LocalDate.now(), LocalTime.now(), "Different", "Different");
 
 		assertEquals(rapport, sameIdRapport);
@@ -74,7 +75,7 @@ class RapportTest
 	void equalsAndHashCode_differentId_notEqual()
 	{
 
-		Rapport differentIdRapport = new Rapport("DIFFERENT_ID", mockSite, VALID_ONDERHOUDS_NR, mockTechnieker,
+		Report differentIdRapport = new Report("DIFFERENT_ID", mockSite, VALID_ONDERHOUDS_NR, mockTechnieker,
 				VALID_START_DATE, VALID_START_TIME, VALID_END_DATE, VALID_END_TIME, VALID_REDEN, VALID_OPMERKINGEN);
 
 		assertNotEquals(rapport, differentIdRapport);

@@ -1,4 +1,4 @@
-package domain.rapport;
+package domain.report;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -14,9 +14,9 @@ public interface RapportBuilder
 {
 	RapportBuilder setSite(Site site);
 
-	RapportBuilder setOnderhoudsNr(String onderhoudsNr);
+	RapportBuilder setMaintenanceNr(String onderhoudsNr);
 
-	RapportBuilder setTechnieker(User technieker);
+	RapportBuilder setTechnician(User technieker);
 
 	RapportBuilder setStartDate(LocalDate startDate);
 
@@ -26,9 +26,9 @@ public interface RapportBuilder
 
 	RapportBuilder setEndTime(LocalTime endTime);
 
-	RapportBuilder setReden(String reden);
+	RapportBuilder setReason(String reden);
 
-	RapportBuilder setOpmerkingen(String opmerkingen);
+	RapportBuilder setRemarks(String opmerkingen);
 
-	Rapport build();
+	Report build();
 }
