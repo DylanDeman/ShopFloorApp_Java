@@ -25,15 +25,18 @@ import util.MaintenanceStatus;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="maintenances")
-public class Maintenance implements Serializable {
-	
+@Table(name = "maintenances")
+public class Maintenance implements Serializable
+{
+
+	// TODO: link to machine, so siteDetails can be accessed in reports.
+
 	private static final long serialVersionUID = 1L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Getter
 	private int id;
-	
+
 	@Getter
 	private LocalDate executionDate;
 	@Getter
@@ -51,20 +54,15 @@ public class Maintenance implements Serializable {
 	@Enumerated(EnumType.STRING)
 	@Getter
 	private MaintenanceStatus status;
-	
+
 	@OneToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "report_id")
 	@Getter
 	private Report report;
-	
-	public Maintenance(LocalDate executionDate, 
-			LocalDateTime startDate, LocalDateTime endDate, 
-			User technician, 
-			String reason, 
-			String comments,
-			MaintenanceStatus status,
-			Report report
-			) {
+
+	public Maintenance(LocalDate executionDate, LocalDateTime startDate, LocalDateTime endDate, User technician,
+			String reason, String comments, MaintenanceStatus status, Report report)
+	{
 		this.executionDate = executionDate;
 		this.startDate = startDate;
 		this.endDate = endDate;
@@ -74,5 +72,5 @@ public class Maintenance implements Serializable {
 		this.status = status;
 		this.report = report;
 	}
-	
+
 }

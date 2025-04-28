@@ -10,9 +10,9 @@ import util.Role;
 
 public class ReportDirector
 {
-	private RapportBuilder builder;
+	private ReportBuilder builder;
 
-	public ReportDirector(RapportBuilder builder)
+	public ReportDirector(ReportBuilder builder)
 	{
 		this.builder = builder;
 	}
@@ -24,9 +24,9 @@ public class ReportDirector
 
 		if (hasRole)
 		{
-			return builder.setSite(site).setMaintenanceNr(onderhoudsNr).setTechnician(technieker)
-					.setStartDate(startDate).setStartTime(startTime).setEndDate(endDate).setEndTime(endTime)
-					.setReason("Regulier onderhoud").setRemarks("Standaard onderhoudsrapport").build();
+			return builder.setSite(site).setTechnician(technieker).setStartDate(startDate).setStartTime(startTime)
+					.setEndDate(endDate).setEndTime(endTime).setReason("Regulier onderhoud")
+					.setRemarks("Standaard onderhoudsrapport").build();
 		}
 
 		return null;

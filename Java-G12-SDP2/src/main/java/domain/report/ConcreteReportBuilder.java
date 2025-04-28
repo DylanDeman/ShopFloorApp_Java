@@ -3,6 +3,7 @@ package domain.report;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import domain.maintenance.MaintenanceDTO; // Assuming MaintenanceDTO is in this package
 import domain.site.Site;
 import domain.user.User;
 
@@ -10,11 +11,12 @@ import domain.user.User;
  * Concrete implementation of the RapportBuilder interface. Builds and assembles
  * the parts of the Rapport object.
  */
-public class ConcreteReportBuilder implements RapportBuilder
+public class ConcreteReportBuilder implements ReportBuilder
 {
-	private String rapportId;
+	private String reportId;
 	private Site site;
-	private String maintenanceNr;
+	private String maintenanceNumber;
+	private MaintenanceDTO selectedMaintenanceDTO; // Updated to use MaintenanceDTO
 	private User technieker;
 	private LocalDate startDate;
 	private LocalTime startTime;
@@ -23,69 +25,69 @@ public class ConcreteReportBuilder implements RapportBuilder
 	private String reden;
 	private String opmerkingen;
 
-	public ConcreteReportBuilder(String rapportId)
+	public ConcreteReportBuilder(String reportId)
 	{
-		this.rapportId = rapportId;
+		this.reportId = reportId;
 	}
 
 	@Override
-	public RapportBuilder setSite(Site site)
+	public ReportBuilder setSite(Site site)
 	{
 		this.site = site;
 		return this;
 	}
 
 	@Override
-	public RapportBuilder setMaintenanceNr(String onderhoudsNr)
+	public ReportBuilder setMaintenanceDTO(MaintenanceDTO maintenanceDTO) // Method to accept MaintenanceDTO
 	{
-		this.maintenanceNr = onderhoudsNr;
+		this.selectedMaintenanceDTO = maintenanceDTO;
 		return this;
 	}
 
 	@Override
-	public RapportBuilder setTechnician(User technieker)
+	public ReportBuilder setTechnician(User technieker)
 	{
 		this.technieker = technieker;
 		return this;
 	}
 
 	@Override
-	public RapportBuilder setStartDate(LocalDate startDate)
+	public ReportBuilder setStartDate(LocalDate startDate)
 	{
 		this.startDate = startDate;
 		return this;
 	}
 
 	@Override
-	public RapportBuilder setStartTime(LocalTime startTime)
+	public ReportBuilder setStartTime(LocalTime startTime)
 	{
 		this.startTime = startTime;
 		return this;
 	}
 
 	@Override
-	public RapportBuilder setEndDate(LocalDate endDate)
+	public ReportBuilder setEndDate(LocalDate endDate)
 	{
 		this.endDate = endDate;
 		return this;
 	}
 
 	@Override
-	public RapportBuilder setEndTime(LocalTime endTime)
+	public ReportBuilder setEndTime(LocalTime endTime)
 	{
 		this.endTime = endTime;
 		return this;
 	}
 
 	@Override
-	public RapportBuilder setReason(String reden)
+	public ReportBuilder setReason(String reden)
 	{
 		this.reden = reden;
 		return this;
 	}
 
 	@Override
-	public RapportBuilder setRemarks(String opmerkingen)
+	public ReportBuilder setRemarks(String opmerkingen)
 	{
 		this.opmerkingen = opmerkingen;
 		return this;
@@ -96,8 +98,7 @@ public class ConcreteReportBuilder implements RapportBuilder
 	{
 		validateFields();
 
-		// Create Rapport instance using the package-private constructor
-		return new Report(rapportId, site, maintenanceNr, technieker, startDate, startTime, endDate, endTime, reden,
+		return new Report(selectedMaintenanceDTO, technieker, startDate, startTime, endDate, endTime, reden,
 				opmerkingen);
 	}
 
@@ -107,9 +108,9 @@ public class ConcreteReportBuilder implements RapportBuilder
 		{
 			throw new IllegalStateException("Site cannot be null");
 		}
-		if (maintenanceNr == null || maintenanceNr.trim().isEmpty())
+		if (selectedMaintenanceDTO == null)
 		{
-			throw new IllegalStateException("OnderhoudsNr cannot be null or empty");
+			throw new IllegalStateException("MaintenanceDTO cannot be null");
 		}
 		if (technieker == null)
 		{
@@ -136,7 +137,6 @@ public class ConcreteReportBuilder implements RapportBuilder
 			throw new IllegalStateException("Reden cannot be null or empty");
 		}
 
-		// Additional validation logic
 		if (endDate.isBefore(startDate))
 		{
 			throw new IllegalStateException("End date cannot be before start date");
@@ -146,4 +146,5 @@ public class ConcreteReportBuilder implements RapportBuilder
 			throw new IllegalStateException("End time cannot be before start time on the same day");
 		}
 	}
+
 }

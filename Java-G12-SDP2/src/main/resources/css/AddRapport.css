@@ -11,7 +11,10 @@
 /* Header styling */
 .header-label {
     -fx-font-weight: bold;
-    -fx-font-size: 20px;
+    -fx-font-size: 24px;
+    -fx-text-align: center;
+    -fx-padding: 15;
+    -fx-text-fill: #333;
 }
 
 .header-box {
@@ -25,19 +28,20 @@
     -fx-border-color: #cccccc;
     -fx-border-radius: 10;
     -fx-border-width: 2;
-    -fx-spacing: 15;
-    -fx-padding: 30;
+    -fx-spacing: 10;
+    -fx-padding: 25;
 }
 
 /* Content container */
 .content-container {
-    -fx-spacing: 10;
+    -fx-spacing: 15;
     -fx-padding: 20;
 }
 
 /* Form labels */
 .form-label {
     -fx-font-weight: bold;
+    -fx-min-width: 200px;
 }
 
 /* Container for label + field pairs */
@@ -76,6 +80,7 @@
 /* Additional styles for form components */
 .text-field, .text-area, .combo-box, .date-picker {
     -fx-background-radius: 5;
+    -fx-pref-width: 300;
 }
 
 .text-area {

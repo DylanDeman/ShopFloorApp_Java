@@ -87,11 +87,10 @@ public class ChoicePane extends GridPane
 		primaryStage.setScene(loginPaneScene);
 	}
 
-
 	private void goToAddRapport(Stage primaryStage)
 	{
-		MachineController mc = new MachineController();
-		AddReportForm addRapportForm = new AddReportForm(primaryStage, mc.getMachineList2().getFirst());
+		MaintenanceController mc = new MaintenanceController();
+		AddReportForm addRapportForm = new AddReportForm(primaryStage, mc.getMaintenances().getFirst());
 		Scene addRapportScene = new Scene(addRapportForm);
 		addRapportForm.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
 		primaryStage.setScene(addRapportScene);

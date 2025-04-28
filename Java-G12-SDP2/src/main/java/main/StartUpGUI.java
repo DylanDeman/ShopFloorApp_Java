@@ -10,6 +10,7 @@ import java.util.stream.IntStream;
 import domain.Address;
 import domain.machine.Machine;
 import domain.maintenance.Maintenance;
+import domain.maintenance.MaintenanceController;
 import domain.report.Report;
 import domain.site.Site;
 import domain.user.User;
@@ -19,16 +20,17 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import util.AuthenticationUtil;
 import util.JPAUtil;
 import util.MaintenanceStatus;
 import util.PasswordHasher;
 import util.Role;
 import util.Status;
 
-public class StartUpGUI extends Application {
+public class StartUpGUI extends Application
+{
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(Stage primaryStage)
+	{
 		// ChoicePane pane = new ChoicePane(primaryStage);
 
 		// Login pagina tonen:
@@ -76,69 +78,38 @@ public class StartUpGUI extends Application {
 		List<Site> sites = IntStream.range(0, 14)
 				.mapToObj(i -> new Site("Site" + i, u10, i % 2 == 0 ? Status.ACTIEF : Status.INACTIEF))
 				.collect(Collectors.toList());
-		
-        Site site1 = sites.get(0);
-        
-        Report r1 = new Report(
-        		"1", 
-        		site1, 
-        		"1", 
-        		u7, 
-        		LocalDate.now(),
-        		LocalTime.now(),
-        		LocalDate.now().plusDays(1),
-        		LocalTime.now().plusHours(6),
-        		"",
-        		""
-        		);
+
+		Site site1 = sites.get(0);
+
+		MaintenanceController mc = new MaintenanceController();
 
 		List<Maintenance> maintenances = IntStream.range(0, 14)
-				.mapToObj(i -> 
-				new Maintenance(
-						LocalDate.now().plusDays(i), 
-						LocalDateTime.now().plusDays(i), 
-						LocalDateTime.now().plusDays(i).plusHours(i), 
-						u7, 
-						"reason", 
-						String.format("reason %d", i), 
-						MaintenanceStatus.IN_PROGRESS, 
-						r1
-						))
+				.mapToObj(i -> new Maintenance(LocalDate.now().plusDays(i), LocalDateTime.now().plusDays(i),
+						LocalDateTime.now().plusDays(i).plusHours(i), u7, "reason", String.format("reason %d", i),
+						MaintenanceStatus.IN_PROGRESS, null))
 				.collect(Collectors.toList());
+
+		Report r1 = new Report(mc.makeMaintenanceDTOs(maintenances).getFirst(), u7, LocalDate.now(), LocalTime.now(),
+				LocalDate.now().plusDays(1), LocalTime.now().plusHours(6), "Test reason", "");
 
 		EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
 
-		try {
+		try
+		{
 			entityManager.getTransaction().begin();
-			
-			Machine m1 = Machine.builder()
-	                 .site(site1)
-	                 .technician(u1)
-	                 .code("M1-1234")
-	                 .status("Active")
-	                 .productieStatus("Running")
-	                 .location("Line 1")
-	                 .productInfo("Product A")
-	                 .lastMaintenance(LocalDateTime.of(2025, 4, 20, 10, 0))
-	                 .futureMaintenance(LocalDateTime.of(2025, 5, 20, 10, 0))
-	                 .build();
 
-	        Machine m2 = Machine.builder()
-	                 .site(site1)
-	                 .technician(u2)
-	                 .code("M2-5678")
-	                 .status("Inactive")
-	                 .productieStatus("Idle")
-	                 .location("Line 2")
-	                 .productInfo("Product B")
-	                 .lastMaintenance(LocalDateTime.of(2025, 3, 15, 10, 0))
-	                 .futureMaintenance(LocalDateTime.of(2025, 6, 10, 10, 0))
-	                 .build();
-	        
-            entityManager.persist(m1);
-            entityManager.persist(m2);
-	        
-	        
+			Machine m1 = Machine.builder().site(site1).technician(u1).code("M1-1234").status("Active")
+					.productieStatus("Running").location("Line 1").productInfo("Product A")
+					.lastMaintenance(LocalDateTime.of(2025, 4, 20, 10, 0))
+					.futureMaintenance(LocalDateTime.of(2025, 5, 20, 10, 0)).build();
+
+			Machine m2 = Machine.builder().site(site1).technician(u2).code("M2-5678").status("Inactive")
+					.productieStatus("Idle").location("Line 2").productInfo("Product B")
+					.lastMaintenance(LocalDateTime.of(2025, 3, 15, 10, 0))
+					.futureMaintenance(LocalDateTime.of(2025, 6, 10, 10, 0)).build();
+
+			entityManager.persist(m1);
+			entityManager.persist(m2);
 
 			entityManager.persist(u1);
 			entityManager.persist(u2);
@@ -151,24 +122,28 @@ public class StartUpGUI extends Application {
 			entityManager.persist(u9);
 			entityManager.persist(u10);
 			sites.forEach(site -> entityManager.persist(site));
-			
+
 			maintenances.forEach(maintenance -> entityManager.persist(maintenance));
-			
 
 			entityManager.getTransaction().commit();
-		} catch (Exception e) {
+		} catch (Exception e)
+		{
 			System.err.println("Error during transaction: " + e.getMessage());
-			if (entityManager.getTransaction().isActive()) {
+			if (entityManager.getTransaction().isActive())
+			{
 				entityManager.getTransaction().rollback();
 			}
-		} finally {
-			if (entityManager != null && entityManager.isOpen()) {
+		} finally
+		{
+			if (entityManager != null && entityManager.isOpen())
+			{
 				entityManager.close();
 			}
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args)
+	{
 		launch(args);
 	}
 }
