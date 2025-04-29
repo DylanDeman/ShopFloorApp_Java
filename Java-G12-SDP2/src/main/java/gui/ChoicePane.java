@@ -7,6 +7,7 @@ import domain.user.UserController;
 import gui.login.LoginPane;
 import gui.machine.MachinesListComponent;
 import gui.maintenance.MaintenanceListComponent;
+import gui.report.AddReportForm;
 import gui.sitesList.SitesListComponent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -117,8 +118,8 @@ public class ChoicePane extends GridPane
 
 	private void goToAddRapport(Stage primaryStage)
 	{
-		MachineController mc = new MachineController();
-		AddRapportForm addRapportForm = new AddRapportForm(primaryStage, mc.getMachineList2().getFirst());
+		MaintenanceController mc = new MaintenanceController();
+		AddReportForm addRapportForm = new AddReportForm(primaryStage, mc.getMaintenances().getFirst());
 		Scene addRapportScene = new Scene(addRapportForm);
 		addRapportForm.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
 		primaryStage.setScene(addRapportScene);
