@@ -92,20 +92,6 @@ public class StartUpGUI extends Application {
         		""
         		);
 
-		List<Maintenance> maintenances = IntStream.range(0, 14)
-				.mapToObj(i -> 
-				new Maintenance(
-						LocalDate.now().plusDays(i), 
-						LocalDateTime.now().plusDays(i), 
-						LocalDateTime.now().plusDays(i).plusHours(i), 
-						u7, 
-						"reason", 
-						String.format("reason %d", i), 
-						MaintenanceStatus.IN_PROGRESS, 
-						r1
-						))
-				.collect(Collectors.toList());
-
 		EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
 
 		try {
@@ -138,7 +124,20 @@ public class StartUpGUI extends Application {
             entityManager.persist(m1);
             entityManager.persist(m2);
 	        
-	        
+    		List<Maintenance> maintenances = IntStream.range(0, 14)
+    				.mapToObj(i -> 
+    				new Maintenance(
+    						LocalDate.now().plusDays(i), 
+    						LocalDateTime.now().plusDays(i), 
+    						LocalDateTime.now().plusDays(i).plusHours(i), 
+    						u7, 
+    						"reason", 
+    						String.format("reason %d", i), 
+    						MaintenanceStatus.IN_PROGRESS,
+    						i % 2 == 0 ? m1 : m2,
+    						r1
+    						))
+    				.collect(Collectors.toList());
 
 			entityManager.persist(u1);
 			entityManager.persist(u2);

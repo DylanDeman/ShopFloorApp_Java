@@ -1,6 +1,13 @@
 package domain.maintenance;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
+
+import domain.machine.Machine;
+import domain.machine.MachineController;
+import domain.machine.MachineDTO;
+import domain.site.Site;
+import domain.site.SiteDTO;
 
 public class MaintenanceController {
 	private MaintenanceDao maintenanceRepo;
@@ -25,9 +32,44 @@ public class MaintenanceController {
 	            maintenance.getReason(),
 	            maintenance.getComments(),
 	            maintenance.getStatus(),
+	            convertToMachineDTO(maintenance.getMachine()),
 	            maintenance.getReport()
 	        );
 	    }).collect(Collectors.toUnmodifiableList());
+	}
+	
+	public MachineDTO convertToMachineDTO(Machine machine) {
+	    SiteDTO siteDTO = convertToSiteDTO(machine.getSite()); // Convert the Site object to a SiteDTO
+	    return new MachineDTO(
+	            machine.getId(),
+	            siteDTO,
+	            machine.getTechnician(),
+	            machine.getCode(),
+	            machine.getStatus(),
+	            machine.getProductieStatus(),
+	            machine.getLocation(),
+	            machine.getProductInfo(),
+	            machine.getLastMaintenance(),
+	            machine.getFutureMaintenance(),
+	            machine.getNumberDaysSinceLastMaintenance(),
+	            machine.getUpTimeInHours()
+	    );
+	}
+
+	private SiteDTO convertToSiteDTO(Site site) {
+	    return new SiteDTO(
+	            site.getId(),
+	            site.getSiteName(),
+	            site.getVerantwoordelijke(),  // Assuming this is a User object
+	            convertMachinesToMachineDTOs(site.getMachines()), // If Site has a set of Machines, convert them to MachineDTOs
+	            site.getStatus()
+	    );
+	}
+	
+	private Set<MachineDTO> convertMachinesToMachineDTOs(Set<Machine> machines) {
+	    return machines.stream()
+	            .map(this::convertToMachineDTO)
+	            .collect(Collectors.toSet());
 	}
 
 

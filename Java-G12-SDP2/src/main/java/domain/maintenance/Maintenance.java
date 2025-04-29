@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import domain.machine.Machine;
 import domain.rapport.Rapport;
 import domain.user.User;
 import jakarta.persistence.CascadeType;
@@ -52,6 +53,11 @@ public class Maintenance implements Serializable {
 	@Getter
 	private MaintenanceStatus status;
 	
+	@ManyToOne(cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "machine_id")
+	@Getter
+	private Machine machine;
+	
 	@OneToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "report_id")
 	@Getter
@@ -63,6 +69,7 @@ public class Maintenance implements Serializable {
 			String reason, 
 			String comments,
 			MaintenanceStatus status,
+			Machine machine,
 			Rapport report
 			) {
 		this.executionDate = executionDate;
@@ -72,6 +79,7 @@ public class Maintenance implements Serializable {
 		this.reason = reason;
 		this.comments = comments;
 		this.status = status;
+		this.machine = machine;
 		this.report = report;
 	}
 	

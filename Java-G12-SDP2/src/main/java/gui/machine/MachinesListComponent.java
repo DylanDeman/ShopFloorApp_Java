@@ -4,9 +4,11 @@ import java.util.List;
 
 import domain.machine.MachineController;
 import domain.machine.MachineDTO;
+import domain.maintenance.MaintenanceController;
 import domain.site.SiteController;
 import domain.user.UserController;
 import gui.ChoicePane;
+import gui.maintenance.MaintenanceListComponent;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.Insets;
@@ -137,7 +139,7 @@ public class MachinesListComponent extends VBox {
                 onderhoudButton.setOnAction(event -> {
                     MachineDTO selectedMachine = getTableView().getItems().get(getIndex());
                     System.out.println("Onderhoud for machine: " + selectedMachine.code());
-                    // Later: open onderhoud scherm
+                    goToMaintenanceList(stage, selectedMachine);
                 });
                 onderhoudButton.setStyle("-fx-background-color: transparent;");
             }
@@ -162,6 +164,7 @@ public class MachinesListComponent extends VBox {
                     MachineDTO selectedMachine = getTableView().getItems().get(getIndex());
                     System.out.println("Rapporten for machine: " + selectedMachine.code());
                     // Later: open rapport scherm
+                    
                 });
                 rapportButton.setStyle("-fx-background-color: transparent;");
             }
@@ -215,6 +218,14 @@ public class MachinesListComponent extends VBox {
 				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
 				new BackgroundSize(100, 100, true, true, true, true));
 		setBackground(new Background(backgroundImage));
+    }
+    
+    
+    private void goToMaintenanceList(Stage stage, MachineDTO machine) {
+		MaintenanceController mc = new MaintenanceController();
+		MaintenanceListComponent maintenanceListComponent = new MaintenanceListComponent(stage, mc, machine);
+		Scene maintenanceListScene = new Scene(maintenanceListComponent);
+		stage.setScene(maintenanceListScene);
     }
 
     private void goBackToChoicePane() {
