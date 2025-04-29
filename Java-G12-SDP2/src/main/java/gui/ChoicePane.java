@@ -3,6 +3,7 @@ package gui;
 import domain.machine.MachineController;
 import domain.maintenance.MaintenanceController;
 import domain.site.SiteController;
+import domain.user.User;
 import domain.user.UserController;
 import gui.login.LoginPane;
 import gui.machine.MachinesListComponent;
@@ -21,9 +22,15 @@ import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import repository.GenericDao;
+import repository.GenericDaoJpa;
+import repository.UserRepository;
 
 public class ChoicePane extends GridPane
 {
+
+	GenericDao<User> userDao = new GenericDaoJpa<>(User.class);
+	UserRepository userRepo = new UserRepository(userDao);
 
 	public ChoicePane(Stage primaryStage)
 	{
@@ -95,7 +102,7 @@ public class ChoicePane extends GridPane
 
 	private void goToUserManagement(Stage primaryStage)
 	{
-		UserManagementPane userManagementPane = new UserManagementPane(primaryStage);
+		UserManagementPane userManagementPane = new UserManagementPane(primaryStage, userRepo);
 		primaryStage.setScene(new Scene(userManagementPane, 800, 800));
 	}
 

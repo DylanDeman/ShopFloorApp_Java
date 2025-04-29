@@ -3,8 +3,12 @@ package domain.user;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.ArrayList;
+import java.util.List;
 
 import domain.Address;
+import interfaces.Observer;
+import interfaces.Subject;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -32,26 +36,17 @@ import util.Status;
 @Entity
 @Table(name = "users")
 @NamedQueries({
-		@NamedQuery(
-				name = "User.getAllWithAddress", 
-				query = "SELECT u FROM User u JOIN u.address a ORDER BY u.id"
-				),
-		@NamedQuery(
-				name = "User.getAllTechniekers",
-				query = """
-						SELECT u FROM User u
-						WHERE u.role = util.Role.TECHNIEKER
-						"""),
-		@NamedQuery(
-				name= "User.getByEmail",
-				query= "SELECT u FROM User u WHERE u.email = :email ORDER BY u.id"
-				)
-		})
-public class User implements Serializable
+		@NamedQuery(name = "User.getAllWithAddress", query = "SELECT u FROM User u JOIN u.address a ORDER BY u.id"),
+		@NamedQuery(name = "User.getAllTechniekers", query = """
+				SELECT u FROM User u
+				WHERE u.role = util.Role.TECHNIEKER
+				"""),
+		@NamedQuery(name = "User.getByEmail", query = "SELECT u FROM User u WHERE u.email = :email ORDER BY u.id") })
+public class User implements Serializable, Subject
 {
 	private static final long serialVersionUID = 1L;
-	private static final int MIN_AGE = 18;
-	private static final int MIN_PASSWORD_LENGTH = 8;
+
+	private List<Observer> observers = new ArrayList<>();
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -106,5 +101,25 @@ public class User implements Serializable
 	public String getFullName()
 	{
 		return String.format("%s %s", firstName, lastName);
+	}
+
+	@Override
+	public void addObserver(Observer o)
+	{
+		observers.add(o);
+		notifyObservers();
+	}
+
+	@Override
+	public void removeObserver(Observer o)
+	{
+		observers.remove(o);
+		notifyObservers();
+	}
+
+	@Override
+	public void notifyObservers()
+	{
+		observers.forEach(o -> o.update());
 	}
 }

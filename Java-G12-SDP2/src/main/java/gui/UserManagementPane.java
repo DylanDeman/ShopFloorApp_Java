@@ -3,13 +3,15 @@ package gui;
 import java.util.List;
 
 import domain.user.User;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.TypedQuery;
+import interfaces.Observer;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
@@ -25,21 +27,28 @@ import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
-import util.JPAUtil;
+import repository.UserRepository;
 
-public class UserManagementPane extends GridPane
+public class UserManagementPane extends GridPane implements Observer
 {
+
 	private TableView<User> userTable;
 	private Button addButton;
-
-	private EntityManager entityManager;
 	private Stage primaryStage;
+	private final UserRepository userRepo;
 
-	public UserManagementPane(Stage primaryStage)
+	public UserManagementPane(Stage primaryStage, UserRepository userRepo)
 	{
+		this.userRepo = userRepo;
+		this.userRepo.addObserver(this);
 		this.primaryStage = primaryStage;
-		this.entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
 
+		buildGUI();
+		loadUsers();
+	}
+
+	private void buildGUI()
+	{
 		setVgap(10);
 		setHgap(10);
 		setPadding(new Insets(20));
@@ -72,8 +81,6 @@ public class UserManagementPane extends GridPane
 
 		GridPane.setHgrow(userTable, Priority.ALWAYS);
 		GridPane.setVgrow(userTable, Priority.ALWAYS);
-
-		loadUsersFromDatabase();
 	}
 
 	private void buildColumns()
@@ -155,46 +162,26 @@ public class UserManagementPane extends GridPane
 
 	}
 
-	private void loadUsersFromDatabase()
+	private void loadUsers()
 	{
-		if (entityManager != null && entityManager.isOpen())
-		{
-			entityManager.close();
-		}
-
-		if (!entityManager.isOpen())
-		{
-			entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
-		}
-		entityManager.getTransaction().begin();
-
-		try
-		{
-			TypedQuery<User> userQuery = entityManager.createNamedQuery("User.getAllWithAddress", User.class);
-			List<User> userList = userQuery.getResultList();
-			userTable.getItems().setAll(userList);
-			entityManager.getTransaction().commit();
-		} catch (Exception e)
-		{
-			System.err.println("Error loading users: " + e.getMessage());
-			e.printStackTrace();
-		}
+		List<User> users = userRepo.getAllUsers();
+		userTable.getItems().setAll(users);
 	}
 
 	private void openAddUserForm(Stage primaryStage)
 	{
-		primaryStage.getScene().setRoot(new AddOrEditUserForm(primaryStage, this, null));
+		primaryStage.getScene().setRoot(new AddOrEditUserForm(primaryStage, userRepo, this, null));
 	}
 
 	private void openEditUserForm(Stage primaryStage, User user)
 	{
-		primaryStage.getScene().setRoot(new AddOrEditUserForm(primaryStage, this, user));
+		primaryStage.getScene().setRoot(new AddOrEditUserForm(primaryStage, userRepo, this, user));
 	}
 
 	public void returnToUserManagement(Stage primaryStage)
 	{
 		primaryStage.getScene().setRoot(this);
-		loadUsersFromDatabase();
+		loadUsers();
 	}
 
 	private void returnToChoicePane(Stage stage)
@@ -206,10 +193,25 @@ public class UserManagementPane extends GridPane
 
 	private void deleteUser(User user)
 	{
-		userTable.getItems().remove(user);
-		entityManager.getTransaction().begin();
-		entityManager.remove(user);
-		entityManager.getTransaction().commit();
+		try
+		{
+			userRepo.deleteUser(user);
+		} catch (Exception e)
+		{
+			Platform.runLater(() -> {
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Fout bij verwijderen");
+				alert.setHeaderText("Kan gebruiker niet verwijderen");
+				alert.setContentText("Deze gebruiker is nog gekoppeld aan een site");
+				alert.showAndWait();
+			});
+		}
+	}
+
+	@Override
+	public void update()
+	{
+		Platform.runLater(this::loadUsers);
 	}
 
 }
