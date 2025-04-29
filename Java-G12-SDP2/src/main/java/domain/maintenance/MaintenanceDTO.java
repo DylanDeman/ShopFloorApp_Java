@@ -8,8 +8,7 @@ import domain.user.User;
 import util.MaintenanceStatus;
 
 public record MaintenanceDTO(int id, LocalDate executionDate, LocalDateTime startDate, LocalDateTime endDate,
-		User technician, String reason, String comments, MaintenanceStatus status, Report report
-		) {
+		User technician, String reason, String comments, MaintenanceStatus status, Report report)
+{
 
 }
-

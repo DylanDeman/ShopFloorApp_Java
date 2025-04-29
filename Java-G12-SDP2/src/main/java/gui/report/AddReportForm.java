@@ -16,9 +16,11 @@ import domain.report.ReportController;
 import domain.user.User;
 import gui.ChoicePane;
 import gui.customComponents.CustomButton;
+import gui.customComponents.CustomInformationBox;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
@@ -33,6 +35,8 @@ import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
@@ -47,7 +51,7 @@ public class AddReportForm extends BorderPane
 	private Label technicianErrorLabel, startDateErrorLabel, startTimeErrorLabel, endDateErrorLabel, endTimeErrorLabel,
 			reasonErrorLabel;
 	private Label generalMessageLabel;
-	private VBox formBox, headerBox;
+	private VBox formBox;
 	private GridPane formGridPane;
 	private MaintenanceDTO selectedMaintenanceDTO;
 	private ReportController reportController;
@@ -72,80 +76,28 @@ public class AddReportForm extends BorderPane
 
 		this.selectedMaintenanceDTO = maintenanceDTO;
 
-		// Header
-		titleLabel = new Label("Rapport aanmaken");
-		titleLabel.getStyleClass().add("header-label");
+		VBox titleSection = createTitleSection(primaryStage);
 
-		// Form
-		formGridPane = new GridPane();
-		formGridPane.setHgap(10);
-		formGridPane.setVgap(5);
-		formGridPane.setPadding(new Insets(10));
-
-		siteNameLabel = new Label("TEST SITE");
-		responsiblePersonLabel = new Label(maintenanceDTO.technician().getFullName());
-		maintenanceNumberLabel = new Label("" + maintenanceDTO.id());
-
-		technicianComboBox = new ComboBox<>();
-		startDatePicker = new DatePicker();
-		startTimeField = new TextField();
-		endDatePicker = new DatePicker();
-		endTimeField = new TextField();
-		reasonField = new TextField();
-		commentsArea = new TextArea();
-		commentsArea.setPrefRowCount(5);
-		commentsArea.setWrapText(true);
-
-		// Errors
-		technicianErrorLabel = createErrorLabel();
-		startDateErrorLabel = createErrorLabel();
-		startTimeErrorLabel = createErrorLabel();
-		endDateErrorLabel = createErrorLabel();
-		endTimeErrorLabel = createErrorLabel();
-		reasonErrorLabel = createErrorLabel();
 		generalMessageLabel = new Label();
 		generalMessageLabel.setVisible(false);
 		generalMessageLabel.getStyleClass().add("error-label");
+		generalMessageLabel.setMaxWidth(Double.MAX_VALUE);
+		generalMessageLabel.setAlignment(Pos.CENTER);
 
-		// Fill Form
-		int row = 0;
+		formGridPane = new GridPane();
+		formGridPane.setHgap(15);
+		formGridPane.setVgap(12);
+		formGridPane.setPadding(new Insets(20));
+		initializeFormComponents();
 
-		// Add site, responsible person, maintenance number fields to form with same
-		// spacing
-		formGridPane.add(createLabeledField("Site:", siteNameLabel), 0, row++, 2, 1);
-		formGridPane.add(createLabeledField("Verantwoordelijke:", responsiblePersonLabel), 0, row++, 2, 1);
-		formGridPane.add(createLabeledField("Onderhoudsnummer:", maintenanceNumberLabel), 0, row++, 2, 1);
+		organizeFormLayout();
 
-		// Add technician combo box
-		formGridPane.add(createLabeledField("Technieker:", technicianComboBox), 0, row++, 2, 1);
-		formGridPane.add(technicianErrorLabel, 0, row++, 2, 1);
-
-		// Date and time fields together
-		HBox startDateTimeBox = new HBox(10, createLabeledField("Startdatum:", startDatePicker),
-				createLabeledField("Starttijd (HH:MM):", startTimeField));
-		formGridPane.add(startDateTimeBox, 0, row++, 2, 1);
-		formGridPane.add(startDateErrorLabel, 0, row++, 2, 1);
-		formGridPane.add(startTimeErrorLabel, 0, row++, 2, 1);
-
-		HBox endDateTimeBox = new HBox(10, createLabeledField("Einddatum:", endDatePicker),
-				createLabeledField("Eindtijd (HH:MM):", endTimeField));
-		formGridPane.add(endDateTimeBox, 0, row++, 2, 1);
-		formGridPane.add(endDateErrorLabel, 0, row++, 2, 1);
-		formGridPane.add(endTimeErrorLabel, 0, row++, 2, 1);
-
-		formGridPane.add(createLabeledField("Reden:", reasonField), 0, row++, 2, 1);
-		formGridPane.add(reasonErrorLabel, 0, row++, 2, 1);
-
-		formGridPane.add(createLabeledField("Opmerkingen:", commentsArea), 0, row++, 2, 1);
-
-		// Form Container
 		formBox = new VBox(15, formGridPane);
 		formBox.getStyleClass().add("form-box");
 		formBox.setAlignment(Pos.TOP_CENTER);
-		formBox.setMaxWidth(900);
+		formBox.setMaxWidth(800);
 		formBox.setMinWidth(400);
 
-		// Button
 		FontIcon saveIcon = new FontIcon(BootstrapIcons.SAVE);
 		CustomButton createReportBtn = new CustomButton(saveIcon, "Rapport aanmaken");
 		createReportBtn.getStyleClass().add("create-report-button");
@@ -154,19 +106,196 @@ public class AddReportForm extends BorderPane
 
 		HBox buttonBox = new HBox(createReportBtn);
 		buttonBox.setAlignment(Pos.CENTER);
-		buttonBox.setPadding(new Insets(20, 0, 0, 0));
+		buttonBox.setPadding(new Insets(20, 0, 30, 0));
 
-		VBox content = new VBox(10, titleLabel, generalMessageLabel, formBox, buttonBox);
-		content.getStyleClass().add("content-container");
+		VBox content = new VBox(20, titleSection, generalMessageLabel, formBox, buttonBox);
 		content.setAlignment(Pos.TOP_CENTER);
-		content.setPadding(new Insets(20));
+		content.setPadding(new Insets(50, 80, 0, 80));
 
-		this.widthProperty().addListener((obs, oldVal, newVal) -> adjustFormLayout(newVal.doubleValue()));
+		this.widthProperty().addListener((obs, oldVal, newVal) ->
+		{
+			adjustFormLayout(newVal.doubleValue());
+			updatePadding(primaryStage);
+		});
 
-		this.setTop(headerBox);
 		this.setCenter(content);
 
 		loadTechnicians();
+	}
+
+	private void updatePadding(Stage stage)
+	{
+		double amountOfPixels = stage.getWidth();
+		double calculatedPadding = amountOfPixels < 1200 ? amountOfPixels * 0.05 : amountOfPixels * 0.10;
+		this.setPadding(new Insets(50, calculatedPadding, 0, calculatedPadding));
+	}
+
+	private VBox createTitleSection(Stage primaryStage)
+	{
+		HBox header = createWindowHeader(primaryStage);
+		HBox infoBox = new CustomInformationBox("Maak een rapport aan voor het geselecteerde onderhoud.");
+		return new VBox(10, header, infoBox);
+	}
+
+	private HBox createWindowHeader(Stage primaryStage)
+	{
+		HBox hbox = new HBox(10);
+		hbox.setAlignment(Pos.CENTER_LEFT);
+
+		FontIcon icon = new FontIcon("fas-arrow-left");
+		icon.setIconSize(20);
+		Button backButton = new Button();
+		backButton.setGraphic(icon);
+		backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+		backButton.setOnAction(e -> returnToChoicePane(primaryStage));
+
+		titleLabel = new Label("Rapport aanmaken");
+		titleLabel.setStyle("-fx-font: 40 arial;");
+
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+
+		hbox.getChildren().addAll(backButton, titleLabel, spacer);
+		return hbox;
+	}
+
+	private void initializeFormComponents()
+	{
+		// TODO: Get the related site
+		siteNameLabel = new Label("TEST SITE");
+		siteNameLabel.getStyleClass().add("info-value");
+
+		responsiblePersonLabel = new Label(selectedMaintenanceDTO.technician().getFullName());
+		responsiblePersonLabel.getStyleClass().add("info-value");
+
+		maintenanceNumberLabel = new Label("" + selectedMaintenanceDTO.id());
+		maintenanceNumberLabel.getStyleClass().add("info-value");
+
+		// Initialize input fields
+		technicianComboBox = new ComboBox<>();
+		technicianComboBox.setPromptText("Selecteer een technieker");
+		technicianComboBox.setMaxWidth(Double.MAX_VALUE);
+
+		startDatePicker = new DatePicker();
+		startDatePicker.setPromptText("Kies startdatum");
+
+		startTimeField = new TextField();
+		startTimeField.setPromptText("HH:MM");
+
+		endDatePicker = new DatePicker();
+		endDatePicker.setPromptText("Kies einddatum");
+
+		endTimeField = new TextField();
+		endTimeField.setPromptText("HH:MM");
+
+		reasonField = new TextField();
+		reasonField.setPromptText("Voer reden in");
+
+		commentsArea = new TextArea();
+		commentsArea.setPrefRowCount(5);
+		commentsArea.setWrapText(true);
+		commentsArea.setPromptText("Voer eventuele opmerkingen in");
+
+		// Initialize error labels
+		technicianErrorLabel = createErrorLabel("Selecteer een technieker");
+		startDateErrorLabel = createErrorLabel("Startdatum is verplicht");
+		startTimeErrorLabel = createErrorLabel("Voer starttijd in (HH:MM)");
+		endDateErrorLabel = createErrorLabel("Einddatum is verplicht");
+		endTimeErrorLabel = createErrorLabel("Voer eindtijd in (HH:MM)");
+		reasonErrorLabel = createErrorLabel("Reden is verplicht");
+	}
+
+	private void organizeFormLayout()
+	{
+		int row = 0;
+
+		Label infoSectionLabel = new Label("Onderhoudsgegevens");
+		infoSectionLabel.getStyleClass().add("section-label");
+		formGridPane.add(infoSectionLabel, 0, row++, 2, 1);
+
+		double labelWidth = 150;
+
+		formGridPane.add(createInfoField("Site:", siteNameLabel, labelWidth), 0, row++, 2, 1);
+		formGridPane.add(createInfoField("Verantwoordelijke:", responsiblePersonLabel, labelWidth), 0, row++, 2, 1);
+		formGridPane.add(createInfoField("Onderhoudsnummer:", maintenanceNumberLabel, labelWidth), 0, row++, 2, 1);
+
+		VBox spacer = new VBox();
+		spacer.setMinHeight(15);
+		formGridPane.add(spacer, 0, row++);
+
+		Label reportSectionLabel = new Label("Rapport informatie");
+		reportSectionLabel.getStyleClass().add("section-label");
+		formGridPane.add(reportSectionLabel, 0, row++, 2, 1);
+
+		formGridPane.add(createLabeledField("Technieker:", technicianComboBox, labelWidth), 0, row++, 2, 1);
+		formGridPane.add(technicianErrorLabel, 0, row++, 2, 1);
+
+		double timeFieldLabelWidth = 80;
+
+		HBox startDateTimeBox = new HBox(15);
+		startDateTimeBox.setAlignment(Pos.CENTER_LEFT);
+
+		HBox startDateField = createLabeledField("Startdatum:", startDatePicker, labelWidth);
+		HBox startTimeField = createLabeledField("Starttijd:", this.startTimeField, timeFieldLabelWidth);
+
+		startDateTimeBox.getChildren().addAll(startDateField, startTimeField);
+		formGridPane.add(startDateTimeBox, 0, row++, 2, 1);
+
+		HBox startErrorBox = new HBox(20, startDateErrorLabel, startTimeErrorLabel);
+		formGridPane.add(startErrorBox, 0, row++, 2, 1);
+
+		HBox endDateTimeBox = new HBox(15);
+		endDateTimeBox.setAlignment(Pos.CENTER_LEFT);
+
+		HBox endDateField = createLabeledField("Einddatum:", endDatePicker, labelWidth);
+		HBox endTimeField = createLabeledField("Eindtijd:", this.endTimeField, timeFieldLabelWidth);
+
+		endDateTimeBox.getChildren().addAll(endDateField, endTimeField);
+		formGridPane.add(endDateTimeBox, 0, row++, 2, 1);
+
+		HBox endErrorBox = new HBox(20, endDateErrorLabel, endTimeErrorLabel);
+		formGridPane.add(endErrorBox, 0, row++, 2, 1);
+
+		formGridPane.add(createLabeledField("Reden:", reasonField, labelWidth), 0, row++, 2, 1);
+		formGridPane.add(reasonErrorLabel, 0, row++, 2, 1);
+
+		formGridPane.add(createLabeledField("Opmerkingen:", commentsArea, labelWidth), 0, row++, 2, 1);
+	}
+
+	private HBox createInfoField(String labelText, javafx.scene.Node field, double labelWidth)
+	{
+		Label label = new Label(labelText);
+		label.getStyleClass().add("form-label");
+
+		// Set fixed width for consistent alignment
+		label.setPrefWidth(labelWidth);
+
+		// Create container with better alignment
+		HBox box = new HBox(10, label, field);
+		box.getStyleClass().add("form-field-container");
+		box.setAlignment(Pos.CENTER_LEFT);
+
+		return box;
+	}
+
+	private HBox createLabeledField(String labelText, javafx.scene.Node field, double labelWidth)
+	{
+		Label label = new Label(labelText);
+		label.getStyleClass().add("form-label");
+
+		label.setPrefWidth(labelWidth);
+
+		if (field instanceof TextField || field instanceof DatePicker || field instanceof ComboBox)
+		{
+			field.setStyle("-fx-pref-width: 200px;");
+		}
+
+		// Create container with better alignment
+		HBox box = new HBox(10, label, field);
+		box.getStyleClass().add("form-field-container");
+		box.setAlignment(Pos.CENTER_LEFT);
+
+		return box;
 	}
 
 	private void adjustFormLayout(double width)
@@ -339,23 +468,9 @@ public class AddReportForm extends BorderPane
 		primaryStage.setScene(scene);
 	}
 
-	private HBox createLabeledField(String labelText, javafx.scene.Node field)
+	private Label createErrorLabel(String text)
 	{
-		Label label = new Label(labelText);
-		label.getStyleClass().add("form-label");
-
-		// Ensure all form fields are aligned properly
-		HBox box = new HBox(10, label, field);
-		box.getStyleClass().add("form-field-container");
-		box.setAlignment(Pos.CENTER_LEFT);
-		box.setMaxWidth(Double.MAX_VALUE);
-
-		return box;
-	}
-
-	private Label createErrorLabel()
-	{
-		Label errorLabel = new Label();
+		Label errorLabel = new Label(text);
 		errorLabel.getStyleClass().add("error-label");
 		errorLabel.setVisible(false);
 		return errorLabel;
