@@ -153,35 +153,9 @@ public class MachinesListComponent extends VBox {
                     setGraphic(onderhoudButton);
                 }
             }
-        });
+        });        
 
-        TableColumn<MachineDTO, Void> rapportCol = new TableColumn<>("Rapporten");
-        rapportCol.setCellFactory(param -> new TableCell<>() {
-            private final Button rapportButton = new Button("📄");
-
-            {
-                rapportButton.setOnAction(event -> {
-                    MachineDTO selectedMachine = getTableView().getItems().get(getIndex());
-                    System.out.println("Rapporten for machine: " + selectedMachine.code());
-                    // Later: open rapport scherm
-                    
-                });
-                rapportButton.setStyle("-fx-background-color: transparent;");
-            }
-
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(rapportButton);
-                }
-            }
-        });       
-        
-
-     machineTable.getColumns().addAll(editCol, onderhoudCol, rapportCol);
+     machineTable.getColumns().addAll(editCol, onderhoudCol);
 
 
      machineTable.getColumns().addAll(
