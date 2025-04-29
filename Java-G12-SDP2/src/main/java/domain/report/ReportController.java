@@ -119,7 +119,7 @@ public class ReportController
 
 	public MaintenanceDTO getMaintenanceById(int id)
 	{
-		Maintenance maintenance = maintenanceController.maintenanceRepo.get(id);
+		Maintenance maintenance = maintenanceController.getMaintenance(id);
 
 		if (maintenance == null)
 		{

@@ -6,7 +6,6 @@ import java.time.LocalDateTime;
 
 import domain.report.Report;
 import domain.machine.Machine;
-import domain.rapport.Rapport;
 import domain.user.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -25,9 +24,9 @@ import lombok.NoArgsConstructor;
 import util.MaintenanceStatus;
 
 @Entity
+@Table(name = "maintenances")
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "maintenances")
 public class Maintenance implements Serializable
 {
 
@@ -63,24 +62,13 @@ public class Maintenance implements Serializable
 	@Getter
 	private Machine machine;
 	
-	@OneToOne(cascade = CascadeType.PERSIST)
-	@JoinColumn(name = "report_id")
-	@Getter
-	private Report report;
-
-	public Maintenance(LocalDate executionDate, LocalDateTime startDate, LocalDateTime endDate, User technician,
-			String reason, String comments, MaintenanceStatus status, Report report)
-	{
-	private Rapport report;
-	
 	public Maintenance(LocalDate executionDate, 
 			LocalDateTime startDate, LocalDateTime endDate, 
 			User technician, 
 			String reason, 
 			String comments,
 			MaintenanceStatus status,
-			Machine machine,
-			Rapport report
+			Machine machine
 			) {
 		this.executionDate = executionDate;
 		this.startDate = startDate;
@@ -90,7 +78,6 @@ public class Maintenance implements Serializable
 		this.comments = comments;
 		this.status = status;
 		this.machine = machine;
-		this.report = report;
 	}
 
 }

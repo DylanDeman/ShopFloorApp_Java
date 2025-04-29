@@ -4,11 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MaintenanceController
-{
-	public MaintenanceDao maintenanceRepo;
 import domain.machine.Machine;
-import domain.machine.MachineController;
 import domain.machine.MachineDTO;
 import domain.site.Site;
 import domain.site.SiteDTO;
@@ -38,19 +34,14 @@ public class MaintenanceController {
 	            maintenance.getReason(),
 	            maintenance.getComments(),
 	            maintenance.getStatus(),
-	            convertToMachineDTO(maintenance.getMachine()),
-	            maintenance.getReport()
+	            convertToMachineDTO(maintenance.getMachine())
 	        );
 	    }).collect(Collectors.toUnmodifiableList());
-
-	public List<MaintenanceDTO> makeMaintenanceDTOs(List<Maintenance> maintenances)
-	{
-		return maintenances.stream().map(maintenance ->
-		{
-			return new MaintenanceDTO(maintenance.getId(), maintenance.getExecutionDate(), maintenance.getStartDate(),
-					maintenance.getEndDate(), maintenance.getTechnician(), maintenance.getReason(),
-					maintenance.getComments(), maintenance.getStatus(), maintenance.getReport());
-		}).collect(Collectors.toUnmodifiableList());
+	    
+	}
+	
+	public Maintenance getMaintenance(int id) {
+		return maintenanceRepo.get(id);
 	}
 	
 	public MachineDTO convertToMachineDTO(Machine machine) {

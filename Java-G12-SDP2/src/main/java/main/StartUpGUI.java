@@ -83,19 +83,25 @@ public class StartUpGUI extends Application
 
 		MaintenanceController mc = new MaintenanceController();
 
-		List<Maintenance> maintenances = IntStream.range(0, 14)
-				.mapToObj(i -> new Maintenance(LocalDate.now().plusDays(i), LocalDateTime.now().plusDays(i),
-						LocalDateTime.now().plusDays(i).plusHours(i), u7, "reason", String.format("reason %d", i),
-						MaintenanceStatus.IN_PROGRESS, null))
-				.collect(Collectors.toList());
-
-		Report r1 = new Report(mc.makeMaintenanceDTOs(maintenances).getFirst(), u7, LocalDate.now(), LocalTime.now(),
-				LocalDate.now().plusDays(1), LocalTime.now().plusHours(6), "Test reason", "");
-
 		EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
-
+		
 		try
 		{
+			
+			Machine m1 = Machine.builder().site(site1).technician(u2).code("M1-3096").status("Active")
+					.productieStatus("Idle").location("Line 1").productInfo("Product A")
+					.lastMaintenance(LocalDateTime.of(2025, 2, 26, 15, 0))
+					.futureMaintenance(LocalDateTime.of(2025, 5, 8, 16, 0)).build();
+			
+			List<Maintenance> maintenances = IntStream.range(0, 14)
+					.mapToObj(i -> new Maintenance(LocalDate.now().plusDays(i), LocalDateTime.now().plusDays(i),
+							LocalDateTime.now().plusDays(i).plusHours(i), u7, "reason", String.format("reason %d", i),
+							MaintenanceStatus.IN_PROGRESS, m1))
+					.collect(Collectors.toList());
+			
+			Report r1 = new Report(mc.makeMaintenanceDTOs(maintenances).getFirst(), u7, LocalDate.now(), LocalTime.now(),
+					LocalDate.now().plusDays(1), LocalTime.now().plusHours(6), "Test reason", "");
+			
 			entityManager.getTransaction().begin();
 
 	        Machine m2 = Machine.builder()
@@ -113,7 +119,7 @@ public class StartUpGUI extends Application
             entityManager.persist(m1);
             entityManager.persist(m2);
 	        
-    		List<Maintenance> maintenances = IntStream.range(0, 14)
+    		maintenances = IntStream.range(0, 14)
     				.mapToObj(i -> 
     				new Maintenance(
     						LocalDate.now().plusDays(i), 
@@ -123,15 +129,8 @@ public class StartUpGUI extends Application
     						"reason", 
     						String.format("reason %d", i), 
     						MaintenanceStatus.IN_PROGRESS,
-    						i % 2 == 0 ? m1 : m2,
-    						r1
-    						))
+    						i % 2 == 0 ? m1 : m2))
     				.collect(Collectors.toList());
-
-			Machine m2 = Machine.builder().site(site1).technician(u2).code("M2-5678").status("Inactive")
-					.productieStatus("Idle").location("Line 2").productInfo("Product B")
-					.lastMaintenance(LocalDateTime.of(2025, 3, 15, 10, 0))
-					.futureMaintenance(LocalDateTime.of(2025, 6, 10, 10, 0)).build();
 
 			entityManager.persist(m1);
 			entityManager.persist(m2);
