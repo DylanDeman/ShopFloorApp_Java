@@ -98,10 +98,35 @@ public class StartUpGUI extends Application
 		{
 			entityManager.getTransaction().begin();
 
-			Machine m1 = Machine.builder().site(site1).technician(u1).code("M1-1234").status("Active")
-					.productieStatus("Running").location("Line 1").productInfo("Product A")
-					.lastMaintenance(LocalDateTime.of(2025, 4, 20, 10, 0))
-					.futureMaintenance(LocalDateTime.of(2025, 5, 20, 10, 0)).build();
+	        Machine m2 = Machine.builder()
+	                 .site(site1)
+	                 .technician(u2)
+	                 .code("M2-5678")
+	                 .status("Inactive")
+	                 .productieStatus("Idle")
+	                 .location("Line 2")
+	                 .productInfo("Product B")
+	                 .lastMaintenance(LocalDateTime.of(2025, 3, 15, 10, 0))
+	                 .futureMaintenance(LocalDateTime.of(2025, 6, 10, 10, 0))
+	                 .build();
+	        
+            entityManager.persist(m1);
+            entityManager.persist(m2);
+	        
+    		List<Maintenance> maintenances = IntStream.range(0, 14)
+    				.mapToObj(i -> 
+    				new Maintenance(
+    						LocalDate.now().plusDays(i), 
+    						LocalDateTime.now().plusDays(i), 
+    						LocalDateTime.now().plusDays(i).plusHours(i), 
+    						u7, 
+    						"reason", 
+    						String.format("reason %d", i), 
+    						MaintenanceStatus.IN_PROGRESS,
+    						i % 2 == 0 ? m1 : m2,
+    						r1
+    						))
+    				.collect(Collectors.toList());
 
 			Machine m2 = Machine.builder().site(site1).technician(u2).code("M2-5678").status("Inactive")
 					.productieStatus("Idle").location("Line 2").productInfo("Product B")
