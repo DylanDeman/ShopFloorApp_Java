@@ -48,7 +48,8 @@ public class AddReportForm extends BorderPane
 	private Label siteNameLabel, responsiblePersonLabel, maintenanceNumberLabel, titleLabel;
 	private ComboBox<String> technicianComboBox;
 	private DatePicker startDatePicker, endDatePicker;
-	private TextField startTimeField, endTimeField;
+	private ComboBox<LocalTime> startTimeField;
+	private ComboBox<LocalTime> endTimeField;
 	private TextField reasonField;
 	private TextArea commentsArea;
 	private Label technicianErrorLabel, startDateErrorLabel, startTimeErrorLabel, endDateErrorLabel, endTimeErrorLabel,
@@ -167,6 +168,7 @@ public class AddReportForm extends BorderPane
 
 	private void initializeFormComponents()
 	{
+		// TODO: Get the related site
 		siteNameLabel = new Label(selectedMaintenanceDTO.machine().site().siteName());
 		siteNameLabel.getStyleClass().add("info-value");
 
@@ -184,14 +186,20 @@ public class AddReportForm extends BorderPane
 		startDatePicker = new DatePicker();
 		startDatePicker.setPromptText("Kies startdatum");
 
-		startTimeField = new TextField();
-		startTimeField.setPromptText("HH:MM");
+		// Replace TextField with ComboBox for time selection
+		startTimeField = new ComboBox<>();
+		startTimeField.setPromptText("Kies starttijd");
+		startTimeField.setMaxWidth(Double.MAX_VALUE);
+		populateTimePicker(startTimeField); // Populating ComboBox with time intervals
 
 		endDatePicker = new DatePicker();
 		endDatePicker.setPromptText("Kies einddatum");
 
-		endTimeField = new TextField();
-		endTimeField.setPromptText("HH:MM");
+		// Replace TextField with ComboBox for time selection
+		endTimeField = new ComboBox<>();
+		endTimeField.setPromptText("Kies eindtijd");
+		endTimeField.setMaxWidth(Double.MAX_VALUE);
+		populateTimePicker(endTimeField); // Populating ComboBox with time intervals
 
 		reasonField = new TextField();
 		reasonField.setPromptText("Voer reden in");
@@ -208,6 +216,42 @@ public class AddReportForm extends BorderPane
 		endDateErrorLabel = createErrorLabel("Einddatum is verplicht");
 		endTimeErrorLabel = createErrorLabel("Voer eindtijd in (HH:MM)");
 		reasonErrorLabel = createErrorLabel("Reden is verplicht");
+	}
+
+	// Method to populate ComboBox with 15-minute interval times
+	private void populateTimePicker(ComboBox<LocalTime> timePicker)
+	{
+		LocalTime time = LocalTime.of(0, 0);
+		while (time.isBefore(LocalTime.of(23, 45)))
+		{
+			timePicker.getItems().add(time);
+			time = time.plusMinutes(15);
+		}
+
+		timePicker.setConverter(new javafx.util.StringConverter<>()
+		{
+			private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+			@Override
+			public String toString(LocalTime time)
+			{
+				if (time != null)
+				{
+					return formatter.format(time);
+				}
+				return "";
+			}
+
+			@Override
+			public LocalTime fromString(String string)
+			{
+				if (string != null && !string.isEmpty())
+				{
+					return LocalTime.parse(string, formatter);
+				}
+				return null;
+			}
+		});
 	}
 
 	private void organizeFormLayout()
@@ -332,9 +376,9 @@ public class AddReportForm extends BorderPane
 			String reason = reasonField.getText().trim();
 			String comments = commentsArea.getText().trim();
 			LocalDate startDate = startDatePicker.getValue();
-			LocalTime startTime = parseTime(startTimeField.getText());
+			LocalTime startTime = startTimeField.getValue().plusHours(1);
 			LocalDate endDate = endDatePicker.getValue();
-			LocalTime endTime = parseTime(endTimeField.getText());
+			LocalTime endTime = endTimeField.getValue().plusHours(1);
 			Site site = siteController.getSite(selectedMaintenanceDTO.machine().site().id());
 
 			Report report = new Report(maintenanceController.getMaintenance(selectedMaintenanceDTO.id()),
@@ -367,7 +411,7 @@ public class AddReportForm extends BorderPane
 			hasErrors = true;
 		}
 
-		if (startTimeField.getText() == null || startTimeField.getText().trim().isEmpty())
+		if (startTimeField.getValue() == null || startTimeField.getValue().toString().isEmpty())
 		{
 			startTimeErrorLabel.setVisible(true);
 			hasErrors = true;
@@ -375,7 +419,7 @@ public class AddReportForm extends BorderPane
 		{
 			try
 			{
-				parseTime(startTimeField.getText());
+				startTimeField.getValue();
 			} catch (DateTimeParseException e)
 			{
 				startTimeErrorLabel.setText("Ongeldige tijd. Gebruik HH:MM format.");
@@ -390,7 +434,7 @@ public class AddReportForm extends BorderPane
 			hasErrors = true;
 		}
 
-		if (endTimeField.getText() == null || endTimeField.getText().trim().isEmpty())
+		if (endTimeField.getValue() == null || endTimeField.getValue().toString().isEmpty())
 		{
 			endTimeErrorLabel.setVisible(true);
 			hasErrors = true;
@@ -398,7 +442,7 @@ public class AddReportForm extends BorderPane
 		{
 			try
 			{
-				parseTime(endTimeField.getText());
+				endTimeField.getValue();
 			} catch (DateTimeParseException e)
 			{
 				endTimeErrorLabel.setText("Ongeldige tijd. Gebruik HH:MM format.");
@@ -427,15 +471,6 @@ public class AddReportForm extends BorderPane
 		generalMessageLabel.setVisible(false);
 	}
 
-	private LocalTime parseTime(String timeStr)
-	{
-		if (timeStr == null || timeStr.trim().isEmpty())
-		{
-			throw new DateTimeParseException("Tijd kan niet leeg zijn", timeStr, 0);
-		}
-		return LocalTime.parse(timeStr.trim(), DateTimeFormatter.ofPattern("HH:mm"));
-	}
-
 	private void showGeneralError(String message)
 	{
 		generalMessageLabel.setText(message);
@@ -454,11 +489,19 @@ public class AddReportForm extends BorderPane
 	{
 		technicianComboBox.setValue(null);
 		startDatePicker.setValue(null);
-		startTimeField.clear();
 		endDatePicker.setValue(null);
-		endTimeField.clear();
+		startTimeField.setValue(null);
+		endTimeField.setValue(null);
 		reasonField.clear();
 		commentsArea.clear();
+
+		technicianComboBox.setPromptText("Selecteer een technieker");
+		startDatePicker.setPromptText("Kies startdatum");
+		startTimeField.setPromptText("Kies starttijd");
+		endDatePicker.setPromptText("Kies einddatum");
+		endTimeField.setPromptText("Kies eindtijd");
+		reasonField.setPromptText("Voer reden in");
+		commentsArea.setPromptText("Voer eventuele opmerkingen in");
 	}
 
 	private void loadTechnicians()
