@@ -3,17 +3,17 @@ package domain.report;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import domain.maintenance.MaintenanceDTO;
+import domain.maintenance.Maintenance;
 import domain.site.Site;
 import domain.user.User;
 
 /**
- * Builder interface for creating Rapport objects. Specifies all the steps
- * needed to build a Rapport.
+ * Builder interface for creating Report objects. Specifies all the steps needed
+ * to build a Report.
  */
 public interface ReportBuilder
 {
-	ReportBuilder setMaintenanceDTO(MaintenanceDTO maintenanceDTO);
+	ReportBuilder setMaintenance(Maintenance maintenance);
 
 	ReportBuilder setSite(Site site);
 

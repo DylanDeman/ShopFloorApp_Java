@@ -10,9 +10,12 @@ import java.util.stream.Collectors;
 import org.kordamp.ikonli.bootstrapicons.BootstrapIcons;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import domain.maintenance.MaintenanceController;
 import domain.maintenance.MaintenanceDTO;
 import domain.report.Report;
 import domain.report.ReportController;
+import domain.site.Site;
+import domain.site.SiteController;
 import domain.user.User;
 import gui.ChoicePane;
 import gui.customComponents.CustomButton;
@@ -55,10 +58,13 @@ public class AddReportForm extends BorderPane
 	private GridPane formGridPane;
 	private MaintenanceDTO selectedMaintenanceDTO;
 	private ReportController reportController;
+	private MaintenanceController maintenanceController;
+	private SiteController siteController;
 
 	public AddReportForm(Stage primaryStage, MaintenanceDTO maintenanceDTO)
 	{
-		this.getStyleClass().add("main-pane");
+		maintenanceController = new MaintenanceController();
+		siteController = new SiteController();
 
 		BackgroundImage backgroundImage = new BackgroundImage(
 				new Image(getClass().getResourceAsStream("/images/background.png")), BackgroundRepeat.NO_REPEAT,
@@ -161,8 +167,7 @@ public class AddReportForm extends BorderPane
 
 	private void initializeFormComponents()
 	{
-		// TODO: Get the related site
-		siteNameLabel = new Label("TEST SITE");
+		siteNameLabel = new Label(selectedMaintenanceDTO.machine().site().siteName());
 		siteNameLabel.getStyleClass().add("info-value");
 
 		responsiblePersonLabel = new Label(selectedMaintenanceDTO.technician().getFullName());
@@ -330,9 +335,10 @@ public class AddReportForm extends BorderPane
 			LocalTime startTime = parseTime(startTimeField.getText());
 			LocalDate endDate = endDatePicker.getValue();
 			LocalTime endTime = parseTime(endTimeField.getText());
+			Site site = siteController.getSite(selectedMaintenanceDTO.machine().site().id());
 
-			Report report = new Report(selectedMaintenanceDTO, selectedTechnician, startDate, startTime, endDate,
-					endTime, reason, comments);
+			Report report = new Report(maintenanceController.getMaintenance(selectedMaintenanceDTO.id()),
+					selectedTechnician, startDate, startTime, endDate, endTime, reason, comments, site);
 			reportController.createReport(report, selectedMaintenanceDTO);
 
 			showSuccess("Rapport succesvol aangemaakt!");
@@ -340,6 +346,7 @@ public class AddReportForm extends BorderPane
 
 		} catch (Exception e)
 		{
+			e.printStackTrace();
 			showGeneralError("Er is een fout opgetreden: " + e.getMessage());
 		}
 	}

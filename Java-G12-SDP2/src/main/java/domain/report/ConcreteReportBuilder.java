@@ -3,7 +3,7 @@ package domain.report;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import domain.maintenance.MaintenanceDTO; // Assuming MaintenanceDTO is in this package
+import domain.maintenance.Maintenance;
 import domain.site.Site;
 import domain.user.User;
 
@@ -16,7 +16,7 @@ public class ConcreteReportBuilder implements ReportBuilder
 	private String reportId;
 	private Site site;
 	private String maintenanceNumber;
-	private MaintenanceDTO selectedMaintenanceDTO; // Updated to use MaintenanceDTO
+	private Maintenance selectedMaintenance; // Updated to use MaintenanceDTO
 	private User technieker;
 	private LocalDate startDate;
 	private LocalTime startTime;
@@ -38,9 +38,9 @@ public class ConcreteReportBuilder implements ReportBuilder
 	}
 
 	@Override
-	public ReportBuilder setMaintenanceDTO(MaintenanceDTO maintenanceDTO) // Method to accept MaintenanceDTO
+	public ReportBuilder setMaintenance(Maintenance maintenance) // Method to accept MaintenanceDTO
 	{
-		this.selectedMaintenanceDTO = maintenanceDTO;
+		this.selectedMaintenance = maintenance;
 		return this;
 	}
 
@@ -98,8 +98,8 @@ public class ConcreteReportBuilder implements ReportBuilder
 	{
 		validateFields();
 
-		return new Report(selectedMaintenanceDTO, technieker, startDate, startTime, endDate, endTime, reden,
-				opmerkingen);
+		return new Report(selectedMaintenance, technieker, startDate, startTime, endDate, endTime, reden, opmerkingen,
+				site);
 	}
 
 	private void validateFields()
@@ -108,7 +108,7 @@ public class ConcreteReportBuilder implements ReportBuilder
 		{
 			throw new IllegalStateException("Site cannot be null");
 		}
-		if (selectedMaintenanceDTO == null)
+		if (selectedMaintenance == null)
 		{
 			throw new IllegalStateException("MaintenanceDTO cannot be null");
 		}
