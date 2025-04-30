@@ -61,8 +61,9 @@ public class MaintenanceListComponent extends VBox
 		this.table = new TableView<>();
 		initializeGUI();
 	}
-	
-	public MaintenanceListComponent(Stage stage, MaintenanceController mc, MachineDTO machineDTO) {
+
+	public MaintenanceListComponent(Stage stage, MaintenanceController mc, MachineDTO machineDTO)
+	{
 		this.mc = mc;
 		this.machineDTO = machineDTO;
 		this.stage = stage;
@@ -78,10 +79,9 @@ public class MaintenanceListComponent extends VBox
 				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
 				new BackgroundSize(100, 100, true, true, true, true));
 		setBackground(new Background(backgroundImage));
-		
-		allMaintenances = machineDTO == null ? 
-			mc.getMaintenances() : 
-			mc.getMaintenances().stream().filter((m) -> m.machine().equals(machineDTO)).toList();
+
+		allMaintenances = machineDTO == null ? mc.getMaintenances()
+				: mc.getMaintenances().stream().filter((m) -> m.machine().equals(machineDTO)).toList();
 		filteredMaintenances = allMaintenances;
 		updatePadding(stage);
 		stage.widthProperty().addListener((obs, oldWidth, newWidth) -> updatePadding(stage));
@@ -105,9 +105,9 @@ public class MaintenanceListComponent extends VBox
 	{
 		HBox header = createWindowHeader();
 		HBox infoBox = new CustomInformationBox("Hieronder vindt u een overzicht van alle onderhouden.");
-		return machineDTO == null ? 
-			new VBox(10, header, infoBox) : 
-			new VBox(10, header, new CustomInformationBox(String.format("Hieronder vindt u de onderhouden van machine %d", machineDTO.id())));
+		return machineDTO == null ? new VBox(10, header, infoBox)
+				: new VBox(10, header, new CustomInformationBox(
+						String.format("Hieronder vindt u de onderhouden van machine %d", machineDTO.id())));
 	}
 
 	private HBox createWindowHeader()
@@ -147,12 +147,15 @@ public class MaintenanceListComponent extends VBox
 		TableColumn<MaintenanceDTO, String> col6 = createColumn("Opmerkingen", MaintenanceDTO::comments);
 		TableColumn<MaintenanceDTO, String> col7 = createColumn("Status", m -> m.status().toString());
 		TableColumn<MaintenanceDTO, Void> col8 = createAddRapportButtonColumn(stage);
-		TableColumn<MaintenanceDTO, String> col9 = createColumn("Machine", m -> String.format("Machine %d", m.machine().id()));
+		TableColumn<MaintenanceDTO, String> col9 = createColumn("Machine",
+				m -> String.format("Machine %d", m.machine().id()));
 
 		List<TableColumn<MaintenanceDTO, ?>> columns;
-		if (machineDTO != null) { 
+		if (machineDTO != null)
+		{
 			columns = List.of(col1, col2, col3, col4, col5, col6, col7, col8);
-		} else {
+		} else
+		{
 			columns = List.of(col1, col2, col3, col4, col5, col6, col7, col8, col9);
 		}
 		table.getColumns().addAll(columns);
@@ -301,7 +304,8 @@ public class MaintenanceListComponent extends VBox
 		updateTableItems();
 	}
 
-	private void handleGoBack(Stage stage) {
+	private void handleGoBack(Stage stage)
+	{
 		stage.setScene(new Scene(new ChoicePane(stage)));
 	}
 
