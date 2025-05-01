@@ -1,12 +1,9 @@
 package gui;
 
-import java.time.LocalDate;
-
 import domain.Address;
 import domain.user.User;
 import domain.user.UserBuilder;
 import exceptions.InformationRequiredException;
-import jakarta.persistence.EntityManager;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -28,7 +25,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.stage.Stage;
-import util.JPAUtil;
+import repository.UserRepository;
 import util.RequiredElement;
 import util.Role;
 import util.Status;
@@ -36,6 +33,9 @@ import util.Status;
 public class AddOrEditUserForm extends GridPane
 {
 	private User user;
+	private final UserManagementPane userManagementPane;
+	private final UserRepository userRepo;
+	private final Stage primaryStage;
 
 	private TextField firstNameField, lastNameField, emailField, phoneField;
 	private DatePicker birthdatePicker;
@@ -47,19 +47,28 @@ public class AddOrEditUserForm extends GridPane
 	private Label streetError, houseNumberError, postalCodeError, cityError;
 	private Label roleError, statusError;
 
-	private EntityManager entityManager;
-	private UserManagementPane userManagementPane;
 	private boolean isNewUser;
 
-	public AddOrEditUserForm(Stage primaryStage, UserManagementPane userManagementPane, User user)
+	public AddOrEditUserForm(Stage primaryStage, UserRepository userRepo, UserManagementPane userManagementPane,
+			User user)
 	{
+		this.primaryStage = primaryStage;
+		this.userRepo = userRepo;
 		this.userManagementPane = userManagementPane;
-		entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
-
 		this.user = user;
+		this.isNewUser = user == null;
 
-		isNewUser = user == null;
+		buildGUI();
 
+		if (!isNewUser)
+		{
+			fillUserData(user);
+		}
+
+	}
+
+	private void buildGUI()
+	{
 		this.setPadding(new Insets(20));
 		this.setHgap(20);
 		this.setVgap(20);
@@ -120,7 +129,7 @@ public class AddOrEditUserForm extends GridPane
 		saveButton.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-size: 14px;");
 		saveButton.setMaxWidth(Double.MAX_VALUE);
 		saveButton.setPadding(new Insets(10, 30, 10, 30));
-		saveButton.setOnAction(e -> addUser(primaryStage));
+		saveButton.setOnAction(e -> saveUser());
 
 		HBox buttonBox = new HBox(saveButton);
 		buttonBox.setAlignment(Pos.CENTER);
@@ -130,11 +139,6 @@ public class AddOrEditUserForm extends GridPane
 
 		this.add(buttonBox, 0, 4, 2, 1);
 		GridPane.setHalignment(buttonBox, HPos.CENTER);
-
-		if (!isNewUser)
-		{
-			fillUserData(user);
-		}
 	}
 
 	private void fillUserData(User user)
@@ -297,94 +301,49 @@ public class AddOrEditUserForm extends GridPane
 		return pane;
 	}
 
-	private void addUser(Stage primaryStage)
+	private void saveUser()
 	{
 		resetErrorLabels();
 
-		String firstName = firstNameField.getText();
-		String lastName = lastNameField.getText();
-		String email = emailField.getText();
-		String phone = phoneField.getText();
-		String street = streetField.getText();
-		String houseNumberStr = houseNumberField.getText();
-		String postalCodeStr = postalCodeField.getText();
-		String city = cityField.getText();
-		Role role = roleBox.getValue();
-		Status status = isNewUser ? Status.ACTIEF : statusBox.getValue();
-
-		LocalDate birthdate = birthdatePicker.getValue();
-
-		int houseNumber = 0;
-		int postalCode = 0;
-
 		try
 		{
-			houseNumber = Integer.parseInt(houseNumberStr);
-			postalCode = Integer.parseInt(postalCodeStr);
-
-		} catch (NumberFormatException e)
-		{
-
-		}
-
-		try
-		{
-
 			UserBuilder userBuilder = new UserBuilder();
 			userBuilder.createUser();
-			userBuilder.buildName(firstName, lastName);
-			userBuilder.buildContactInfo(email, phone);
-			userBuilder.buildBirthdate(birthdate);
+			userBuilder.buildName(firstNameField.getText(), lastNameField.getText());
+			userBuilder.buildContactInfo(emailField.getText(), phoneField.getText());
+			userBuilder.buildBirthdate(birthdatePicker.getValue());
 			userBuilder.createAddress();
-			userBuilder.buildStreet(street);
-			userBuilder.buildNumber(houseNumber);
-			userBuilder.buildPostalcode(postalCode);
-			userBuilder.buildCity(city);
-
-			userBuilder.buildRoleAndStatus(role, status);
-
-			User newUser = userBuilder.getUser();
-
-			entityManager.getTransaction().begin();
+			userBuilder.buildStreet(streetField.getText());
+			userBuilder.buildNumber(Integer.parseInt(houseNumberField.getText()));
+			userBuilder.buildPostalcode(Integer.parseInt(postalCodeField.getText()));
+			userBuilder.buildCity(cityField.getText());
 
 			if (isNewUser)
 			{
-				entityManager.persist(newUser);
+				userBuilder.buildRoleAndStatus(roleBox.getValue(), Status.ACTIEF);
+				User newUser = userBuilder.getUser();
+				userRepo.addUser(newUser);
 			} else
 			{
-				User existingUser = entityManager.find(User.class, this.user.getId());
-
-				existingUser.setFirstName(firstName);
-				existingUser.setLastName(lastName);
-				existingUser.setEmail(email);
-				existingUser.setPhoneNumber(phone);
-				existingUser.setBirthdate(birthdate);
-				existingUser.setStatus(status);
-				existingUser.setRole(role);
-
-				Address existingAddress = existingUser.getAddress();
-				existingAddress.setStreet(street);
-				existingAddress.setNumber(houseNumber);
-				existingAddress.setPostalcode(postalCode);
-				existingAddress.setCity(city);
+				userBuilder.buildRoleAndStatus(roleBox.getValue(), statusBox.getValue());
+				User updatedUser = userBuilder.getUser();
+				updatedUser.setId(user.getId());
+				updatedUser.getAddress().setId(user.getAddress().getId());
+				userRepo.updateUser(updatedUser);
 			}
 
-			entityManager.getTransaction().commit();
 			userManagementPane.returnToUserManagement(primaryStage);
-
 		} catch (InformationRequiredException e)
 		{
 			handleInformationRequiredException(e);
+		} catch (NumberFormatException e)
+		{
+			showError("Huisnummer en postcode moeten numeriek zijn");
 		} catch (Exception e)
 		{
-			if (entityManager.getTransaction().isActive())
-			{
-				entityManager.getTransaction().rollback();
-			}
 			showError("Er is een fout opgetreden: " + e.getMessage());
 			e.printStackTrace();
 		}
-
 	}
 
 	private Label createErrorLabel()
