@@ -83,6 +83,7 @@ public class UserRepository implements Subject
 		}
 	}
 
+	// TODO soft delete ipv hard delete
 	public void deleteUser(User user)
 	{
 		try
