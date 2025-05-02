@@ -1,7 +1,10 @@
 package gui;
 
+import domain.Address;
 import domain.site.Site;
-import domain.user.UserDTO;
+import domain.site.SiteBuilder;
+import domain.user.User;
+import exceptions.InformationRequiredExceptionSite;
 import gui.sitesList.SitesListComponent;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -23,35 +26,45 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import repository.SiteRepository;
+import util.RequiredElementSite;
+import util.Status;
 
 public class AddOrEditSiteForm extends GridPane
 {
 	private Site site;
 	private final SitesListComponent sitesListComponent;
 	private final Stage primaryStage;
+	private final SiteRepository siteRepo;
 
 	private TextField siteNameField;
 	private TextField streetField, houseNumberField, postalCodeField, cityField;
-	private ComboBox<UserDTO> employeeBox;
+	private ComboBox<User> employeeBox;
+	private ComboBox<Status> statusBox;
 
-	private Label siteNameError, employeeError;
+	private Label errorLabel, siteNameError, employeeError;
 	private Label streetError, houseNumberError, postalCodeError, cityError;
+	private Label statusError;
 
 	private boolean isNewSite;
 
-	public AddOrEditSiteForm(Stage primaryStage, SitesListComponent sitesListComponent, Site site)
+	public AddOrEditSiteForm(Stage primaryStage, SiteRepository siteRepo, SitesListComponent sitesListComponent,
+			Site site)
 	{
+		this.siteRepo = siteRepo;
 		this.primaryStage = primaryStage;
 		this.sitesListComponent = sitesListComponent;
 		this.site = site;
 		this.isNewSite = site == null;
+
+		initializeFields();
+		buildGUI();
 
 		if (!isNewSite)
 		{
 			fillSiteData(site);
 		}
 
-		buildGUI();
 	}
 
 	private void buildGUI()
@@ -69,6 +82,10 @@ public class AddOrEditSiteForm extends GridPane
 		Button backButton = new Button("← Terug");
 		backButton.setOnAction(e -> sitesListComponent.returnToSiteList(primaryStage));
 		this.add(backButton, 0, 0, 2, 1);
+
+		errorLabel.setTextFill(Color.RED);
+		errorLabel.setWrapText(true);
+		this.add(errorLabel, 0, 1, 2, 1);
 
 		Label headerLabel = new Label(isNewSite ? "SITE TOEVOEGEN" : "SITE AANPASSEN");
 		headerLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: white;");
@@ -95,7 +112,7 @@ public class AddOrEditSiteForm extends GridPane
 
 		VBox addressBox = new VBox(15, createAddressFieldsSection());
 
-		VBox employeeBox = new VBox(15, createEmployeeBoxSection());
+		VBox employeeBox = new VBox(15, createComboBoxSection());
 
 		mainContent.getChildren().addAll(siteNameBox, addressBox, employeeBox);
 
@@ -118,16 +135,21 @@ public class AddOrEditSiteForm extends GridPane
 		GridPane.setHalignment(buttonBox, HPos.CENTER);
 	}
 
-	private Node createEmployeeBoxSection()
+	private Node createComboBoxSection()
 	{
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
 
-		employeeError = createErrorLabel();
+		String labelString = isNewSite ? "Verantwoordelijke" : "Verantwoordelijke en status";
+
+		Label sectionLabel = new Label(labelString);
+
+		sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+		pane.add(sectionLabel, 0, 0, 2, 1);
 
 		employeeBox = new ComboBox<>();
-		employeeBox.getItems().addAll(getAllEmployees());
+		employeeBox.getItems().addAll(siteRepo.getAllEmployees());
 		employeeBox.setPromptText("Selecteer een verantwoordelijke");
 		employeeBox.setPrefWidth(200);
 
@@ -136,17 +158,142 @@ public class AddOrEditSiteForm extends GridPane
 		pane.add(employeeBox, 1, row++);
 		pane.add(employeeError, 1, row++);
 
-		return pane;
-	}
+		if (!isNewSite)
+		{
+			statusBox = new ComboBox<>();
+			statusBox.getItems().addAll(Status.values());
+			statusBox.setPromptText("Wijzig de status");
+			statusBox.setPrefWidth(200);
 
-	private UserDTO getAllEmployees()
-	{
-		return null;
+			pane.add(new Label("Status:"), 0, row);
+			pane.add(statusBox, 1, row++);
+			pane.add(statusError, 1, row++);
+		}
+
+		return pane;
 	}
 
 	private void saveSite()
 	{
-		System.out.println("Gesaved!");
+		resetErrorLabels();
+
+		try
+		{
+			SiteBuilder siteBuilder = new SiteBuilder();
+			siteBuilder.createSite();
+			siteBuilder.buildName(siteNameField.getText());
+			siteBuilder.createAddress();
+			siteBuilder.buildStreet(streetField.getText());
+			siteBuilder.buildNumber(Integer.parseInt(houseNumberField.getText()));
+			siteBuilder.buildPostalcode(Integer.parseInt(postalCodeField.getText()));
+			siteBuilder.buildCity(cityField.getText());
+			siteBuilder.buildEmployee(employeeBox.getValue());
+
+			if (isNewSite)
+			{
+				siteBuilder.buildStatus(Status.ACTIEF);
+				Site newSite = siteBuilder.getSite();
+				siteRepo.addSite(newSite);
+			} else
+			{
+				siteBuilder.buildStatus(statusBox.getValue());
+				Site updatedSite = siteBuilder.getSite();
+				updatedSite.setId(site.getId());
+				updatedSite.getAddress().setId(site.getAddress().getId());
+				siteRepo.updateSite(updatedSite);
+			}
+
+			sitesListComponent.returnToSiteList(primaryStage);
+		} catch (InformationRequiredExceptionSite e)
+		{
+			handleInformationRequiredException(e);
+		} catch (NumberFormatException e)
+		{
+			showError("Huisnummer en postcode moeten numeriek zijn");
+		} catch (Exception e)
+		{
+			showError("Er is een fout opgetreden: " + e.getMessage());
+			e.printStackTrace();
+		}
+	}
+
+	private void showError(String message)
+	{
+		errorLabel.setText(message);
+	}
+
+	private void resetErrorLabels()
+	{
+		errorLabel.setText("");
+		siteNameError.setText("");
+		employeeError.setText("");
+		streetError.setText("");
+		houseNumberError.setText("");
+		postalCodeError.setText("");
+		cityError.setText("");
+		statusError.setText("");
+	}
+
+	private void handleInformationRequiredException(InformationRequiredExceptionSite e)
+	{
+		e.getInformationRequired().forEach((field, requiredElement) -> {
+			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
+			showFieldError(field, errorMessage);
+		});
+
+	}
+
+	private String getErrorMessageForRequiredElement(RequiredElementSite element)
+	{
+		switch (element)
+		{
+		case SITE_NAME_REQUIRED:
+			return "Site naam is verplicht";
+		case EMPLOYEE_REQUIRED:
+			return "Verantwoordelijke is verplicht";
+		case STREET_REQUIRED:
+			return "Straat is verplicht";
+		case NUMBER_REQUIRED:
+			return "Huisnummer is verplicht";
+		case POSTAL_CODE_REQUIRED:
+			return "Postcode is verplicht";
+		case CITY_REQUIRED:
+			return "Stad is verplicht";
+		case STATUS_REQUIRED:
+			return "Status is verplicht";
+		default:
+			return "Verplicht veld";
+		}
+	}
+
+	private void showFieldError(String fieldName, String message)
+	{
+		switch (fieldName)
+		{
+		case "siteName":
+			siteNameError.setText(message);
+			break;
+		case "employee":
+			employeeError.setText(message);
+			break;
+		case "street":
+			streetError.setText(message);
+			break;
+		case "number":
+			houseNumberError.setText(message);
+			break;
+		case "postalCode":
+			postalCodeError.setText(message);
+			break;
+		case "city":
+			cityError.setText(message);
+			break;
+		case "status":
+			statusError.setText(message);
+			break;
+		default:
+			errorLabel.setText(message);
+		}
 	}
 
 	private GridPane createSiteNameField()
@@ -155,9 +302,6 @@ public class AddOrEditSiteForm extends GridPane
 		pane.setVgap(5);
 		pane.setHgap(10);
 
-		siteNameError = createErrorLabel();
-
-		siteNameField = new TextField();
 		siteNameField.setPrefWidth(200);
 
 		pane.add(new Label("Site:"), 0, 1);
@@ -176,16 +320,6 @@ public class AddOrEditSiteForm extends GridPane
 		Label sectionLabel = new Label("Adresgegevens");
 		sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 		pane.add(sectionLabel, 0, 0, 2, 1);
-
-		streetError = createErrorLabel();
-		houseNumberError = createErrorLabel();
-		postalCodeError = createErrorLabel();
-		cityError = createErrorLabel();
-
-		streetField = new TextField();
-		houseNumberField = new TextField();
-		postalCodeField = new TextField();
-		cityField = new TextField();
 
 		streetField.setPrefWidth(200);
 		houseNumberField.setPrefWidth(200);
@@ -212,6 +346,26 @@ public class AddOrEditSiteForm extends GridPane
 		return pane;
 	}
 
+	private void initializeFields()
+	{
+		siteNameField = new TextField();
+		streetField = new TextField();
+		houseNumberField = new TextField();
+		postalCodeField = new TextField();
+		cityField = new TextField();
+		employeeBox = new ComboBox<>();
+		statusBox = new ComboBox<>();
+
+		errorLabel = new Label();
+		siteNameError = createErrorLabel();
+		employeeError = createErrorLabel();
+		streetError = createErrorLabel();
+		houseNumberError = createErrorLabel();
+		postalCodeError = createErrorLabel();
+		cityError = createErrorLabel();
+		statusError = createErrorLabel();
+	}
+
 	private Label createErrorLabel()
 	{
 		Label errorLabel = new Label();
@@ -224,7 +378,19 @@ public class AddOrEditSiteForm extends GridPane
 
 	private void fillSiteData(Site site)
 	{
+		siteNameField.setText(site.getSiteName());
 
+		Address address = site.getAddress();
+		if (address != null)
+		{
+			streetField.setText(address.getStreet());
+			houseNumberField.setText(String.valueOf(address.getNumber()));
+			postalCodeField.setText(String.valueOf(address.getPostalcode()));
+			cityField.setText(address.getCity());
+		}
+
+		employeeBox.setValue(site.getVerantwoordelijke());
+		statusBox.setValue(site.getStatus());
 	}
 
 }

@@ -13,28 +13,37 @@ import gui.ChoicePane;
 import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import repository.SiteRepository;
 
 public class SitesListComponent extends VBox implements Observer
 {
 	private SiteController sc;
+	private SiteRepository siteRepo;
 	private Stage stage;
 	private TableView<SiteDTO> table;
 	private TextField searchField;
@@ -47,12 +56,26 @@ public class SitesListComponent extends VBox implements Observer
 	private int totalPages = 0;
 	private Pagination pagination;
 
-	public SitesListComponent(Stage stage, SiteController sc)
+	public SitesListComponent(Stage stage, SiteController sc, SiteRepository siteRepo)
 	{
 		this.sc = sc;
+		this.siteRepo = siteRepo;
+		this.siteRepo.addObserver(this);
 		this.stage = stage;
 		this.table = new TableView<>();
 		initializeGUI();
+		loadSites();
+	}
+
+	private void loadSites()
+	{
+		List<Site> sites = siteRepo.getAllSites();
+		table.getItems().setAll(makeSiteDTOs(sites));
+	}
+
+	private List<SiteDTO> makeSiteDTOs(List<Site> sites)
+	{
+		return siteRepo.makeSiteDTOs(sites);
 	}
 
 	private void initializeGUI()
@@ -132,7 +155,56 @@ public class SitesListComponent extends VBox implements Observer
 		TableColumn<SiteDTO, Number> col5 = new TableColumn<>("Aantal machines");
 		col5.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().machines().size()));
 
+		TableColumn<SiteDTO, Void> editColumn = new TableColumn<>("Bewerken");
+		editColumn.setCellFactory(param -> new TableCell<SiteDTO, Void>()
+		{
+			private final Button editButton = new Button();
+
+			{
+				ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/edit.png")));
+				editIcon.setFitWidth(16);
+				editIcon.setFitHeight(16);
+				editButton.setGraphic(editIcon);
+				editButton.setBackground(Background.EMPTY);
+				editButton.setOnAction(
+						event -> openEditSiteForm(stage, siteRepo.makeSiteObject(getTableRow().getItem())));
+			}
+
+			@Override
+			protected void updateItem(Void item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				setGraphic(empty ? null : editButton);
+			}
+		});
+
+		TableColumn<SiteDTO, Void> deleteColumn = new TableColumn<>("Verwijderen");
+		deleteColumn.setCellFactory(param -> new TableCell<SiteDTO, Void>()
+		{
+			private final Button deleteButton = new Button();
+
+			{
+				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/delete.png")));
+				deleteIcon.setFitHeight(16);
+				deleteIcon.setFitWidth(16);
+				deleteButton.setGraphic(deleteIcon);
+				deleteButton.setBackground(Background.EMPTY);
+				deleteButton.setOnAction(event -> deleteSite(getTableRow().getItem()));
+			}
+
+			@Override
+			protected void updateItem(Void item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				setGraphic(empty ? null : deleteButton);
+			}
+
+		});
+
 		table.getColumns().setAll(col1, col2, col3, col4, col5);
+		table.getColumns().add(editColumn);
+		table.getColumns().add(deleteColumn);
+
 		table.setPrefHeight(300);
 
 		// Create pagination control
@@ -141,6 +213,24 @@ public class SitesListComponent extends VBox implements Observer
 		VBox.setVgrow(table, Priority.ALWAYS);
 
 		return new VBox(10, filterBox, tableWithPagination);
+	}
+
+	private void deleteSite(SiteDTO siteDTO)
+	{
+		try
+		{
+			Site site = siteRepo.makeSiteObject(siteDTO);
+			siteRepo.deleteSite(site);
+		} catch (Exception e)
+		{
+			Platform.runLater(() -> {
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Fout bij verwijderen");
+				alert.setHeaderText("Kan site niet verwijderen");
+				alert.setContentText(e.toString());
+				alert.showAndWait();
+			});
+		}
 	}
 
 	private HBox createTableHeaders()
@@ -260,12 +350,12 @@ public class SitesListComponent extends VBox implements Observer
 
 	private void openAddSiteForm(Stage primaryStage)
 	{
-		primaryStage.getScene().setRoot(new AddOrEditSiteForm(primaryStage, this, null));
+		primaryStage.getScene().setRoot(new AddOrEditSiteForm(primaryStage, siteRepo, this, null));
 	}
 
 	private void openEditSiteForm(Stage primaryStage, Site site)
 	{
-		primaryStage.getScene().setRoot(new AddOrEditSiteForm(primaryStage, this, site));
+		primaryStage.getScene().setRoot(new AddOrEditSiteForm(primaryStage, siteRepo, this, site));
 	}
 
 	@Override

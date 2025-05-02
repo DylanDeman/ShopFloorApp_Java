@@ -2,6 +2,7 @@ package gui;
 
 import domain.machine.MachineController;
 import domain.maintenance.MaintenanceController;
+import domain.site.Site;
 import domain.site.SiteController;
 import domain.user.User;
 import domain.user.UserController;
@@ -25,6 +26,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import repository.GenericDao;
 import repository.GenericDaoJpa;
+import repository.SiteRepository;
 import repository.UserRepository;
 
 public class ChoicePane extends GridPane
@@ -32,6 +34,9 @@ public class ChoicePane extends GridPane
 
 	GenericDao<User> userDao = new GenericDaoJpa<>(User.class);
 	UserRepository userRepo = new UserRepository(userDao);
+
+	GenericDao<Site> siteDao = new GenericDaoJpa<>(Site.class);
+	SiteRepository siteRepo = new SiteRepository(siteDao);
 
 	public ChoicePane(Stage primaryStage)
 	{
@@ -118,7 +123,7 @@ public class ChoicePane extends GridPane
 	private void gotToSitesList(Stage primaryStage)
 	{
 		SiteController sc = new SiteController();
-		SitesListComponent sitesListComponents = new SitesListComponent(primaryStage, sc);
+		SitesListComponent sitesListComponents = new SitesListComponent(primaryStage, sc, siteRepo);
 		Scene loginPaneScene = new Scene(sitesListComponents);
 		primaryStage.setScene(loginPaneScene);
 	}

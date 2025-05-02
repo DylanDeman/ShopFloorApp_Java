@@ -5,9 +5,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import domain.Address;
 import domain.machine.Machine;
 import domain.user.User;
-import exceptions.InvalidInputException;
 import interfaces.Observer;
 import interfaces.Subject;
 import jakarta.persistence.CascadeType;
@@ -31,7 +31,8 @@ import util.Status;
 @Table(name = "sites")
 @Entity
 @NoArgsConstructor
-public class Site implements Serializable, Subject {
+public class Site implements Serializable, Subject
+{
 	private static final long serialVersionUID = 1L;
 
 	@Transient
@@ -42,12 +43,16 @@ public class Site implements Serializable, Subject {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
-	@Getter
 	private String siteName;
 
 	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "VERANTWOORDELIJKE_ID")
 	private User verantwoordelijke;
+
+	@Setter
+	@ManyToOne(cascade = CascadeType.PERSIST)
+	@JoinColumn(name = "address_id")
+	private Address address;
 
 	@OneToMany(mappedBy = "site")
 	private Set<Machine> machines = new HashSet<>();
@@ -55,57 +60,65 @@ public class Site implements Serializable, Subject {
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
-	public Site(String siteName, User verantwoordelijke, Status status) {
+	public Site(String siteName, User verantwoordelijke, Status status)
+	{
 		this.siteName = siteName;
 		this.verantwoordelijke = verantwoordelijke;
 		this.status = status;
 	}
 
-	public void setSiteName(String siteName) {
-		if (siteName == null || siteName.isBlank()) {
-			throw new InvalidInputException("Naam van de site mag niet leeg zijn!");
-		}
+	public Site(String siteName, User verantwoordelijke, Status status, Address address)
+	{
+		this.siteName = siteName;
+		this.verantwoordelijke = verantwoordelijke;
+		this.status = status;
+		this.address = address;
+	}
+
+	public void setSiteName(String siteName)
+	{
 		this.siteName = siteName.trim();
 		notifyObservers();
 	}
 
-	public void setVerantwoordelijke(User verantwoordelijke) {
-		if (verantwoordelijke == null) {
-			throw new InvalidInputException("Site verantwoordelijke mag niet leeg zijn!");
-		}
+	public void setVerantwoordelijke(User verantwoordelijke)
+	{
 		this.verantwoordelijke = verantwoordelijke;
 		notifyObservers();
 	}
 
-	public void setStatus(Status status) {
-		if (status == null) {
-			throw new InvalidInputException("Site status mag niet leeg zijn!");
-		}
+	public void setStatus(Status status)
+	{
 		this.status = status;
 		notifyObservers();
 	}
 
-	public void addMachine(Machine machine) {
+	public void addMachine(Machine machine)
+	{
 		machines.add(machine);
 		machine.setSite(this);
 	}
 
-	public Set<Machine> getMachines() {
+	public Set<Machine> getMachines()
+	{
 		return Collections.unmodifiableSet(machines);
 	}
 
 	@Override
-	public void addObserver(Observer o) {
+	public void addObserver(Observer o)
+	{
 		observers.add(o);
 	}
 
 	@Override
-	public void removeObserver(Observer o) {
+	public void removeObserver(Observer o)
+	{
 		observers.remove(o);
 	}
 
 	@Override
-	public void notifyObservers() {
+	public void notifyObservers()
+	{
 		observers.forEach(observer -> {
 			observer.update();
 		});

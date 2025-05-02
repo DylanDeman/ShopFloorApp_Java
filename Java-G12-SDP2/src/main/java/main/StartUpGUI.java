@@ -75,8 +75,12 @@ public class StartUpGUI extends Application
 		User u10 = new User("Kim", "De Vries", "kim@email.com", "0412345678", "password", LocalDate.of(1991, 4, 20),
 				new Address("Straat 10", 100, 9999, "Stad"), Status.INACTIEF, Role.MANAGER);
 
-		List<Site> sites = IntStream.range(0, 14)
-				.mapToObj(i -> new Site("Site" + i, u10, i % 2 == 0 ? Status.ACTIEF : Status.INACTIEF))
+		List<Address> siteAddresses = IntStream.range(0, 14).mapToObj(
+				i -> new Address("SiteStraat " + (i + 1), (i + 1) * 10, 1000 + (i * 100), "SiteStad " + (i + 1)))
+				.collect(Collectors.toList());
+
+		List<Site> sites = IntStream.range(0, 14).mapToObj(
+				i -> new Site("Site" + i, u10, i % 2 == 0 ? Status.ACTIEF : Status.INACTIEF, siteAddresses.get(i)))
 				.collect(Collectors.toList());
 
 		Site site1 = sites.get(0);
