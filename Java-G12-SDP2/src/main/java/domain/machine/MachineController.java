@@ -50,7 +50,7 @@ public class MachineController
 																							// object
 				convertMachinesToMachineDTOs(site.getMachines()), // If Site has a set of Machines, convert them to
 																	// MachineDTOs
-				site.getStatus());
+				site.getStatus(), site.getAddress());
 	}
 
 	private Set<MachineDTO> convertMachinesToMachineDTOs(Set<Machine> machines)
@@ -106,8 +106,7 @@ public class MachineController
 		site.setId(dto.id());
 		site.setSiteName(dto.siteName());
 		site.setVerantwoordelijke(dto.verantwoordelijke());
-		dto.machines().forEach(machineDTO ->
-		{
+		dto.machines().forEach(machineDTO -> {
 			Machine machine = convertDTOToMachine(machineDTO);
 			site.addMachine(machine);
 		});
