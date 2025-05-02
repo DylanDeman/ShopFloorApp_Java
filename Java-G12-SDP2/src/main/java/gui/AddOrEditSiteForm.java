@@ -1,5 +1,7 @@
 package gui;
 
+import org.kordamp.ikonli.javafx.FontIcon;
+
 import domain.Address;
 import domain.site.Site;
 import domain.site.SiteBuilder;
@@ -23,6 +25,7 @@ import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -42,6 +45,7 @@ public class AddOrEditSiteForm extends GridPane
 	private ComboBox<User> employeeBox;
 	private ComboBox<Status> statusBox;
 
+	private Label titleLabel;
 	private Label errorLabel, siteNameError, employeeError;
 	private Label streetError, houseNumberError, postalCodeError, cityError;
 	private Label statusError;
@@ -69,6 +73,8 @@ public class AddOrEditSiteForm extends GridPane
 
 	private void buildGUI()
 	{
+		this.getStylesheets().add(getClass().getResource("/css/form.css").toExternalForm());
+
 		this.setPadding(new Insets(20));
 		this.setHgap(20);
 		this.setVgap(20);
@@ -79,35 +85,36 @@ public class AddOrEditSiteForm extends GridPane
 				new BackgroundSize(100, 100, true, true, true, true));
 		setBackground(new Background(backgroundImage));
 
-		Button backButton = new Button("← Terug");
+		FontIcon icon = new FontIcon("fas-arrow-left");
+		icon.setIconSize(20);
+
+		Button backButton = new Button();
+		backButton.setGraphic(icon);
+		backButton.getStyleClass().add("back-button");
 		backButton.setOnAction(e -> sitesListComponent.returnToSiteList(primaryStage));
-		this.add(backButton, 0, 0, 2, 1);
 
 		errorLabel.setTextFill(Color.RED);
 		errorLabel.setWrapText(true);
 		this.add(errorLabel, 0, 1, 2, 1);
 
-		Label headerLabel = new Label(isNewSite ? "SITE TOEVOEGEN" : "SITE AANPASSEN");
-		headerLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: white;");
-		HBox headerBox = new HBox(headerLabel);
-		headerBox.setAlignment(Pos.CENTER);
-		headerBox.setStyle("-fx-background-color: rgb(240, 69, 60); " + "-fx-padding: 15px; "
-				+ "-fx-border-radius: 5 5 5 5; " + "-fx-background-radius: 5 5 5 5;");
-		headerBox.setMaxWidth(Double.MAX_VALUE);
-		headerBox.setMaxHeight(40);
+		Label titleLabel = new Label(isNewSite ? "Site toevoegen" : "Site aanpassen");
+		titleLabel.getStyleClass().add("title-label");
+
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+
+		HBox headerBox = new HBox();
+		headerBox.getChildren().addAll(backButton, titleLabel, spacer);
+
 		this.add(headerBox, 0, 2, 2, 1);
 
 		GridPane.setMargin(headerBox, new Insets(0, 0, 0, 0));
 
 		VBox mainContent = new VBox(30);
 		mainContent.setAlignment(Pos.TOP_CENTER);
-		mainContent.setStyle(
-				"-fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-background-radius: 5;");
-
-		mainContent.setMaxWidth(Double.MAX_VALUE);
+		mainContent.getStyleClass().add("form-box");
 
 		VBox siteNameBox = new VBox(15);
-		siteNameBox.setPadding(new Insets(20));
 		siteNameBox.getChildren().add(createSiteNameField());
 
 		VBox addressBox = new VBox(15, createAddressFieldsSection());
@@ -120,9 +127,7 @@ public class AddOrEditSiteForm extends GridPane
 		this.add(mainContent, 0, 3, 2, 1);
 
 		Button saveButton = new Button("Opslaan");
-		saveButton.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-size: 14px;");
-		saveButton.setMaxWidth(Double.MAX_VALUE);
-		saveButton.setPadding(new Insets(10, 30, 10, 30));
+		saveButton.getStyleClass().add("save-button");
 		saveButton.setOnAction(e -> saveSite());
 
 		HBox buttonBox = new HBox(saveButton);
@@ -145,7 +150,7 @@ public class AddOrEditSiteForm extends GridPane
 
 		Label sectionLabel = new Label(labelString);
 
-		sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+		sectionLabel.getStyleClass().add("section-label");
 		pane.add(sectionLabel, 0, 0, 2, 1);
 
 		employeeBox = new ComboBox<>();
@@ -302,6 +307,11 @@ public class AddOrEditSiteForm extends GridPane
 		pane.setVgap(5);
 		pane.setHgap(10);
 
+		Label sectionLabel = new Label("Site naam");
+
+		sectionLabel.getStyleClass().add("section-label");
+		pane.add(sectionLabel, 0, 0);
+
 		siteNameField.setPrefWidth(200);
 
 		pane.add(new Label("Site:"), 0, 1);
@@ -318,7 +328,7 @@ public class AddOrEditSiteForm extends GridPane
 		pane.setHgap(10);
 
 		Label sectionLabel = new Label("Adresgegevens");
-		sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+		sectionLabel.getStyleClass().add("section-label");
 		pane.add(sectionLabel, 0, 0, 2, 1);
 
 		streetField.setPrefWidth(200);
@@ -369,10 +379,7 @@ public class AddOrEditSiteForm extends GridPane
 	private Label createErrorLabel()
 	{
 		Label errorLabel = new Label();
-		errorLabel.setTextFill(Color.RED);
-		errorLabel.setStyle("-fx-font-size: 10px;");
-		errorLabel.setMaxWidth(150);
-		errorLabel.setWrapText(true);
+		errorLabel.getStyleClass().add("error-label");
 		return errorLabel;
 	}
 
