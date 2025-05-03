@@ -67,12 +67,11 @@ public class SiteController
 
 	public List<SiteDTO> makeSiteDTOs(List<Site> sites)
 	{
-		return sites.stream().map(site ->
-		{
+		return sites.stream().map(site -> {
 			Set<MachineDTO> machineDTOs = toMachineDTOs(site.getMachines());
 
 			return new SiteDTO(site.getId(), site.getSiteName(), site.getVerantwoordelijke(), // later UserDTO
-					machineDTOs, site.getStatus());
+					machineDTOs, site.getStatus(), site.getAddress());
 		}).collect(Collectors.toUnmodifiableList());
 	}
 

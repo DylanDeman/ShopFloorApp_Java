@@ -3,6 +3,7 @@ package domain;
 import java.io.Serializable;
 import java.util.List;
 
+import domain.site.Site;
 import domain.user.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -34,6 +35,9 @@ public class Address implements Serializable
 
 	@OneToMany(mappedBy = "address")
 	private List<User> users;
+
+	@OneToMany(mappedBy = "address")
+	private List<Site> sites;
 
 	public Address(String street, int number, int postalcode, String city)
 	{

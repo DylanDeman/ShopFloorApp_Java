@@ -266,7 +266,7 @@ public class AddOrEditUserForm extends GridPane
 		pane.setVgap(5);
 		pane.setHgap(10);
 
-		String labelString = isNewUser ? "Rol" : "Rol en Status";
+		String labelString = isNewUser ? "Rol" : "Rol en status";
 
 		Label sectionLabel = new Label(labelString);
 

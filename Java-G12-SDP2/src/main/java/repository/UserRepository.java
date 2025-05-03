@@ -32,10 +32,7 @@ public class UserRepository implements Subject
 	@Override
 	public void notifyObservers()
 	{
-		for (Observer o : observers)
-		{
-			o.update();
-		}
+		observers.forEach(o -> o.update());
 	}
 
 	public List<User> getAllUsers()

@@ -24,27 +24,27 @@ public class UserBuilder
 
 	public void buildName(String firstName, String lastName)
 	{
-		// validatie nog toevoegen
+		// TODO validatie nog toevoegen
 		user.setFirstName(firstName);
 		user.setLastName(lastName);
 	}
 
 	public void buildContactInfo(String email, String phoneNumber)
 	{
-		// validatie nog toevoegen
+		// TODO validatie nog toevoegen
 		user.setEmail(email);
 		user.setPhoneNumber(phoneNumber);
 	}
 
 	public void buildBirthdate(LocalDate birthdate)
 	{
-		// validatie nog toevoegen
+		// TODO validatie nog toevoegen
 		user.setBirthdate(birthdate);
 	}
 
 	public void buildRoleAndStatus(Role role, Status status)
 	{
-		// validatie nog toevoegen
+		// TODO validatie nog toevoegen
 		user.setRole(role);
 		user.setStatus(status);
 	}
@@ -56,25 +56,25 @@ public class UserBuilder
 
 	public void buildStreet(String street)
 	{
-		// validatie nog toevoegen
+		// TODO validatie nog toevoegen
 		address.setStreet(street);
 	}
 
 	public void buildNumber(int number)
 	{
-		// validatie nog toevoegen
+		// TODO validatie nog toevoegen
 		address.setNumber(number);
 	}
 
 	public void buildPostalcode(int postalcode)
 	{
-		// validatie nog toevoegen
+		// TODO validatie nog toevoegen
 		address.setPostalcode(postalcode);
 	}
 
 	public void buildCity(String city)
 	{
-		// validatie nog toevoegen
+		// TODO validatie nog toevoegen
 		address.setCity(city);
 	}
 

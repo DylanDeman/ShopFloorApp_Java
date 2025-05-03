@@ -9,7 +9,8 @@ import domain.machine.MachineDTO;
 import domain.site.Site;
 import domain.site.SiteDTO;
 
-public class MaintenanceController {
+public class MaintenanceController
+{
 	private MaintenanceDao maintenanceRepo;
 
 	public MaintenanceController()
@@ -22,61 +23,43 @@ public class MaintenanceController {
 		List<Maintenance> sites = maintenanceRepo.findAll();
 		return makeMaintenanceDTOs(sites);
 	}
-	
-	public List<MaintenanceDTO> makeMaintenanceDTOs(List<Maintenance> maintenances) {
-	    return maintenances.stream().map(maintenance -> {
-	        return new MaintenanceDTO(
-	            maintenance.getId(),
-	            maintenance.getExecutionDate(),
-	            maintenance.getStartDate(),
-	            maintenance.getEndDate(),
-	            maintenance.getTechnician(),
-	            maintenance.getReason(),
-	            maintenance.getComments(),
-	            maintenance.getStatus(),
-	            convertToMachineDTO(maintenance.getMachine())
-	        );
-	    }).collect(Collectors.toUnmodifiableList());
-	    
+
+	public List<MaintenanceDTO> makeMaintenanceDTOs(List<Maintenance> maintenances)
+	{
+		return maintenances.stream().map(maintenance -> {
+			return new MaintenanceDTO(maintenance.getId(), maintenance.getExecutionDate(), maintenance.getStartDate(),
+					maintenance.getEndDate(), maintenance.getTechnician(), maintenance.getReason(),
+					maintenance.getComments(), maintenance.getStatus(), convertToMachineDTO(maintenance.getMachine()));
+		}).collect(Collectors.toUnmodifiableList());
+
 	}
-	
-	public Maintenance getMaintenance(int id) {
+
+	public Maintenance getMaintenance(int id)
+	{
 		return maintenanceRepo.get(id);
 	}
-	
-	public MachineDTO convertToMachineDTO(Machine machine) {
-	    SiteDTO siteDTO = convertToSiteDTO(machine.getSite()); // Convert the Site object to a SiteDTO
-	    return new MachineDTO(
-	            machine.getId(),
-	            siteDTO,
-	            machine.getTechnician(),
-	            machine.getCode(),
-	            machine.getStatus(),
-	            machine.getProductieStatus(),
-	            machine.getLocation(),
-	            machine.getProductInfo(),
-	            machine.getLastMaintenance(),
-	            machine.getFutureMaintenance(),
-	            machine.getNumberDaysSinceLastMaintenance(),
-	            machine.getUpTimeInHours()
-	    );
+
+	public MachineDTO convertToMachineDTO(Machine machine)
+	{
+		SiteDTO siteDTO = convertToSiteDTO(machine.getSite()); // Convert the Site object to a SiteDTO
+		return new MachineDTO(machine.getId(), siteDTO, machine.getTechnician(), machine.getCode(), machine.getStatus(),
+				machine.getProductieStatus(), machine.getLocation(), machine.getProductInfo(),
+				machine.getLastMaintenance(), machine.getFutureMaintenance(),
+				machine.getNumberDaysSinceLastMaintenance(), machine.getUpTimeInHours());
 	}
 
-	private SiteDTO convertToSiteDTO(Site site) {
-	    return new SiteDTO(
-	            site.getId(),
-	            site.getSiteName(),
-	            site.getVerantwoordelijke(),  // Assuming this is a User object
-	            convertMachinesToMachineDTOs(site.getMachines()), // If Site has a set of Machines, convert them to MachineDTOs
-	            site.getStatus()
-	    );
-	}
-	
-	private Set<MachineDTO> convertMachinesToMachineDTOs(Set<Machine> machines) {
-	    return machines.stream()
-	            .map(this::convertToMachineDTO)
-	            .collect(Collectors.toSet());
+	private SiteDTO convertToSiteDTO(Site site)
+	{
+		return new SiteDTO(site.getId(), site.getSiteName(), site.getVerantwoordelijke(), // Assuming this is a User
+																							// object
+				convertMachinesToMachineDTOs(site.getMachines()), // If Site has a set of Machines, convert them to
+																	// MachineDTOs
+				site.getStatus(), site.getAddress());
 	}
 
+	private Set<MachineDTO> convertMachinesToMachineDTOs(Set<Machine> machines)
+	{
+		return machines.stream().map(this::convertToMachineDTO).collect(Collectors.toSet());
+	}
 
 }

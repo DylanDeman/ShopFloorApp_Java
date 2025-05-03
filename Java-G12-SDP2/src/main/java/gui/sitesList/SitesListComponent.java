@@ -1,35 +1,51 @@
 package gui.sitesList;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.kordamp.ikonli.javafx.FontIcon;
+
+import domain.site.Site;
 import domain.site.SiteController;
 import domain.site.SiteDTO;
+import gui.AddOrEditSiteForm;
 import gui.ChoicePane;
 import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import repository.SiteRepository;
 
-public class SitesListComponent extends VBox implements Observer {
+public class SitesListComponent extends VBox implements Observer
+{
 	private SiteController sc;
+	private SiteRepository siteRepo;
 	private Stage stage;
 	private TableView<SiteDTO> table;
 	private TextField searchField;
@@ -42,14 +58,34 @@ public class SitesListComponent extends VBox implements Observer {
 	private int totalPages = 0;
 	private Pagination pagination;
 
-	public SitesListComponent(Stage stage, SiteController sc) {
+	public SitesListComponent(Stage stage, SiteController sc, SiteRepository siteRepo)
+	{
 		this.sc = sc;
+		this.siteRepo = siteRepo;
+		this.siteRepo.addObserver(this);
 		this.stage = stage;
 		this.table = new TableView<>();
 		initializeGUI();
+		loadSites();
 	}
 
-	private void initializeGUI() {
+	private void loadSites()
+	{
+		List<Site> sites = siteRepo.getAllSites();
+
+		allSites = makeSiteDTOs(sites);
+		filteredSites = allSites;
+
+		updateTable(allSites);
+	}
+
+	private List<SiteDTO> makeSiteDTOs(List<Site> sites)
+	{
+		return siteRepo.makeSiteDTOs(sites);
+	}
+
+	private void initializeGUI()
+	{
 
 		stage.setMinWidth(800);
 		allSites = sc.getSites();
@@ -65,46 +101,49 @@ public class SitesListComponent extends VBox implements Observer {
 		updateTable(filteredSites);
 	}
 
-	private void updatePadding(Stage stage) {
+	private void updatePadding(Stage stage)
+	{
 		double amountOfPixels = stage.getWidth();
 		double calculatedPadding = amountOfPixels < 1200 ? amountOfPixels * 0.05 : amountOfPixels * 0.10;
 		this.setPadding(new Insets(50, calculatedPadding, 0, calculatedPadding));
 	}
 
-	private VBox createTitleSection() {
+	private VBox createTitleSection()
+	{
 		HBox windowHeader = createWindowHeader();
 		HBox informationBox = createInformationBox();
 		return new VBox(10, windowHeader, informationBox);
 	}
 
-	private HBox createWindowHeader() {
-	    HBox hbox = new HBox();
-	    hbox.setAlignment(Pos.CENTER_LEFT);
-	    hbox.setSpacing(10);
+	private HBox createWindowHeader()
+	{
+		HBox hbox = new HBox();
+		hbox.setAlignment(Pos.CENTER_LEFT);
+		hbox.setSpacing(10);
 
-	    // Back button
-	    Button backButton = new Button();
-	    FontIcon icon = new FontIcon("fas-arrow-left");
-	    icon.setIconSize(20);
-	    backButton.setGraphic(icon);
-	    backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
-	    backButton.setOnAction(e -> handleGoBack(stage));
+		// Back button
+		Button backButton = new Button();
+		FontIcon icon = new FontIcon("fas-arrow-left");
+		icon.setIconSize(20);
+		backButton.setGraphic(icon);
+		backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+		backButton.setOnAction(e -> handleGoBack(stage));
 
-	    Label title = new Label("Sites");
-	    title.setStyle("-fx-font: 40 arial;");
+		Label title = new Label("Sites");
+		title.setStyle("-fx-font: 40 arial;");
 
-	    Region spacer = new Region();
-	    HBox.setHgrow(spacer, Priority.ALWAYS);
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-	    Button addButton = new CustomButton(new FontIcon("fas-plus"), "Site toevoegen");
-	    addButton.setOnAction(e -> System.out.println("Open toevoegen scherm"));
+		Button addButton = new CustomButton(new FontIcon("fas-plus"), "Site toevoegen");
+		addButton.setOnAction(e -> openAddSiteForm(stage));
 
-	    hbox.getChildren().addAll(backButton, title, spacer, addButton);
-	    return hbox;
+		hbox.getChildren().addAll(backButton, title, spacer, addButton);
+		return hbox;
 	}
 
-
-	private VBox createTableSection() {
+	private VBox createTableSection()
+	{
 		HBox filterBox = createTableHeaders();
 
 		TableColumn<SiteDTO, Number> col1 = new TableColumn<>("Nr.");
@@ -122,7 +161,56 @@ public class SitesListComponent extends VBox implements Observer {
 		TableColumn<SiteDTO, Number> col5 = new TableColumn<>("Aantal machines");
 		col5.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().machines().size()));
 
+		TableColumn<SiteDTO, Void> editColumn = new TableColumn<>("Bewerken");
+		editColumn.setCellFactory(param -> new TableCell<SiteDTO, Void>()
+		{
+			private final Button editButton = new Button();
+
+			{
+				ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/edit.png")));
+				editIcon.setFitWidth(16);
+				editIcon.setFitHeight(16);
+				editButton.setGraphic(editIcon);
+				editButton.setBackground(Background.EMPTY);
+				editButton.setOnAction(
+						event -> openEditSiteForm(stage, siteRepo.makeSiteObject(getTableRow().getItem())));
+			}
+
+			@Override
+			protected void updateItem(Void item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				setGraphic(empty ? null : editButton);
+			}
+		});
+
+		TableColumn<SiteDTO, Void> deleteColumn = new TableColumn<>("Verwijderen");
+		deleteColumn.setCellFactory(param -> new TableCell<SiteDTO, Void>()
+		{
+			private final Button deleteButton = new Button();
+
+			{
+				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/delete.png")));
+				deleteIcon.setFitHeight(16);
+				deleteIcon.setFitWidth(16);
+				deleteButton.setGraphic(deleteIcon);
+				deleteButton.setBackground(Background.EMPTY);
+				deleteButton.setOnAction(event -> deleteSite(getTableRow().getItem()));
+			}
+
+			@Override
+			protected void updateItem(Void item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				setGraphic(empty ? null : deleteButton);
+			}
+
+		});
+
 		table.getColumns().setAll(col1, col2, col3, col4, col5);
+		table.getColumns().add(editColumn);
+		table.getColumns().add(deleteColumn);
+
 		table.setPrefHeight(300);
 
 		// Create pagination control
@@ -133,7 +221,45 @@ public class SitesListComponent extends VBox implements Observer {
 		return new VBox(10, filterBox, tableWithPagination);
 	}
 
-	private HBox createTableHeaders() {
+	private void deleteSite(SiteDTO siteDTO)
+	{
+		Alert confirmation = new Alert(AlertType.CONFIRMATION);
+		confirmation.setTitle("Bevestig verwijderen");
+		confirmation.setHeaderText("Site verwijderen");
+		confirmation.setContentText("Weet u zeker dat u site '" + siteDTO.siteName() + "' wilt verwijderen?");
+
+		confirmation.showAndWait().ifPresent(response -> {
+			if (response == ButtonType.OK)
+			{
+				try
+				{
+					Site site = siteRepo.makeSiteObject(siteDTO);
+					siteRepo.deleteSite(site);
+
+					allSites.removeIf(s -> s.id() == siteDTO.id());
+					filteredSites.removeIf(s -> s.id() == siteDTO.id());
+
+					updateTable(filteredSites);
+
+				} catch (Exception e)
+				{
+					System.err.println("Fout bij verwijderen: " + e.getMessage());
+					e.printStackTrace();
+
+					Platform.runLater(() -> {
+						Alert alert = new Alert(AlertType.ERROR);
+						alert.setTitle("Fout bij verwijderen");
+						alert.setHeaderText("Kan site niet verwijderen");
+						alert.setContentText(e.toString());
+						alert.showAndWait();
+					});
+				}
+			}
+		});
+	}
+
+	private HBox createTableHeaders()
+	{
 		searchField = new TextField();
 		searchField.setPromptText("Zoeken...");
 		searchField.setMaxWidth(300);
@@ -150,7 +276,8 @@ public class SitesListComponent extends VBox implements Observer {
 		return filterBox;
 	}
 
-	private HBox createPageSelector() {
+	private HBox createPageSelector()
+	{
 		Label lblItemsPerPage = new Label("Aantal per pagina:");
 
 		ComboBox<Integer> comboItemsPerPage = new ComboBox<>(FXCollections.observableArrayList(10, 20, 50, 100));
@@ -166,14 +293,16 @@ public class SitesListComponent extends VBox implements Observer {
 		return pageSelector;
 	}
 
-	private void updateItemsPerPage(int itemsPerPage) {
+	private void updateItemsPerPage(int itemsPerPage)
+	{
 		this.itemsPerPage = itemsPerPage;
 		this.currentPage = 0; // Reset to first page when changing items per page
 		updatePagination();
 		updateTableItems();
 	}
 
-	private void filterTable(String searchQuery) {
+	private void filterTable(String searchQuery)
+	{
 		String lowerCaseFilter = searchQuery.toLowerCase();
 		filteredSites = allSites.stream()
 				.filter(site -> site.siteName().toLowerCase().contains(lowerCaseFilter)
@@ -186,7 +315,8 @@ public class SitesListComponent extends VBox implements Observer {
 		updateTableItems();
 	}
 
-	private Pagination createPagination() {
+	private Pagination createPagination()
+	{
 		updateTotalPages();
 		Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
 		pagination.setPageFactory(this::createPage);
@@ -197,55 +327,85 @@ public class SitesListComponent extends VBox implements Observer {
 		return pagination;
 	}
 
-	private HBox createPage(int pageIndex) {
+	private HBox createPage(int pageIndex)
+	{
 		return new HBox();
 	}
 
-	private void updatePagination() {
+	private void updatePagination()
+	{
 		updateTotalPages();
 		pagination.setPageCount(Math.max(1, totalPages));
 		pagination.setCurrentPageIndex(Math.min(currentPage, Math.max(0, totalPages - 1)));
 	}
 
-	private void updateTotalPages() {
+	private void updateTotalPages()
+	{
 		totalPages = (int) Math.ceil((double) filteredSites.size() / itemsPerPage);
 	}
 
-	private void updateTableItems() {
+	private void updateTableItems()
+	{
 		int fromIndex = currentPage * itemsPerPage;
 		int toIndex = Math.min(fromIndex + itemsPerPage, filteredSites.size());
 
-		if (filteredSites.isEmpty()) {
+		if (filteredSites.isEmpty())
+		{
 			table.getItems().clear();
-		} else {
+		} else
+		{
 			List<SiteDTO> currentPageItems = fromIndex < toIndex ? filteredSites.subList(fromIndex, toIndex)
 					: List.of();
 			table.getItems().setAll(currentPageItems);
 		}
 	}
 
-	private void updateTable(List<SiteDTO> sites) {
+	private void updateTable(List<SiteDTO> sites)
+	{
 		filteredSites = sites;
+		currentPage = 0;
 		updatePagination();
 		updateTableItems();
 	}
 
-	private HBox createInformationBox() {
+	private HBox createInformationBox()
+	{
 		return new CustomInformationBox(
 				"Hieronder vindt u een overzicht van alle sites. Klik op een site om de details van de site te bekijken!");
 	}
 
-	@Override
-	public void update() {
-		allSites = sc.getSites();
-		filteredSites = allSites;
-		updatePagination();
-		updateTableItems();
+	private void openAddSiteForm(Stage primaryStage)
+	{
+		primaryStage.getScene().setRoot(new AddOrEditSiteForm(primaryStage, siteRepo, this, null));
 	}
 
-	private void handleGoBack(Stage stage) {
+	private void openEditSiteForm(Stage primaryStage, Site site)
+	{
+		primaryStage.getScene().setRoot(new AddOrEditSiteForm(primaryStage, siteRepo, this, site));
+	}
+
+	@Override
+	public void update()
+	{
+		Platform.runLater(() -> {
+			List<Site> sites = siteRepo.getAllSites();
+			allSites = makeSiteDTOs(sites);
+			filteredSites = new ArrayList<>(allSites);
+			updateTable(filteredSites);
+		});
+	}
+
+	private void handleGoBack(Stage stage)
+	{
 		ChoicePane choicePane = new ChoicePane(stage);
 		Scene choicePaneScene = new Scene(choicePane);
 		stage.setScene(choicePaneScene);
 	}
+
+	public void returnToSiteList(Stage primaryStage)
+	{
+		loadSites();
+		primaryStage.getScene().setRoot(this);
+	}
+
 }
