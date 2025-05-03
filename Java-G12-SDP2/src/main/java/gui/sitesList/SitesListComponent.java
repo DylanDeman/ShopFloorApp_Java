@@ -1,5 +1,6 @@
 package gui.sitesList;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
@@ -70,7 +72,11 @@ public class SitesListComponent extends VBox implements Observer
 	private void loadSites()
 	{
 		List<Site> sites = siteRepo.getAllSites();
-		table.getItems().setAll(makeSiteDTOs(sites));
+
+		allSites = makeSiteDTOs(sites);
+		filteredSites = allSites;
+
+		updateTable(allSites);
 	}
 
 	private List<SiteDTO> makeSiteDTOs(List<Site> sites)
@@ -217,20 +223,39 @@ public class SitesListComponent extends VBox implements Observer
 
 	private void deleteSite(SiteDTO siteDTO)
 	{
-		try
-		{
-			Site site = siteRepo.makeSiteObject(siteDTO);
-			siteRepo.deleteSite(site);
-		} catch (Exception e)
-		{
-			Platform.runLater(() -> {
-				Alert alert = new Alert(AlertType.ERROR);
-				alert.setTitle("Fout bij verwijderen");
-				alert.setHeaderText("Kan site niet verwijderen");
-				alert.setContentText(e.toString());
-				alert.showAndWait();
-			});
-		}
+		Alert confirmation = new Alert(AlertType.CONFIRMATION);
+		confirmation.setTitle("Bevestig verwijderen");
+		confirmation.setHeaderText("Site verwijderen");
+		confirmation.setContentText("Weet u zeker dat u site '" + siteDTO.siteName() + "' wilt verwijderen?");
+
+		confirmation.showAndWait().ifPresent(response -> {
+			if (response == ButtonType.OK)
+			{
+				try
+				{
+					Site site = siteRepo.makeSiteObject(siteDTO);
+					siteRepo.deleteSite(site);
+
+					allSites.removeIf(s -> s.id() == siteDTO.id());
+					filteredSites.removeIf(s -> s.id() == siteDTO.id());
+
+					updateTable(filteredSites);
+
+				} catch (Exception e)
+				{
+					System.err.println("Fout bij verwijderen: " + e.getMessage());
+					e.printStackTrace();
+
+					Platform.runLater(() -> {
+						Alert alert = new Alert(AlertType.ERROR);
+						alert.setTitle("Fout bij verwijderen");
+						alert.setHeaderText("Kan site niet verwijderen");
+						alert.setContentText(e.toString());
+						alert.showAndWait();
+					});
+				}
+			}
+		});
 	}
 
 	private HBox createTableHeaders()
@@ -338,6 +363,7 @@ public class SitesListComponent extends VBox implements Observer
 	private void updateTable(List<SiteDTO> sites)
 	{
 		filteredSites = sites;
+		currentPage = 0;
 		updatePagination();
 		updateTableItems();
 	}
@@ -361,10 +387,12 @@ public class SitesListComponent extends VBox implements Observer
 	@Override
 	public void update()
 	{
-		allSites = sc.getSites();
-		filteredSites = allSites;
-		updatePagination();
-		updateTableItems();
+		Platform.runLater(() -> {
+			List<Site> sites = siteRepo.getAllSites();
+			allSites = makeSiteDTOs(sites);
+			filteredSites = new ArrayList<>(allSites);
+			updateTable(filteredSites);
+		});
 	}
 
 	private void handleGoBack(Stage stage)
@@ -376,6 +404,7 @@ public class SitesListComponent extends VBox implements Observer
 
 	public void returnToSiteList(Stage primaryStage)
 	{
+		loadSites();
 		primaryStage.getScene().setRoot(this);
 	}
 

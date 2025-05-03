@@ -92,7 +92,15 @@ public class SiteRepository implements Subject
 		try
 		{
 			siteDao.startTransaction();
-			siteDao.delete(site);
+
+			Site managedSite = siteDao.get(site.getId());
+			if (managedSite == null)
+			{
+				throw new RuntimeException("Site not found with ID: " + site.getId());
+			}
+
+			siteDao.delete(managedSite);
+
 			siteDao.commitTransaction();
 			notifyObservers();
 		} catch (Exception e)
@@ -111,7 +119,7 @@ public class SiteRepository implements Subject
 
 	public List<SiteDTO> makeSiteDTOs(List<Site> sites)
 	{
-		return sites.stream().map(site -> toSiteDTO(site)).collect(Collectors.toUnmodifiableList());
+		return sites.stream().map(site -> toSiteDTO(site)).collect(Collectors.toList());
 	}
 
 	private SiteDTO toSiteDTO(Site site)
@@ -132,7 +140,8 @@ public class SiteRepository implements Subject
 
 	public Site makeSiteObject(SiteDTO siteDTO)
 	{
-		return new Site(siteDTO.siteName(), siteDTO.verantwoordelijke(), siteDTO.status(), siteDTO.address());
+		return new Site(siteDTO.id(), siteDTO.siteName(), siteDTO.verantwoordelijke(), siteDTO.status(),
+				siteDTO.address());
 	}
 
 }

@@ -75,6 +75,15 @@ public class Site implements Serializable, Subject
 		this.address = address;
 	}
 
+	public Site(int id, String siteName, User verantwoordelijke, Status status, Address address)
+	{
+		this.id = id;
+		this.siteName = siteName;
+		this.verantwoordelijke = verantwoordelijke;
+		this.status = status;
+		this.address = address;
+	}
+
 	public void setSiteName(String siteName)
 	{
 		this.siteName = siteName.trim();
