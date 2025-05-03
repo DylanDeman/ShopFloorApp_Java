@@ -184,8 +184,6 @@ public class MachinesListComponent extends VBox {
 
 
         this.getChildren().addAll(machineTable, backButton);
-        
-
 
 		BackgroundImage backgroundImage = new BackgroundImage(
 				new Image(getClass().getResourceAsStream("/images/background.png")), BackgroundRepeat.NO_REPEAT,

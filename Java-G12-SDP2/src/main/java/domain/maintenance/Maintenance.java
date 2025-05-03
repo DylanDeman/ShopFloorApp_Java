@@ -17,10 +17,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import util.MaintenanceStatus;
 
 @Entity
@@ -30,8 +33,6 @@ import util.MaintenanceStatus;
 public class Maintenance implements Serializable
 {
 
-	// TODO: link to machine, so siteDetails can be accessed in reports.
-
 	private static final long serialVersionUID = 1L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,28 +40,44 @@ public class Maintenance implements Serializable
 	private int id;
 
 	@Getter
+	@Setter
 	private LocalDate executionDate;
 	@Getter
+	@Setter
 	private LocalDateTime startDate;
 	@Getter
+	@Setter
 	private LocalDateTime endDate;
 	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "technician_id")
 	@Getter
+	@Setter
 	private User technician;
 	@Getter
+	@Setter
 	private String reason;
 	@Getter
+	@Setter
 	private String comments;
 	@Enumerated(EnumType.STRING)
 	@Getter
+	@Setter
 	private MaintenanceStatus status;
 
 	
 	@ManyToOne(cascade = CascadeType.PERSIST)
 	@JoinColumn(name = "machine_id")
 	@Getter
+	@Setter
 	private Machine machine;
+	
+    @PrePersist
+    @PreUpdate
+    void validateDates() {
+        if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+            throw new IllegalStateException("End date cannot be before start date.");
+        }
+    }
 	
 	public Maintenance(LocalDate executionDate, 
 			LocalDateTime startDate, LocalDateTime endDate, 
