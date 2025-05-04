@@ -112,7 +112,7 @@ public class MachineController {
 	    machine.setProductInfo(dto.productInfo());
 	    machine.setLastMaintenance(dto.lastMaintenance());
 	    machine.setNumberDaysSinceLastMaintenance(dto.numberDaysSinceLastMaintenance());
-	    machine.setUpTimeInHours(dto.upTimeInHours());
+	    //machine.setUpTimeInHours(dto.upTimeInHours());
 	    machine.setCode(dto.code());
 	    machine.setLocation(dto.location());
 	    machine.setStatus(dto.status());

@@ -48,7 +48,6 @@ public class Machine implements Serializable {
     private String code, status, productieStatus, location, productInfo;
     private LocalDateTime lastMaintenance, futureMaintenance;
     private int numberDaysSinceLastMaintenance;
-    private double upTimeInHours = 0.0;
 
     
     private Machine(Builder builder) {
@@ -65,6 +64,12 @@ public class Machine implements Serializable {
     	        ? (int) java.time.Duration.between(lastMaintenance, LocalDateTime.now()).toDays()
     	        : 0;
     }
+    public double getUpTimeInHours() {
+        return (lastMaintenance != null)
+            ? Duration.between(lastMaintenance, LocalDateTime.now()).toHours()
+            : 0.0;
+    }
+
     
     public static Builder builder() {
     	return new Builder();
