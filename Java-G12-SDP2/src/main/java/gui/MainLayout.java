@@ -39,7 +39,7 @@ public class MainLayout
 		applyRootStyles();
 
 		this.mainScene = new Scene(rootLayout);
-		// applySceneStyles();
+		applySceneStyles();
 
 		primaryStage.setScene(mainScene);
 		primaryStage.setMaximized(true);
@@ -56,55 +56,55 @@ public class MainLayout
 		rootLayout.setBackground(new Background(backgroundImage));
 	}
 
-//	private void applySceneStyles()
-//	{
-//		mainScene.getStylesheets().add(getClass().getResource("/css/application.css").toExternalForm());
-//	}
+	private void applySceneStyles()
+	{
+		mainScene.getStylesheets().add(getClass().getResource("/css/navbar.css").toExternalForm());
+	}
 
 	public void showLoginScreen()
 	{
 		LoginPane loginPane = new LoginPane(this);
-		setContent(loginPane, false);
+		setContent(loginPane, false, false);
 	}
 
 	public void showHomeScreen()
 	{
 		ChoicePane choicePane = new ChoicePane(this);
-		setContent(choicePane, true);
+		setContent(choicePane, true, true);
 	}
 
 	public void showUserManagementScreen()
 	{
 		UserManagementPane userManagement = new UserManagementPane(this);
-		setContent(userManagement, true);
+		setContent(userManagement, true, false);
 	}
 
 	public void showSiteList()
 	{
 		SitesListComponent siteList = new SitesListComponent(this);
-		setContent(siteList, true);
+		setContent(siteList, true, false);
 	}
 
 	public void showMachineScreen()
 	{
 		MachinesListComponent machineList = new MachinesListComponent(this);
-		setContent(machineList, true);
+		setContent(machineList, true, false);
 	}
 
 	public void showMaintenanceList()
 	{
 		MaintenanceListComponent maintenanceList = new MaintenanceListComponent(this);
-		setContent(maintenanceList, true);
+		setContent(maintenanceList, true, false);
 	}
 
-	public void setContent(Parent content, boolean showNavbar)
+	public void setContent(Parent content, boolean showNavbar, boolean isHomeScreen)
 	{
 		VBox contentContainer = new VBox(CONTENT_SPACING);
 		contentContainer.setPadding(CONTENT_PADDING);
 		contentContainer.getChildren().add(content);
 
 		rootLayout.setCenter(contentContainer);
-		rootLayout.setTop(showNavbar ? new Navbar(this) : null);
+		rootLayout.setTop(showNavbar ? new Navbar(this, isHomeScreen) : null);
 	}
 
 }

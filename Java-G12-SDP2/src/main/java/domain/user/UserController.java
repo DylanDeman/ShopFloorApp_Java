@@ -5,20 +5,28 @@ import java.util.List;
 import exceptions.InvalidInputException;
 import util.AuthenticationUtil;
 
-public class UserController {
+public class UserController
+{
 	private UserDao userRepo;
 
-	public UserController() {
+	public UserController()
+	{
 		userRepo = new UserDaoJpa();
 	}
 
-	public void authenticate(String email, String password) throws InvalidInputException {
+	public void authenticate(String email, String password) throws InvalidInputException
+	{
 		AuthenticationUtil.authenticate(email, password, userRepo);
 	}
-	public void logout() {
+
+	public void logout()
+	{
 		AuthenticationUtil.logout();
 	}
-	public List<User> getAllTechniekers(){
+
+	public List<User> getAllTechniekers()
+	{
 		return userRepo.getAllTechniekers();
 	}
+
 }

@@ -75,31 +75,31 @@ public class ChoicePane extends GridPane
 	private void goToUserManagement()
 	{
 		UserManagementPane userManagementPane = new UserManagementPane(mainLayout);
-		mainLayout.setContent(userManagementPane, true);
+		mainLayout.setContent(userManagementPane, true, false);
 	}
 
 	private void goToMaintenanceList()
 	{
 		MaintenanceListComponent maintenanceList = new MaintenanceListComponent(mainLayout);
-		mainLayout.setContent(maintenanceList, true);
+		mainLayout.setContent(maintenanceList, true, false);
 	}
 
 	private void gotToSitesList()
 	{
 		SitesListComponent sitesList = new SitesListComponent(mainLayout);
-		mainLayout.setContent(sitesList, true);
+		mainLayout.setContent(sitesList, true, false);
 	}
 
 	private void goToAddRapport()
 	{
 		AddReportForm addReportForm = new AddReportForm(mainLayout,
 				services.getMaintenanceController().getMaintenances().getFirst());
-		mainLayout.setContent(addReportForm, true);
+		mainLayout.setContent(addReportForm, true, false);
 	}
 
 	private void goToMachinesList()
 	{
 		MachinesListComponent machinesList = new MachinesListComponent(mainLayout);
-		mainLayout.setContent(machinesList, true);
+		mainLayout.setContent(machinesList, true, false);
 	}
 }

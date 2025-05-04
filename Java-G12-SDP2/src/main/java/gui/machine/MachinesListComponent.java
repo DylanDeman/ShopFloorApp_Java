@@ -206,14 +206,14 @@ public class MachinesListComponent extends VBox
 	{
 		Parent addMachineForm = new AddOrEditMachineForm(mainLayout, machineController, null, siteController,
 				userController);
-		mainLayout.setContent(addMachineForm, true);
+		mainLayout.setContent(addMachineForm, true, false);
 	}
 
 	private void openEditMachineForm(MachineDTO machine)
 	{
 		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machineController, machine, siteController,
 				userController);
-		mainLayout.setContent(editMachineForm, true);
+		mainLayout.setContent(editMachineForm, true, false);
 	}
 
 }

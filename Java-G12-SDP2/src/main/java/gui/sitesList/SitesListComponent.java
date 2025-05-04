@@ -365,13 +365,13 @@ public class SitesListComponent extends VBox implements Observer
 	private void openAddSiteForm()
 	{
 		Parent addSiteForm = new AddOrEditSiteForm(mainLayout, siteRepo, null);
-		mainLayout.setContent(addSiteForm, true);
+		mainLayout.setContent(addSiteForm, true, false);
 	}
 
 	private void openEditSiteForm(Site site)
 	{
 		Parent editSiteForm = new AddOrEditSiteForm(mainLayout, siteRepo, site);
-		mainLayout.setContent(editSiteForm, true);
+		mainLayout.setContent(editSiteForm, true, false);
 	}
 
 	@Override
