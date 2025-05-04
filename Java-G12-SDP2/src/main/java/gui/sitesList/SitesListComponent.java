@@ -31,8 +31,6 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -156,9 +154,8 @@ public class SitesListComponent extends VBox implements Observer
 			private final Button editButton = new Button();
 
 			{
-				ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/edit.png")));
-				editIcon.setFitWidth(16);
-				editIcon.setFitHeight(16);
+				FontIcon editIcon = new FontIcon("fas-pen");
+				editIcon.setIconSize(20);
 				editButton.setGraphic(editIcon);
 				editButton.setBackground(Background.EMPTY);
 				editButton.setOnAction(event -> openEditSiteForm(siteRepo.makeSiteObject(getTableRow().getItem())));
@@ -178,9 +175,8 @@ public class SitesListComponent extends VBox implements Observer
 			private final Button deleteButton = new Button();
 
 			{
-				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/delete.png")));
-				deleteIcon.setFitHeight(16);
-				deleteIcon.setFitWidth(16);
+				FontIcon deleteIcon = new FontIcon("far-trash-alt");
+				deleteIcon.setIconSize(20);
 				deleteButton.setGraphic(deleteIcon);
 				deleteButton.setBackground(Background.EMPTY);
 				deleteButton.setOnAction(event -> deleteSite(getTableRow().getItem()));

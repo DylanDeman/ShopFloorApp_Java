@@ -5,7 +5,6 @@ import java.util.List;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.user.User;
-import domain.user.UserDTO;
 import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;
 import javafx.application.Platform;
@@ -93,6 +92,7 @@ public class UserManagementPane extends GridPane implements Observer
 		hbox.getChildren().addAll(backButton, title, spacer);
 
 		HBox infoBox = new CustomInformationBox("Hieronder vindt u een overzicht van alle gebruikers.");
+		VBox.setMargin(infoBox, new Insets(20, 0, 10, 0));
 
 		return new VBox(10, hbox, infoBox);
 	}
