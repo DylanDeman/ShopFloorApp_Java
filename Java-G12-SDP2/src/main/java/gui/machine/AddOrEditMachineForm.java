@@ -5,72 +5,184 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import domain.machine.MachineBuilder;
 import domain.machine.MachineController;
 import domain.machine.MachineDTO;
-import domain.site.Site;
-import domain.site.SiteController;
-import domain.user.User;
-import domain.user.UserController;
-import exceptions.InformationRequiredExceptionMachine;
-import gui.MainLayout;
+import javafx.collections.FXCollections;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundImage;
+import javafx.scene.layout.BackgroundPosition;
+import javafx.scene.layout.BackgroundRepeat;
+import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import util.MachineStatus;
-import util.ProductionStatus;
-import util.RequiredElementMachine;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
+import javafx.stage.Stage;
+import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.util.List;
 
 public class AddOrEditMachineForm extends GridPane
 {
 
-	private MachineController machineController;
-	private MachineDTO machineDTO;
-	private SiteController siteController;
-	private UserController userController;
-	private final MainLayout mainLayout;
+public class AddOrEditMachineForm extends GridPane {
 
-	private Label errorLabel;
-	private Label codeError, locationError, productInfoError;
-	private Label errorSite, errorTechnician, errorMachineStatus, errorProductionStatus;
-	private Label errorFutureMaintenance;
+    private Stage stage;
+    private MachineController machineController;
+    private MachineDTO machineDTO; // If null, it's add mode
+    private SiteController siteController;
+    private UserController userController;
+    
+    private TextField codeField, locationField, productInfoField;
+    private DatePicker futureMaintenancePicker;
+    private ComboBox<SiteDTO> siteCb;
+    private ComboBox<User> techniekerCb;
+    private Label errorLabel;
+    private Label codeError, locationError, siteError, technicianError, productInfoError, maintenanceError;
 
-	private TextField codeField, locationField, productInfoField;
+    public AddOrEditMachineForm(Stage stage, MachineController machineController, 
+            MachineDTO machineDTO,
+            SiteController siteController,
+            UserController userController
+            ) {
+        this.stage = stage;
+        this.machineController = machineController;
+        this.machineDTO = machineDTO;
+        this.siteController = siteController;
+        this.userController = userController;
 
 	private ComboBox<Site> siteBox;
 	private ComboBox<User> technicianBox;
 	private ComboBox<MachineStatus> machineStatusBox;
 	private ComboBox<ProductionStatus> productionStatusBox;
 
-	private DatePicker futureMaintenance;
+    private void initializeGUI() {
+        this.setPadding(new Insets(20));
+        this.setHgap(20);
+        this.setVgap(20);
 
-	private boolean isNewMachine;
+        BackgroundImage backgroundImage = new BackgroundImage(
+                new Image(getClass().getResourceAsStream("/images/background.png")),
+                BackgroundRepeat.NO_REPEAT, BackgroundRepeat.NO_REPEAT,
+                BackgroundPosition.CENTER,
+                new BackgroundSize(100, 100, true, true, true, true));
+        setBackground(new Background(backgroundImage));
 
-	public AddOrEditMachineForm(MainLayout mainLayout, MachineController machineController, MachineDTO machineDTO,
-			SiteController siteController, UserController userController)
-	{
-		this.mainLayout = mainLayout;
-		this.machineController = machineController;
-		this.machineDTO = machineDTO;
-		this.siteController = siteController;
-		this.userController = userController;
-		this.isNewMachine = machineDTO == null;
+        Button backButton = new Button("← Terug");
+        backButton.setOnAction(e -> goBack());
+        this.add(backButton, 0, 0, 2, 1);
 
-		initializeFields();
-		initializeGUI();
+        errorLabel = new Label();
+        errorLabel.setTextFill(Color.RED);
+        errorLabel.setWrapText(true);
+        this.add(errorLabel, 0, 1, 2, 1);
 
-		if (!isNewMachine)
-		{
-			fillMachineData(machineDTO);
-		}
-	}
+        Label headerLabel = new Label(machineDTO == null ? "MACHINE TOEVOEGEN" : "MACHINE AANPASSEN");
+        headerLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: white;");
+        HBox headerBox = new HBox(headerLabel);
+        headerBox.setAlignment(Pos.CENTER);
+        headerBox.setStyle("-fx-background-color: rgb(240, 69, 60); " +
+                "-fx-padding: 15px; " +
+                "-fx-border-radius: 5 5 5 5; " +
+                "-fx-background-radius: 5 5 5 5;");
+        headerBox.setMaxWidth(Double.MAX_VALUE);
+        headerBox.setMaxHeight(40);
+        this.add(headerBox, 0, 2, 2, 1);
+        
+        GridPane.setMargin(headerBox, new Insets(0, 0, 0, 0));
+
+        HBox mainContent = new HBox(30);
+        mainContent.setAlignment(Pos.TOP_CENTER);
+        mainContent.setStyle("-fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-background-radius: 5;");
+        mainContent.setMaxWidth(Double.MAX_VALUE);
+
+        VBox leftFieldsBox = new VBox(15);
+        leftFieldsBox.setPadding(new Insets(20));
+        leftFieldsBox.getChildren().add(createMachineDetailsSection());
+
+        Line divider = new Line(0, 0, 0, 400);
+        divider.setStroke(Color.LIGHTGRAY);
+        divider.setStrokeWidth(1);
+
+        VBox rightFieldsBox = new VBox(15);
+        rightFieldsBox.setPadding(new Insets(20));
+        rightFieldsBox.getChildren().add(createLocationAndMaintenanceSection());
+
+        mainContent.getChildren().addAll(leftFieldsBox, divider, rightFieldsBox);
+        this.add(mainContent, 0, 3, 2, 1);
+
+        Button saveButton = new Button("Opslaan");
+        saveButton.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-size: 14px;");
+        saveButton.setMaxWidth(Double.MAX_VALUE);
+        saveButton.setPadding(new Insets(10, 30, 10, 30));
+        saveButton.setOnAction(e -> saveMachine());
+
+        HBox buttonBox = new HBox(saveButton);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setPadding(new Insets(20, 0, 0, 0));
+        HBox.setHgrow(saveButton, Priority.ALWAYS);
+        buttonBox.setMaxWidth(400);
+
+        this.add(buttonBox, 0, 4, 2, 1);
+        GridPane.setHalignment(buttonBox, HPos.CENTER);
+
+        // Prefill fields if editing
+        if (machineDTO != null) {
+            fillMachineData(machineDTO);
+        }
+    }
+
+    private GridPane createMachineDetailsSection() {
+        GridPane pane = new GridPane();
+        pane.setVgap(5);
+        pane.setHgap(10);
+
+        Label sectionLabel = new Label("Machine Details");
+        sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        pane.add(sectionLabel, 0, 0, 2, 1);
+
+        codeError = createErrorLabel();
+        technicianError = createErrorLabel();
+        siteError = createErrorLabel();
+        productInfoError = createErrorLabel();
+
+        codeField = new TextField();
+        techniekerCb = new ComboBox<>();
+        siteCb = new ComboBox<>();
+        productInfoField = new TextField();
+        
+        // Setup ComboBoxes
+        techniekerCb.setItems(FXCollections.observableArrayList(userController.getAllTechniekers()));
+        techniekerCb.setConverter(new javafx.util.StringConverter<User>() {
+            @Override
+            public String toString(User user) {
+                return user == null ? "" : user.getFullName();
+            }
+
+            @Override
+            public User fromString(String string) {
+                return null;
+            }
+        });
+        
+        List<SiteDTO> sites = siteController.getSites();
+        siteCb.setItems(FXCollections.observableArrayList(sites));
+        siteCb.setConverter(new javafx.util.StringConverter<SiteDTO>() {
+            @Override
+            public String toString(SiteDTO site) {
+                return site == null ? "" : site.siteName();
+            }
 
 	private void initializeGUI()
 	{
@@ -80,348 +192,203 @@ public class AddOrEditMachineForm extends GridPane
 		this.setVgap(15);
 		this.setPadding(new Insets(20));
 
-		VBox mainContainer = new VBox();
-		mainContainer.setAlignment(Pos.CENTER);
-		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, createFormContent());
+        codeField.setPrefWidth(200);
+        techniekerCb.setPrefWidth(200);
+        siteCb.setPrefWidth(200);
+        productInfoField.setPrefWidth(200);
+        
+        int row = 1;
+        pane.add(new Label("Code:"), 0, row);
+        pane.add(codeField, 1, row++);
+        pane.add(codeError, 1, row++);
 
-		this.add(mainContainer, 0, 0);
+        pane.add(new Label("Site:"), 0, row);
+        pane.add(siteCb, 1, row++);
+        pane.add(siteError, 1, row++);
 
-	}
+        pane.add(new Label("Technieker:"), 0, row);
+        pane.add(techniekerCb, 1, row++);
+        pane.add(technicianError, 1, row++);
 
-	private VBox createFormContent()
-	{
-		VBox formContent = new VBox(30);
-		formContent.setAlignment(Pos.TOP_CENTER);
-		formContent.getStyleClass().add("form-box");
+        pane.add(new Label("Product Info:"), 0, row);
+        pane.add(productInfoField, 1, row++);
+        pane.add(productInfoError, 1, row++);
 
-		VBox textFieldBox = new VBox(15, createTextFields());
-		VBox datePickerBox = new VBox(15, createDatePicker());
-		VBox infoBox = new VBox(15, createInfoBox());
-		VBox statusBox = new VBox(15, createComboBoxSection());
+        return pane;
+    }
 
-		formContent.getChildren().addAll(textFieldBox, datePickerBox, infoBox, statusBox, createSaveButton());
+    private GridPane createLocationAndMaintenanceSection() {
+        GridPane pane = new GridPane();
+        pane.setVgap(5);
+        pane.setHgap(10);
 
-		return formContent;
-	}
+        Label sectionLabel = new Label("Locatie & Onderhoud");
+        sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
+        pane.add(sectionLabel, 0, 0, 2, 1);
 
-	private Node createDatePicker()
-	{
-		GridPane pane = new GridPane();
-		pane.setVgap(5);
-		pane.setHgap(10);
+        locationError = createErrorLabel();
+        maintenanceError = createErrorLabel();
 
-		Label sectionLabel = new Label("Onderhoud");
+        locationField = new TextField();
+        futureMaintenancePicker = new DatePicker();
+        futureMaintenancePicker.setEditable(false);
 
-		sectionLabel.getStyleClass().add("section-label");
-		pane.add(sectionLabel, 0, 0);
+        locationField.setPrefWidth(200);
+        futureMaintenancePicker.setPrefWidth(200);
 
-		codeField.setPrefWidth(200);
+        int row = 1;
+        pane.add(new Label("Locatie:"), 0, row);
+        pane.add(locationField, 1, row++);
+        pane.add(locationError, 1, row++);
 
-		int row = 1;
+        pane.add(new Label("Volgende onderhoudsdatum:"), 0, row);
+        pane.add(futureMaintenancePicker, 1, row++);
+        pane.add(maintenanceError, 1, row++);
 
-		pane.add(new Label("Volgend onderhoud:"), 0, row);
-		pane.add(futureMaintenance, 1, row++);
-		pane.add(errorFutureMaintenance, 1, row++);
+        return pane;
+    }
 
-		return pane;
-	}
+    private void fillMachineData(MachineDTO machine) {
+        codeField.setText(machine.code());
+        locationField.setText(machine.location());
+        productInfoField.setText(machine.productInfo());
+        
+        if (machine.futureMaintenance() != null) {
+            futureMaintenancePicker.setValue(machine.futureMaintenance().toLocalDate());
+        }
+        
+        // Set selected site and technician if available
+        if (machine.site() != null) {
+            siteCb.getItems().stream()
+                .filter(site -> site.id() == machine.site().id())
+                .findFirst()
+                .ifPresent(siteCb::setValue);
+        }
+        
+        if (machine.technician() != null) {
+            techniekerCb.getItems().stream()
+                .filter(tech -> tech.getId() == machine.technician().getId())
+                .findFirst()
+                .ifPresent(techniekerCb::setValue);
+        }
+    }
 
-	private Node createTextFields()
-	{
-		GridPane pane = new GridPane();
-		pane.setVgap(5);
-		pane.setHgap(10);
+    private void saveMachine() {
+        try {
+            resetErrorLabels();
+            
+            String code = codeField.getText();
+            String location = locationField.getText();
+            SiteDTO selectedSite = siteCb.getValue();
+            User selectedTechnician = techniekerCb.getValue();
+            String productInfo = productInfoField.getText();
+            LocalDate futureMaintenanceDate = futureMaintenancePicker.getValue();
 
-		Label sectionLabel = new Label("Site info");
+            // Simple validation
+            boolean hasErrors = false;
+            
+            if (code.isBlank()) {
+                codeError.setText("Code is verplicht");
+                hasErrors = true;
+            }
+            
+            if (location.isBlank()) {
+                locationError.setText("Locatie is verplicht");
+                hasErrors = true;
+            }
+            
+            if (selectedSite == null) {
+                siteError.setText("Site is verplicht");
+                hasErrors = true;
+            }
+            
+            if (selectedTechnician == null) {
+                technicianError.setText("Technieker is verplicht");
+                hasErrors = true;
+            }
+            
+            if (futureMaintenanceDate == null) {
+                maintenanceError.setText("Onderhoudsdatum is verplicht");
+                hasErrors = true;
+            }
+            
+            if (hasErrors) {
+                return;
+            }
 
-		sectionLabel.getStyleClass().add("section-label");
-		pane.add(sectionLabel, 0, 0);
+            MachineDTO updatedMachine;
 
-		codeField.setPrefWidth(200);
-		locationField.setPrefWidth(200);
-		productInfoField.setPrefWidth(200);
+            if (machineDTO != null) {
+                // Edit existing machine
+                updatedMachine = new MachineDTO(
+                    machineDTO.id(),
+                    selectedSite,
+                    selectedTechnician,
+                    code,
+                    machineDTO.status(),
+                    machineDTO.productieStatus(),
+                    location,
+                    productInfo,
+                    machineDTO.lastMaintenance(),
+                    futureMaintenanceDate.atStartOfDay(),
+                    machineDTO.numberDaysSinceLastMaintenance(),
+                    machineDTO.upTimeInHours()
+                );
 
-		int row = 1;
+                machineController.updateMachine(machineController.convertDTOToMachine(updatedMachine));
+            } else {
+                // Add new machine
+                updatedMachine = new MachineDTO(
+                    0,
+                    selectedSite,
+                    selectedTechnician,
+                    code,
+                    "Actief",
+                    "Productie OK",
+                    location,
+                    productInfo,
+                    LocalDateTime.now(),
+                    futureMaintenanceDate.atStartOfDay(),
+                    0,
+                    0.0
+                );
 
-		pane.add(new Label("Code:"), 0, row);
-		pane.add(codeField, 1, row++);
-		pane.add(codeError, 1, row++);
+                machineController.addNewMachine(updatedMachine);
+            }
 
-		pane.add(new Label("Locatie:"), 0, row);
-		pane.add(locationField, 1, row++);
-		pane.add(locationError, 1, row++);
+            goBack();
+        } catch (Exception ex) {
+            showError("Er is een fout opgetreden: " + ex.getMessage());
+            ex.printStackTrace();
+        }
+    }
 
-		pane.add(new Label("Product info:"), 0, row);
-		pane.add(productInfoField, 1, row++);
-		pane.add(productInfoError, 1, row++);
+    private Label createErrorLabel() {
+        Label errorLabel = new Label();
+        errorLabel.setTextFill(Color.RED);
+        errorLabel.setStyle("-fx-font-size: 10px;");
+        errorLabel.setMaxWidth(150);
+        errorLabel.setWrapText(true);
+        return errorLabel;
+    }
 
-		return pane;
-	}
+    private void showError(String message) {
+        errorLabel.setText(message);
+    }
 
-	private Node createInfoBox()
-	{
-		GridPane pane = new GridPane();
-		pane.setVgap(5);
-		pane.setHgap(10);
+    private void resetErrorLabels() {
+        errorLabel.setText("");
+        codeError.setText("");
+        locationError.setText("");
+        siteError.setText("");
+        technicianError.setText("");
+        productInfoError.setText("");
+        maintenanceError.setText("");
+    }
 
-		Label sectionLabel1 = new Label("Site en technieker");
-		sectionLabel1.getStyleClass().add("section-label");
-		pane.add(sectionLabel1, 0, 0, 2, 1);
-
-		siteBox = new ComboBox<>();
-		siteBox.getItems().addAll(siteController.getSiteObjects());
-		siteBox.setPromptText("Selecteer een site");
-		siteBox.setPrefWidth(200);
-
-		technicianBox = new ComboBox<>();
-		technicianBox.getItems().addAll(userController.getAllTechniekers());
-		technicianBox.setPromptText("Selecteer een technieker");
-		technicianBox.setPrefWidth(200);
-
-		int row = 1;
-		pane.add(new Label("Site:"), 0, row);
-		pane.add(siteBox, 1, row++);
-		pane.add(errorSite, 1, row++);
-
-		pane.add(new Label("Technieker:"), 0, row);
-		pane.add(technicianBox, 1, row++);
-		pane.add(errorTechnician, 1, row++);
-
-		return pane;
-	}
-
-	private Node createComboBoxSection()
-	{
-		GridPane pane = new GridPane();
-		pane.setVgap(5);
-		pane.setHgap(10);
-
-		Label sectionLabel = new Label("Statussen");
-		sectionLabel.getStyleClass().add("section-label");
-		pane.add(sectionLabel, 0, 0, 2, 1);
-
-		machineStatusBox = new ComboBox<>();
-		machineStatusBox.getItems().addAll(MachineStatus.values());
-		machineStatusBox.setPromptText("Selecteer een machinestatus");
-		machineStatusBox.setPrefWidth(200);
-
-		productionStatusBox = new ComboBox<>();
-		productionStatusBox.getItems().addAll(ProductionStatus.values());
-		productionStatusBox.setPromptText("Selecteer een productiestatus");
-		productionStatusBox.setPrefWidth(200);
-
-		int row = 1;
-
-		pane.add(new Label("Machinestatus:"), 0, row);
-		pane.add(machineStatusBox, 1, row++);
-		pane.add(errorMachineStatus, 1, row++);
-
-		pane.add(new Label("Productiestatus:"), 0, row);
-		pane.add(productionStatusBox, 1, row++);
-		pane.add(errorProductionStatus, 1, row++);
-
-		return pane;
-	}
-
-	private HBox createSaveButton()
-	{
-		Button saveButton = new Button("Opslaan");
-		saveButton.getStyleClass().add("save-button");
-		saveButton.setOnAction(e -> saveMachine());
-
-		HBox buttonBox = new HBox(saveButton);
-		buttonBox.setAlignment(Pos.CENTER);
-		buttonBox.setPadding(new Insets(20, 0, 0, 0));
-		buttonBox.setMaxWidth(400);
-
-		return buttonBox;
-	}
-
-	private void saveMachine()
-	{
-		resetErrorLabels();
-
-		try
-		{
-			MachineBuilder machineBuilder = new MachineBuilder();
-			machineBuilder.createMachine();
-			machineBuilder.buildSite(siteBox.getValue());
-			machineBuilder.buildTechnician(technicianBox.getValue());
-			machineBuilder.buildCode(codeField.getText());
-			machineBuilder.buildStatusses(machineStatusBox.getValue(), productionStatusBox.getValue());
-			machineBuilder.buildLocation(locationField.getText());
-			machineBuilder.buildProductInfo(productInfoField.getText());
-			machineBuilder.buildMaintenance(futureMaintenance.getValue());
-
-			if (isNewMachine)
-			{
-				machineController.addNewMachine(machineBuilder.getMachine());
-			} else
-			{
-				machineController.updateMachine(machineBuilder.getMachine());
-			}
-
-			mainLayout.showMachineScreen();
-		} catch (InformationRequiredExceptionMachine e)
-		{
-			handleInformationRequiredException(e);
-		} catch (Exception e)
-		{
-			showError("Er is een fout opgetreden: " + e.getMessage());
-			e.printStackTrace();
-		}
-	}
-
-	private void resetErrorLabels()
-	{
-		errorLabel.setText("");
-		codeError.setText("");
-		locationError.setText("");
-		productInfoError.setText("");
-		errorLabel.setText("");
-		errorSite.setText("");
-		errorTechnician.setText("");
-		errorMachineStatus.setText("");
-		errorProductionStatus.setText("");
-		errorFutureMaintenance.setText("");
-	}
-
-	private void handleInformationRequiredException(InformationRequiredExceptionMachine e)
-	{
-		e.getInformationRequired().forEach((field, requiredElement) -> {
-			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
-			showFieldError(field, errorMessage);
-		});
-
-	}
-
-	private String getErrorMessageForRequiredElement(RequiredElementMachine element)
-	{
-		switch (element)
-		{
-		case CODE_REQUIRED:
-			return "Code is verplicht";
-		case MACHINESTATUS_REQUIRED:
-			return "Machinestatus is verplicht";
-		case PRODUCTIONSTATUS_REQUIRED:
-			return "Productiestatus is verplicht";
-		case LOCATION_REQUIRED:
-			return "Locatie is verplicht";
-		case PRODUCTINFO_REQUIRED:
-			return "Product info is verplicht";
-		case SITE_REQUIRED:
-			return "Site is verplicht";
-		case TECHNICIAN_REQUIRED:
-			return "Technieker is verplicht";
-		case FUTURE_MAINTENANCE_REQUIRED:
-			return "Volgend onderhoud is verplicht";
-		default:
-			return "Verplicht veld";
-		}
-	}
-
-	private void showFieldError(String fieldName, String message)
-	{
-		switch (fieldName)
-		{
-		case "code":
-			codeError.setText(message);
-			break;
-		case "machineStatus":
-			errorMachineStatus.setText(message);
-			break;
-		case "productionStatus":
-			errorProductionStatus.setText(message);
-			break;
-		case "location":
-			locationError.setText(message);
-			break;
-		case "productInfo":
-			productInfoError.setText(message);
-			break;
-		case "site":
-			errorSite.setText(message);
-			break;
-		case "technician":
-			errorTechnician.setText(message);
-			break;
-		case "futureMaintenance":
-			errorFutureMaintenance.setText(message);
-			break;
-		default:
-			errorLabel.setText(message);
-		}
-	}
-
-	private void showError(String message)
-	{
-		errorLabel.setText(message);
-	}
-
-	private VBox createTitleSection()
-	{
-		HBox hbox = new HBox(10);
-		hbox.setAlignment(Pos.CENTER_LEFT);
-
-		FontIcon icon = new FontIcon("fas-arrow-left");
-		icon.setIconSize(20);
-		Button backButton = new Button();
-		backButton.setGraphic(icon);
-		backButton.getStyleClass().add("back-button");
-		backButton.setOnAction(e -> mainLayout.showMachineScreen());
-		this.add(backButton, 0, 0, 2, 1);
-
-		Label title = new Label(isNewMachine ? "Machine toevoegen" : "Machine aanpassen");
-		title.getStyleClass().add("title-label");
-
-		Region spacer = new Region();
-		HBox.setHgrow(spacer, Priority.ALWAYS);
-
-		hbox.getChildren().addAll(backButton, title, spacer);
-
-		return new VBox(10, hbox);
-	}
-
-	private void fillMachineData(MachineDTO machineDTO)
-	{
-		codeField.setText(machineDTO.code());
-		locationField.setText(machineDTO.location());
-		productInfoField.setText(machineDTO.productInfo());
-		siteBox.setValue(siteController.getSiteObject(machineDTO.site()));
-		technicianBox.setValue(machineDTO.technician());
-		machineStatusBox.setValue(machineDTO.machineStatus());
-		productionStatusBox.setValue(machineDTO.productionStatus());
-		futureMaintenance.setValue(machineDTO.futureMaintenance());
-	}
-
-	private void initializeFields()
-	{
-		codeField = new TextField();
-		locationField = new TextField();
-		productInfoField = new TextField();
-		siteBox = new ComboBox<Site>();
-		technicianBox = new ComboBox<User>();
-		machineStatusBox = new ComboBox<MachineStatus>();
-		productionStatusBox = new ComboBox<ProductionStatus>();
-		futureMaintenance = new DatePicker();
-		futureMaintenance.setEditable(false);
-
-		errorLabel = createErrorLabel();
-		codeError = createErrorLabel();
-		locationError = createErrorLabel();
-		productInfoError = createErrorLabel();
-		errorSite = createErrorLabel();
-		errorTechnician = createErrorLabel();
-		errorMachineStatus = createErrorLabel();
-		errorProductionStatus = createErrorLabel();
-		errorFutureMaintenance = createErrorLabel();
-	}
-
-	private Label createErrorLabel()
-	{
-		Label errorLabel = new Label();
-		errorLabel.getStyleClass().add("error-label");
-		return errorLabel;
-	}
-
+    private void goBack() {
+        MachinesListComponent machineList = new MachinesListComponent(stage, machineController, siteController, userController);
+        Scene machineScene = new Scene(machineList, 800, 600);
+        stage.setScene(machineScene);
+    }
 }

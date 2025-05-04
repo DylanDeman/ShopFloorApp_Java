@@ -24,22 +24,50 @@ import util.ProductionStatus;
 													// lossen!
 @Getter
 @Setter
-public class Machine implements Serializable
-{
-	public Machine(Site site, User tecnician, String code, String location, String productInfo,
-			MachineStatus machineStatus, ProductionStatus productionStatus, LocalDate futureMaintenance)
-	{
-		setSite(site);
-		setTechnician(tecnician);
-		setCode(code);
-		setLocation(location);
-		setProductInfo(productInfo);
-		setMachineStatus(machineStatus);
-		setProductionStatus(productionStatus);
-		setFutureMaintenance(futureMaintenance);
-	}
+public class Machine implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
+    
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id;
+   
+    
+    @ManyToOne
+    private Site site;
+    
+    @ManyToOne
+    private User technician;
+        
+    private String code, status, productieStatus, location, productInfo;
+    private LocalDateTime lastMaintenance, futureMaintenance;
+    private int numberDaysSinceLastMaintenance;
 
-	private static final long serialVersionUID = 1L;
+    
+    private Machine(Builder builder) {
+    	site = builder.site;
+    	technician = builder.technician;
+    	code = builder.code;
+    	status = builder.status;
+    	productieStatus = builder.productieStatus;
+    	location = builder.location;
+    	productInfo = builder.productInfo;
+    	lastMaintenance = builder.lastMaintenance;
+    	futureMaintenance = builder.futureMaintenance;
+    	numberDaysSinceLastMaintenance = (lastMaintenance != null)
+    	        ? (int) java.time.Duration.between(lastMaintenance, LocalDateTime.now()).toDays()
+    	        : 0;
+    }
+    public double getUpTimeInHours() {
+        return (lastMaintenance != null)
+            ? Duration.between(lastMaintenance, LocalDateTime.now()).toHours()
+            : 0.0;
+    }
+
+    
+    public static Builder builder() {
+    	return new Builder();
+    }
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
