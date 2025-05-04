@@ -1,44 +1,39 @@
 package gui.report;
 
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
-import java.util.List;
-import java.util.stream.Collectors;
 
-import org.kordamp.ikonli.bootstrapicons.BootstrapIcons;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.maintenance.MaintenanceController;
 import domain.maintenance.MaintenanceDTO;
-import domain.report.Report;
+import domain.report.ReportBuilder;
 import domain.report.ReportController;
-import domain.site.Site;
 import domain.site.SiteController;
 import domain.user.User;
+import domain.user.UserController;
+import exceptions.InformationRequiredExceptionReport;
 import gui.MainLayout;
-import gui.customComponents.CustomButton;
-import gui.customComponents.CustomInformationBox;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import util.RequiredElementReport;
 
-public class AddReportForm extends BorderPane
+public class AddReportForm extends GridPane
 {
-	private Label siteNameLabel, responsiblePersonLabel, maintenanceNumberLabel, titleLabel;
-	private ComboBox<String> technicianComboBox;
+	private Label siteNameLabel, responsiblePersonLabel, maintenanceNumberLabel;
+	private ComboBox<User> technicianComboBox;
 	private DatePicker startDatePicker, endDatePicker;
 	private ComboBox<LocalTime> startTimeField;
 	private ComboBox<LocalTime> endTimeField;
@@ -46,24 +41,28 @@ public class AddReportForm extends BorderPane
 	private TextArea commentsArea;
 	private Label technicianErrorLabel, startDateErrorLabel, startTimeErrorLabel, endDateErrorLabel, endTimeErrorLabel,
 			reasonErrorLabel;
-	private Label generalMessageLabel;
-	private VBox formBox;
-	private GridPane formGridPane;
+	private Label errorLabel;
+
 	private MaintenanceDTO selectedMaintenanceDTO;
+
 	private ReportController reportController;
 	private MaintenanceController maintenanceController;
 	private SiteController siteController;
+	private UserController userController;
 
 	private final MainLayout mainLayout;
 
 	public AddReportForm(MainLayout mainLayout, MaintenanceDTO maintenanceDTO)
 	{
-		maintenanceController = new MaintenanceController();
-		siteController = new SiteController();
-
+		this.maintenanceController = new MaintenanceController();
+		this.siteController = new SiteController();
+		this.reportController = new ReportController();
+		this.userController = new UserController();
 		this.mainLayout = mainLayout;
+		this.selectedMaintenanceDTO = maintenanceDTO;
 
-		reportController = new ReportController();
+		initializeFields();
+		buildGUI();
 
 		if (maintenanceDTO == null)
 		{
@@ -71,81 +70,153 @@ public class AddReportForm extends BorderPane
 			throw new IllegalArgumentException("Het onderhoud is ongeldig");
 		}
 
-		this.selectedMaintenanceDTO = maintenanceDTO;
+	}
 
-		VBox titleSection = createTitleSection();
+	private void buildGUI()
+	{
+		this.getStylesheets().add(getClass().getResource("/css/form.css").toExternalForm());
+		this.setAlignment(Pos.CENTER);
+		this.setHgap(10);
+		this.setVgap(15);
+		this.setPadding(new Insets(20));
 
-		generalMessageLabel = new Label();
-		generalMessageLabel.setVisible(false);
-		generalMessageLabel.getStyleClass().add("error-label");
-		generalMessageLabel.setMaxWidth(Double.MAX_VALUE);
-		generalMessageLabel.setAlignment(Pos.CENTER);
+		VBox mainContainer = new VBox();
+		mainContainer.setAlignment(Pos.CENTER);
+		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, createFormContent());
 
-		formGridPane = new GridPane();
-		formGridPane.setHgap(15);
-		formGridPane.setVgap(12);
-		formGridPane.setPadding(new Insets(20));
-		initializeFormComponents();
+		this.add(mainContainer, 0, 0);
+	}
 
-		organizeFormLayout();
+	private VBox createFormContent()
+	{
+		VBox formContent = new VBox(30);
+		formContent.setAlignment(Pos.TOP_CENTER);
+		formContent.getStyleClass().add("form-box");
 
-		formBox = new VBox(15, formGridPane);
-		formBox.getStyleClass().add("form-box");
-		formBox.setAlignment(Pos.TOP_CENTER);
-		formBox.setMaxWidth(800);
-		formBox.setMinWidth(400);
+		VBox informationBox = new VBox(15, createInformationBox());
+		VBox technicianBox = new VBox(15, createTechnicianBox());
+		VBox datesBox = new VBox(15, createDatesBox());
+		VBox lowBox = new VBox(15, createLowBox());
 
-		FontIcon saveIcon = new FontIcon(BootstrapIcons.SAVE);
-		CustomButton createReportBtn = new CustomButton(saveIcon, "Rapport aanmaken");
-		createReportBtn.getStyleClass().add("create-report-button");
-		createReportBtn.setPadding(new Insets(10, 30, 10, 30));
-		createReportBtn.setOnAction(e -> createReport());
+		formContent.getChildren().addAll(informationBox, technicianBox, datesBox, lowBox, createSaveButton());
 
-		HBox buttonBox = new HBox(createReportBtn);
+		return formContent;
+	}
+
+	private Node createInformationBox()
+	{
+		GridPane pane = new GridPane();
+		pane.setVgap(5);
+		pane.setHgap(10);
+
+		String labelString = "Onderhoudsgegevens";
+		Label sectionLabel = new Label(labelString);
+		sectionLabel.getStyleClass().add("section-label");
+		pane.add(sectionLabel, 0, 0, 2, 1);
+
+		int row = 1;
+
+		pane.add(new Label("Site:"), 0, row);
+		pane.add(siteNameLabel, 1, row++);
+
+		pane.add(new Label("Verantwoordelijke:"), 0, row);
+		pane.add(responsiblePersonLabel, 1, row++);
+
+		pane.add(new Label("Onderhoudsnummer:"), 0, row);
+		pane.add(maintenanceNumberLabel, 1, row++);
+
+		return pane;
+	}
+
+	private Node createTechnicianBox()
+	{
+		GridPane pane = new GridPane();
+		pane.setVgap(5);
+		pane.setHgap(10);
+
+		String labelString = "Rapport informatie";
+		Label sectionLabel = new Label(labelString);
+		sectionLabel.getStyleClass().add("section-label");
+		pane.add(sectionLabel, 0, 0, 2, 1);
+
+		technicianComboBox = new ComboBox<>();
+		technicianComboBox.getItems().addAll(userController.getAllTechniekers());
+		technicianComboBox.setPromptText("Selecteer een technieker");
+		technicianComboBox.setPrefWidth(200);
+
+		int row = 1;
+		pane.add(new Label("Technieker:"), 0, row);
+		pane.add(technicianComboBox, 1, row++);
+		pane.add(technicianErrorLabel, 1, row++);
+
+		return pane;
+	}
+
+	private Node createDatesBox()
+	{
+		GridPane pane = new GridPane();
+		pane.setVgap(5);
+		pane.setHgap(10);
+
+		String labelString = "Data";
+		Label sectionLabel = new Label(labelString);
+		sectionLabel.getStyleClass().add("section-label");
+		pane.add(sectionLabel, 0, 0, 2, 1);
+
+		int row = 1;
+		pane.add(new Label("Startdatum:"), 0, row);
+		pane.add(startDatePicker, 1, row++);
+		pane.add(startDateErrorLabel, 1, row++);
+
+		pane.add(new Label("Starttijd:"), 0, row);
+		pane.add(startTimeField, 1, row++);
+		pane.add(startTimeErrorLabel, 1, row++);
+
+		pane.add(new Label("Einddatum:"), 0, row);
+		pane.add(endDatePicker, 1, row++);
+		pane.add(endDateErrorLabel, 1, row++);
+
+		pane.add(new Label("Eindtijd:"), 0, row);
+		pane.add(endTimeField, 1, row++);
+		pane.add(endTimeErrorLabel, 1, row++);
+
+		return pane;
+	}
+
+	private Node createLowBox()
+	{
+		GridPane pane = new GridPane();
+		pane.setVgap(5);
+		pane.setHgap(10);
+
+		int row = 1;
+
+		pane.add(new Label("Reden:"), 0, row);
+		pane.add(reasonField, 1, row++);
+		pane.add(reasonErrorLabel, 1, row++);
+
+		pane.add(new Label("Opmerkingen:"), 0, row);
+		pane.add(commentsArea, 1, row++);
+
+		return pane;
+	}
+
+	private HBox createSaveButton()
+	{
+		Button saveButton = new Button("Opslaan");
+		saveButton.getStyleClass().add("save-button");
+		saveButton.setOnAction(e -> createReport());
+
+		HBox buttonBox = new HBox(saveButton);
 		buttonBox.setAlignment(Pos.CENTER);
-		buttonBox.setPadding(new Insets(20, 0, 30, 0));
+		buttonBox.setPadding(new Insets(20, 0, 0, 0));
+		buttonBox.setMaxWidth(400);
 
-		VBox content = new VBox(20, titleSection, generalMessageLabel, formBox, buttonBox);
-		content.setAlignment(Pos.TOP_CENTER);
-		content.setPadding(new Insets(50, 80, 0, 80));
-
-		this.setCenter(content);
-
-		loadTechnicians();
+		return buttonBox;
 	}
 
-	private VBox createTitleSection()
+	private void initializeFields()
 	{
-		HBox header = createWindowHeader();
-		HBox infoBox = new CustomInformationBox("Maak een rapport aan voor het geselecteerde onderhoud.");
-		return new VBox(10, header, infoBox);
-	}
-
-	private HBox createWindowHeader()
-	{
-		HBox hbox = new HBox(10);
-		hbox.setAlignment(Pos.CENTER_LEFT);
-
-		FontIcon icon = new FontIcon("fas-arrow-left");
-		icon.setIconSize(20);
-		Button backButton = new Button();
-		backButton.setGraphic(icon);
-		backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
-		backButton.setOnAction(e -> mainLayout.showHomeScreen());
-
-		titleLabel = new Label("Rapport aanmaken");
-		titleLabel.setStyle("-fx-font: 40 arial;");
-
-		Region spacer = new Region();
-		HBox.setHgrow(spacer, Priority.ALWAYS);
-
-		hbox.getChildren().addAll(backButton, titleLabel, spacer);
-		return hbox;
-	}
-
-	private void initializeFormComponents()
-	{
-		// TODO: Get the related site
 		siteNameLabel = new Label(selectedMaintenanceDTO.machine().site().siteName());
 		siteNameLabel.getStyleClass().add("info-value");
 
@@ -155,28 +226,22 @@ public class AddReportForm extends BorderPane
 		maintenanceNumberLabel = new Label("" + selectedMaintenanceDTO.id());
 		maintenanceNumberLabel.getStyleClass().add("info-value");
 
-		// Initialize input fields
 		technicianComboBox = new ComboBox<>();
 		technicianComboBox.setPromptText("Selecteer een technieker");
-		technicianComboBox.setMaxWidth(Double.MAX_VALUE);
 
 		startDatePicker = new DatePicker();
 		startDatePicker.setPromptText("Kies startdatum");
 
-		// Replace TextField with ComboBox for time selection
 		startTimeField = new ComboBox<>();
 		startTimeField.setPromptText("Kies starttijd");
-		startTimeField.setMaxWidth(Double.MAX_VALUE);
-		populateTimePicker(startTimeField); // Populating ComboBox with time intervals
+		populateTimePicker(startTimeField);
 
 		endDatePicker = new DatePicker();
 		endDatePicker.setPromptText("Kies einddatum");
 
-		// Replace TextField with ComboBox for time selection
 		endTimeField = new ComboBox<>();
 		endTimeField.setPromptText("Kies eindtijd");
-		endTimeField.setMaxWidth(Double.MAX_VALUE);
-		populateTimePicker(endTimeField); // Populating ComboBox with time intervals
+		populateTimePicker(endTimeField);
 
 		reasonField = new TextField();
 		reasonField.setPromptText("Voer reden in");
@@ -186,16 +251,39 @@ public class AddReportForm extends BorderPane
 		commentsArea.setWrapText(true);
 		commentsArea.setPromptText("Voer eventuele opmerkingen in");
 
-		// Initialize error labels
-		technicianErrorLabel = createErrorLabel("Selecteer een technieker");
-		startDateErrorLabel = createErrorLabel("Startdatum is verplicht");
-		startTimeErrorLabel = createErrorLabel("Voer starttijd in (HH:MM)");
-		endDateErrorLabel = createErrorLabel("Einddatum is verplicht");
-		endTimeErrorLabel = createErrorLabel("Voer eindtijd in (HH:MM)");
-		reasonErrorLabel = createErrorLabel("Reden is verplicht");
+		errorLabel = createErrorLabel();
+		technicianErrorLabel = createErrorLabel();
+		startDateErrorLabel = createErrorLabel();
+		startTimeErrorLabel = createErrorLabel();
+		endDateErrorLabel = createErrorLabel();
+		endTimeErrorLabel = createErrorLabel();
+		reasonErrorLabel = createErrorLabel();
 	}
 
-	// Method to populate ComboBox with 15-minute interval times
+	private VBox createTitleSection()
+	{
+		HBox hbox = new HBox(10);
+		hbox.setAlignment(Pos.CENTER_LEFT);
+
+		FontIcon icon = new FontIcon("fas-arrow-left");
+		icon.setIconSize(20);
+		Button backButton = new Button();
+		backButton.setGraphic(icon);
+		backButton.getStyleClass().add("back-button");
+		backButton.setOnAction(e -> mainLayout.showSiteList());
+		this.add(backButton, 0, 0, 2, 1);
+
+		Label title = new Label("Rapport aanmaken");
+		title.getStyleClass().add("title-label");
+
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+
+		hbox.getChildren().addAll(backButton, title, spacer);
+
+		return new VBox(10, hbox);
+	}
+
 	private void populateTimePicker(ComboBox<LocalTime> timePicker)
 	{
 		LocalTime time = LocalTime.of(0, 0);
@@ -231,268 +319,121 @@ public class AddReportForm extends BorderPane
 		});
 	}
 
-	private void organizeFormLayout()
-	{
-		int row = 0;
-
-		Label infoSectionLabel = new Label("Onderhoudsgegevens");
-		infoSectionLabel.getStyleClass().add("section-label");
-		formGridPane.add(infoSectionLabel, 0, row++, 2, 1);
-
-		double labelWidth = 150;
-
-		formGridPane.add(createInfoField("Site:", siteNameLabel, labelWidth), 0, row++, 2, 1);
-		formGridPane.add(createInfoField("Verantwoordelijke:", responsiblePersonLabel, labelWidth), 0, row++, 2, 1);
-		formGridPane.add(createInfoField("Onderhoudsnummer:", maintenanceNumberLabel, labelWidth), 0, row++, 2, 1);
-
-		VBox spacer = new VBox();
-		spacer.setMinHeight(15);
-		formGridPane.add(spacer, 0, row++);
-
-		Label reportSectionLabel = new Label("Rapport informatie");
-		reportSectionLabel.getStyleClass().add("section-label");
-		formGridPane.add(reportSectionLabel, 0, row++, 2, 1);
-
-		formGridPane.add(createLabeledField("Technieker:", technicianComboBox, labelWidth), 0, row++, 2, 1);
-		formGridPane.add(technicianErrorLabel, 0, row++, 2, 1);
-
-		double timeFieldLabelWidth = 80;
-
-		HBox startDateTimeBox = new HBox(15);
-		startDateTimeBox.setAlignment(Pos.CENTER_LEFT);
-
-		HBox startDateField = createLabeledField("Startdatum:", startDatePicker, labelWidth);
-		HBox startTimeField = createLabeledField("Starttijd:", this.startTimeField, timeFieldLabelWidth);
-
-		startDateTimeBox.getChildren().addAll(startDateField, startTimeField);
-		formGridPane.add(startDateTimeBox, 0, row++, 2, 1);
-
-		HBox startErrorBox = new HBox(20, startDateErrorLabel, startTimeErrorLabel);
-		formGridPane.add(startErrorBox, 0, row++, 2, 1);
-
-		HBox endDateTimeBox = new HBox(15);
-		endDateTimeBox.setAlignment(Pos.CENTER_LEFT);
-
-		HBox endDateField = createLabeledField("Einddatum:", endDatePicker, labelWidth);
-		HBox endTimeField = createLabeledField("Eindtijd:", this.endTimeField, timeFieldLabelWidth);
-
-		endDateTimeBox.getChildren().addAll(endDateField, endTimeField);
-		formGridPane.add(endDateTimeBox, 0, row++, 2, 1);
-
-		HBox endErrorBox = new HBox(20, endDateErrorLabel, endTimeErrorLabel);
-		formGridPane.add(endErrorBox, 0, row++, 2, 1);
-
-		formGridPane.add(createLabeledField("Reden:", reasonField, labelWidth), 0, row++, 2, 1);
-		formGridPane.add(reasonErrorLabel, 0, row++, 2, 1);
-
-		formGridPane.add(createLabeledField("Opmerkingen:", commentsArea, labelWidth), 0, row++, 2, 1);
-	}
-
-	private HBox createInfoField(String labelText, javafx.scene.Node field, double labelWidth)
-	{
-		Label label = new Label(labelText);
-		label.getStyleClass().add("form-label");
-
-		// Set fixed width for consistent alignment
-		label.setPrefWidth(labelWidth);
-
-		// Create container with better alignment
-		HBox box = new HBox(10, label, field);
-		box.getStyleClass().add("form-field-container");
-		box.setAlignment(Pos.CENTER_LEFT);
-
-		return box;
-	}
-
-	private HBox createLabeledField(String labelText, javafx.scene.Node field, double labelWidth)
-	{
-		Label label = new Label(labelText);
-		label.getStyleClass().add("form-label");
-
-		label.setPrefWidth(labelWidth);
-
-		if (field instanceof TextField || field instanceof DatePicker || field instanceof ComboBox)
-		{
-			field.setStyle("-fx-pref-width: 200px;");
-		}
-
-		// Create container with better alignment
-		HBox box = new HBox(10, label, field);
-		box.getStyleClass().add("form-field-container");
-		box.setAlignment(Pos.CENTER_LEFT);
-
-		return box;
-	}
-
-	private void adjustFormLayout(double width)
-	{
-		if (width < 700)
-		{
-			formBox.setPadding(new Insets(15));
-		} else
-		{
-			formBox.setPadding(new Insets(30));
-		}
-	}
-
 	private void createReport()
 	{
+		resetErrorLabels();
 		try
 		{
-			clearAllErrorMessages();
+			ReportBuilder reportBuilder = new ReportBuilder();
+			reportBuilder.createReport();
 
-			boolean hasValidationErrors = validateFields();
-			if (hasValidationErrors)
-			{
-				return;
-			}
+			reportBuilder.buildMaintenance(maintenanceController.getMaintenance(selectedMaintenanceDTO.id()));
+			reportBuilder.buildTechnician(technicianComboBox.getValue());
+			reportBuilder.buildStartDate(startDatePicker.getValue());
+			reportBuilder.buildStartTime(startTimeField.getValue());
+			reportBuilder.buildEndDate(endDatePicker.getValue());
+			reportBuilder.buildEndTime(endTimeField.getValue());
+			reportBuilder.buildReason(reasonField.getText().trim());
+			reportBuilder.buildRemarks(commentsArea.getText().trim());
+			reportBuilder.buildSite(siteController.getSiteObject(selectedMaintenanceDTO.machine().site()));
 
-			User selectedTechnician = reportController.getTechnicians().stream()
-					.filter(user -> user.getFullName().equals(technicianComboBox.getValue())).findFirst().orElse(null);
+			reportController.createReport(reportBuilder.getReport());
 
-			String reason = reasonField.getText().trim();
-			String comments = commentsArea.getText().trim();
-			LocalDate startDate = startDatePicker.getValue();
-			LocalTime startTime = startTimeField.getValue().plusHours(1);
-			LocalDate endDate = endDatePicker.getValue();
-			LocalTime endTime = endTimeField.getValue().plusHours(1);
-			Site site = siteController.getSite(selectedMaintenanceDTO.machine().site().id());
-
-			Report report = new Report(maintenanceController.getMaintenance(selectedMaintenanceDTO.id()),
-					selectedTechnician, startDate, startTime, endDate, endTime, reason, comments, site);
-			reportController.createReport(report, selectedMaintenanceDTO);
-
-			showSuccess("Rapport succesvol aangemaakt!");
-			clearUserInputFields();
-
+			mainLayout.showHomeScreen();
+		} catch (InformationRequiredExceptionReport e)
+		{
+			handleInformationRequiredException(e);
 		} catch (Exception e)
 		{
 			e.printStackTrace();
-			showGeneralError("Er is een fout opgetreden: " + e.getMessage());
+			showError("Er is een fout opgetreden: " + e.getMessage());
 		}
 	}
 
-	private boolean validateFields()
+	private void handleInformationRequiredException(InformationRequiredExceptionReport e)
 	{
-		boolean hasErrors = false;
-
-		if (technicianComboBox.getValue() == null)
-		{
-			technicianErrorLabel.setVisible(true);
-			hasErrors = true;
-		}
-
-		if (startDatePicker.getValue() == null)
-		{
-			startDateErrorLabel.setVisible(true);
-			hasErrors = true;
-		}
-
-		if (startTimeField.getValue() == null || startTimeField.getValue().toString().isEmpty())
-		{
-			startTimeErrorLabel.setVisible(true);
-			hasErrors = true;
-		} else
-		{
-			try
-			{
-				startTimeField.getValue();
-			} catch (DateTimeParseException e)
-			{
-				startTimeErrorLabel.setText("Ongeldige tijd. Gebruik HH:MM format.");
-				startTimeErrorLabel.setVisible(true);
-				hasErrors = true;
-			}
-		}
-
-		if (endDatePicker.getValue() == null)
-		{
-			endDateErrorLabel.setVisible(true);
-			hasErrors = true;
-		}
-
-		if (endTimeField.getValue() == null || endTimeField.getValue().toString().isEmpty())
-		{
-			endTimeErrorLabel.setVisible(true);
-			hasErrors = true;
-		} else
-		{
-			try
-			{
-				endTimeField.getValue();
-			} catch (DateTimeParseException e)
-			{
-				endTimeErrorLabel.setText("Ongeldige tijd. Gebruik HH:MM format.");
-				endTimeErrorLabel.setVisible(true);
-				hasErrors = true;
-			}
-		}
-
-		if (reasonField.getText() == null || reasonField.getText().trim().isEmpty())
-		{
-			reasonErrorLabel.setVisible(true);
-			hasErrors = true;
-		}
-
-		return hasErrors;
+		e.getInformationRequired().forEach((field, requiredElement) -> {
+			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
+			showFieldError(field, errorMessage);
+		});
 	}
 
-	private void clearAllErrorMessages()
+	private String getErrorMessageForRequiredElement(RequiredElementReport element)
 	{
-		technicianErrorLabel.setVisible(false);
-		startDateErrorLabel.setVisible(false);
-		startTimeErrorLabel.setVisible(false);
-		endDateErrorLabel.setVisible(false);
-		endTimeErrorLabel.setVisible(false);
-		reasonErrorLabel.setVisible(false);
-		generalMessageLabel.setVisible(false);
+		switch (element)
+		{
+		case MAINTENANCE_REQUIRED:
+			return "Onderhoud is verplicht";
+		case TECHNICIAN_REQUIRED:
+			return "Technieker is verplicht";
+		case STARTDATE_REQUIRED:
+			return "Startdatum is verplicht";
+		case STARTTIME_REQUIRED:
+			return "Starttijd is verplicht";
+		case ENDDATE_REQUIRED:
+			return "Einddatum is verplicht";
+		case ENDTIME_REQUIRED:
+			return "Eindtijd is verplicht";
+		case REASON_REQUIRED:
+			return "Reden is verplicht";
+		case SITE_REQUIRED:
+			return "Site is verplicht";
+		case END_DATE_BEFORE_START:
+			return "Einddatum mag niet voor startdatum liggen";
+		case END_TIME_BEFORE_START:
+			return "Eindtijd mag niet voor starttijd liggen";
+		default:
+			return "Verplicht veld";
+		}
 	}
 
-	private void showGeneralError(String message)
+	private void showFieldError(String fieldName, String message)
 	{
-		generalMessageLabel.setText(message);
-		generalMessageLabel.setStyle("-fx-text-fill: red;");
-		generalMessageLabel.setVisible(true);
+		switch (fieldName)
+		{
+		case "technician":
+			technicianErrorLabel.setText(message);
+			break;
+		case "startDate":
+			startDateErrorLabel.setText(message);
+			break;
+		case "startTime":
+			startTimeErrorLabel.setText(message);
+			break;
+		case "endDate":
+			endDateErrorLabel.setText(message);
+			break;
+		case "endTime":
+			endTimeErrorLabel.setText(message);
+			break;
+		case "reason":
+			reasonErrorLabel.setText(message);
+			break;
+		default:
+			errorLabel.setText(message);
+		}
 	}
 
-	private void showSuccess(String message)
+	private void showError(String message)
 	{
-		generalMessageLabel.setText(message);
-		generalMessageLabel.setStyle("-fx-text-fill: green;");
-		generalMessageLabel.setVisible(true);
+		errorLabel.setText(message);
 	}
 
-	private void clearUserInputFields()
+	private void resetErrorLabels()
 	{
-		technicianComboBox.setValue(null);
-		startDatePicker.setValue(null);
-		endDatePicker.setValue(null);
-		startTimeField.setValue(null);
-		endTimeField.setValue(null);
-		reasonField.clear();
-		commentsArea.clear();
-
-		technicianComboBox.setPromptText("Selecteer een technieker");
-		startDatePicker.setPromptText("Kies startdatum");
-		startTimeField.setPromptText("Kies starttijd");
-		endDatePicker.setPromptText("Kies einddatum");
-		endTimeField.setPromptText("Kies eindtijd");
-		reasonField.setPromptText("Voer reden in");
-		commentsArea.setPromptText("Voer eventuele opmerkingen in");
+		errorLabel.setText("");
+		technicianErrorLabel.setText("");
+		startDateErrorLabel.setText("");
+		startTimeErrorLabel.setText("");
+		endDateErrorLabel.setText("");
+		endTimeErrorLabel.setText("");
+		reasonErrorLabel.setText("");
 	}
 
-	private void loadTechnicians()
+	private Label createErrorLabel()
 	{
-		List<String> technicianNames = reportController.getTechnicians().stream().map(User::getFullName)
-				.collect(Collectors.toList());
-		technicianComboBox.getItems().addAll(technicianNames);
-	}
-
-	private Label createErrorLabel(String text)
-	{
-		Label errorLabel = new Label(text);
+		Label errorLabel = new Label();
 		errorLabel.getStyleClass().add("error-label");
-		errorLabel.setVisible(false);
 		return errorLabel;
 	}
 }

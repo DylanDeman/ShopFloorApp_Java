@@ -17,50 +17,43 @@ import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(of = "reportId")
+@Getter
+@Setter
 public class Report implements Serializable
 {
 
 	private static final long serialVersionUID = 1L;
 
 	@Id
-	@Getter
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int reportId;
 
 	@ManyToOne
-	@Getter
 	@JoinColumn(name = "site_id")
 	private Site site;
 
-	@Getter
 	@ManyToOne
 	@JoinColumn(name = "maintenance_id")
 	private Maintenance maintenance;
 
 	@ManyToOne
-	@Getter
-	private User Technician;
+	private User technician;
 
-	@Getter
 	private LocalDate startDate;
 
-	@Getter
 	private LocalTime startTime;
 
-	@Getter
 	private LocalDate endDate;
 
-	@Getter
 	private LocalTime endTime;
 
-	@Getter
 	private String reason;
 
-	@Getter
 	private String remarks;
 
 	/*
@@ -77,7 +70,7 @@ public class Report implements Serializable
 			LocalDate endDate, LocalTime endTime, String reason, String remarks, Site site)
 	{
 
-		this.Technician = selectedTechnician;
+		this.technician = selectedTechnician;
 		this.startDate = startDate;
 		this.startTime = startTime;
 		this.maintenance = selectedMaintenance;

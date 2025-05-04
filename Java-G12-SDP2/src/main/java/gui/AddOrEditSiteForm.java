@@ -194,7 +194,6 @@ public class AddOrEditSiteForm extends GridPane
 			}
 
 			mainLayout.showSiteList();
-			;
 		} catch (InformationRequiredExceptionSite e)
 		{
 			handleInformationRequiredException(e);
