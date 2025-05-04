@@ -107,11 +107,12 @@ public class MachinesListComponent extends GridPane
 		TableColumn<MachineDTO, String> locationCol = new TableColumn<>("Locatie");
 		locationCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().location()));
 
-		TableColumn<MachineDTO, String> statusCol = new TableColumn<>("Status");
-		statusCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().status()));
+		TableColumn<MachineDTO, String> statusCol = new TableColumn<>("Machinestatus");
+		statusCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().machineStatus().toString()));
 
-		TableColumn<MachineDTO, String> prodStatusCol = new TableColumn<>("Productie");
-		prodStatusCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().productieStatus()));
+		TableColumn<MachineDTO, String> prodStatusCol = new TableColumn<>("Productiestatus");
+		prodStatusCol
+				.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().productionStatus().toString()));
 
 		TableColumn<MachineDTO, String> maintenanceCol = new TableColumn<>("Onderhoud gepland");
 		maintenanceCol

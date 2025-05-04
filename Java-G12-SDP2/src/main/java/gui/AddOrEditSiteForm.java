@@ -7,7 +7,6 @@ import domain.site.Site;
 import domain.site.SiteBuilder;
 import domain.user.User;
 import exceptions.InformationRequiredExceptionSite;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -20,7 +19,6 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
 import repository.SiteRepository;
 import util.RequiredElementSite;
 import util.Status;
@@ -36,7 +34,6 @@ public class AddOrEditSiteForm extends GridPane
 	private ComboBox<User> employeeBox;
 	private ComboBox<Status> statusBox;
 
-	private Label titleLabel;
 	private Label errorLabel, siteNameError, employeeError;
 	private Label streetError, houseNumberError, postalCodeError, cityError;
 	private Label statusError;
@@ -63,46 +60,35 @@ public class AddOrEditSiteForm extends GridPane
 	private void buildGUI()
 	{
 		this.getStylesheets().add(getClass().getResource("/css/form.css").toExternalForm());
+		this.setAlignment(Pos.CENTER);
+		this.setHgap(10);
+		this.setVgap(15);
+		this.setPadding(new Insets(20));
 
-		FontIcon icon = new FontIcon("fas-arrow-left");
-		icon.setIconSize(20);
+		VBox mainContainer = new VBox();
+		mainContainer.setAlignment(Pos.CENTER);
+		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, createFormContent());
 
-		Button backButton = new Button();
-		backButton.setGraphic(icon);
-		backButton.getStyleClass().add("back-button");
-		backButton.setOnAction(e -> mainLayout.showSiteList());
+		this.add(mainContainer, 0, 0);
+	}
 
-		errorLabel.setTextFill(Color.RED);
-		errorLabel.setWrapText(true);
-		this.add(errorLabel, 0, 1, 2, 1);
+	private VBox createFormContent()
+	{
+		VBox formContent = new VBox(30);
+		formContent.setAlignment(Pos.TOP_CENTER);
+		formContent.getStyleClass().add("form-box");
 
-		Label titleLabel = new Label(isNewSite ? "Site toevoegen" : "Site aanpassen");
-		titleLabel.getStyleClass().add("title-label");
-
-		Region spacer = new Region();
-		HBox.setHgrow(spacer, Priority.ALWAYS);
-
-		HBox headerBox = new HBox();
-		headerBox.getChildren().addAll(backButton, titleLabel, spacer);
-
-		this.add(headerBox, 0, 2, 2, 1);
-
-		VBox mainContent = new VBox(30);
-		mainContent.setAlignment(Pos.TOP_CENTER);
-		mainContent.getStyleClass().add("form-box");
-
-		VBox siteNameBox = new VBox(15);
-		siteNameBox.getChildren().add(createSiteNameField());
-
+		VBox siteNameBox = new VBox(15, createSiteNameField());
 		VBox addressBox = new VBox(15, createAddressFieldsSection());
-
 		VBox employeeBox = new VBox(15, createComboBoxSection());
 
-		mainContent.getChildren().addAll(siteNameBox, addressBox, employeeBox);
+		formContent.getChildren().addAll(siteNameBox, addressBox, employeeBox, createSaveButton());
 
-		mainContent.getChildren().addAll();
-		this.add(mainContent, 0, 3, 2, 1);
+		return formContent;
+	}
 
+	private HBox createSaveButton()
+	{
 		Button saveButton = new Button("Opslaan");
 		saveButton.getStyleClass().add("save-button");
 		saveButton.setOnAction(e -> saveSite());
@@ -110,11 +96,33 @@ public class AddOrEditSiteForm extends GridPane
 		HBox buttonBox = new HBox(saveButton);
 		buttonBox.setAlignment(Pos.CENTER);
 		buttonBox.setPadding(new Insets(20, 0, 0, 0));
-		HBox.setHgrow(saveButton, Priority.ALWAYS);
 		buttonBox.setMaxWidth(400);
 
-		this.add(buttonBox, 0, 4, 2, 1);
-		GridPane.setHalignment(buttonBox, HPos.CENTER);
+		return buttonBox;
+	}
+
+	private VBox createTitleSection()
+	{
+		HBox hbox = new HBox(10);
+		hbox.setAlignment(Pos.CENTER_LEFT);
+
+		FontIcon icon = new FontIcon("fas-arrow-left");
+		icon.setIconSize(20);
+		Button backButton = new Button();
+		backButton.setGraphic(icon);
+		backButton.getStyleClass().add("back-button");
+		backButton.setOnAction(e -> mainLayout.showSiteList());
+		this.add(backButton, 0, 0, 2, 1);
+
+		Label title = new Label(isNewSite ? "Site toevoegen" : "Site aanpassen");
+		title.getStyleClass().add("title-label");
+
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+
+		hbox.getChildren().addAll(backButton, title, spacer);
+
+		return new VBox(10, hbox);
 	}
 
 	private Node createComboBoxSection()

@@ -1,10 +1,11 @@
 package gui;
 
+import org.kordamp.ikonli.javafx.FontIcon;
+
 import domain.Address;
 import domain.user.User;
 import domain.user.UserBuilder;
 import exceptions.InformationRequiredException;
-import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -15,9 +16,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Line;
 import repository.UserRepository;
 import util.RequiredElement;
 import util.Role;
@@ -27,6 +27,7 @@ public class AddOrEditUserForm extends GridPane
 {
 	private User user;
 	private final UserRepository userRepo;
+	private final MainLayout mainLayout;
 
 	private TextField firstNameField, lastNameField, emailField, phoneField;
 	private DatePicker birthdatePicker;
@@ -39,7 +40,6 @@ public class AddOrEditUserForm extends GridPane
 	private Label roleError, statusError;
 
 	private boolean isNewUser;
-	private final MainLayout mainLayout;
 
 	public AddOrEditUserForm(MainLayout mainLayout, UserRepository userRepo, User user)
 	{
@@ -48,6 +48,7 @@ public class AddOrEditUserForm extends GridPane
 		this.isNewUser = user == null;
 		this.mainLayout = mainLayout;
 
+		initializeFields();
 		buildGUI();
 
 		if (!isNewUser)
@@ -59,66 +60,70 @@ public class AddOrEditUserForm extends GridPane
 
 	private void buildGUI()
 	{
-		Button backButton = new Button("← Terug");
-		backButton.setOnAction(e -> mainLayout.showUserManagementScreen());
-		this.add(backButton, 0, 0, 2, 1);
+		this.getStylesheets().add(getClass().getResource("/css/form.css").toExternalForm());
+		this.setAlignment(Pos.CENTER);
+		this.setHgap(10);
+		this.setVgap(15);
+		this.setPadding(new Insets(20));
 
-		errorLabel = new Label();
-		errorLabel.setTextFill(Color.RED);
-		errorLabel.setWrapText(true);
-		this.add(errorLabel, 0, 1, 2, 1);
+		VBox mainContainer = new VBox();
+		mainContainer.setAlignment(Pos.CENTER);
+		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, createFormContent());
 
-		Label headerLabel = new Label(isNewUser ? "GEBRUIKER TOEVOEGEN" : "GEBRUIKER AANPASSEN");
-		headerLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 16px; -fx-text-fill: white;");
-		HBox headerBox = new HBox(headerLabel);
-		headerBox.setAlignment(Pos.CENTER);
-		headerBox.setStyle("-fx-background-color: rgb(240, 69, 60); " + "-fx-padding: 15px; "
-				+ "-fx-border-radius: 5 5 5 5; " + "-fx-background-radius: 5 5 5 5;");
-		headerBox.setMaxWidth(Double.MAX_VALUE);
-		headerBox.setMaxHeight(40);
-		this.add(headerBox, 0, 2, 2, 1);
+		this.add(mainContainer, 0, 0);
+	}
 
-		GridPane.setMargin(headerBox, new Insets(0, 0, 0, 0));
+	private VBox createFormContent()
+	{
+		VBox formContent = new VBox(30);
+		formContent.setAlignment(Pos.TOP_CENTER);
+		formContent.getStyleClass().add("form-box");
 
-		HBox mainContent = new HBox(30);
-		mainContent.setAlignment(Pos.TOP_CENTER);
-		mainContent.setStyle(
-				"-fx-background-color: #f5f5f5; -fx-border-color: #e0e0e0; -fx-border-radius: 5; -fx-background-radius: 5;");
-
-		mainContent.setMaxWidth(Double.MAX_VALUE);
-
-		VBox userFieldsBox = new VBox(15);
-		userFieldsBox.setPadding(new Insets(20));
-		userFieldsBox.getChildren().add(createUserFieldsSection());
-
-		Line divider = new Line(0, 0, 0, 400);
-		divider.setStroke(Color.LIGHTGRAY);
-		divider.setStrokeWidth(1);
-
-		VBox rightFieldsBox = new VBox(15);
-		rightFieldsBox.setPadding(new Insets(20));
-
+		VBox siteNameBox = new VBox(15, createUserFieldsSection());
 		VBox addressBox = new VBox(15, createAddressFieldsSection());
-		VBox roleStatusBox = new VBox(15, createRoleStatusSection());
-		rightFieldsBox.getChildren().addAll(addressBox, roleStatusBox);
+		VBox employeeBox = new VBox(15, createRoleStatusSection());
 
-		mainContent.getChildren().addAll(userFieldsBox, divider, rightFieldsBox);
-		this.add(mainContent, 0, 3, 2, 1);
+		formContent.getChildren().addAll(siteNameBox, addressBox, employeeBox, createSaveButton());
 
+		return formContent;
+	}
+
+	private HBox createSaveButton()
+	{
 		Button saveButton = new Button("Opslaan");
-		saveButton.setStyle("-fx-background-color: green; -fx-text-fill: white; -fx-font-size: 14px;");
-		saveButton.setMaxWidth(Double.MAX_VALUE);
-		saveButton.setPadding(new Insets(10, 30, 10, 30));
+		saveButton.getStyleClass().add("save-button");
 		saveButton.setOnAction(e -> saveUser());
 
 		HBox buttonBox = new HBox(saveButton);
 		buttonBox.setAlignment(Pos.CENTER);
 		buttonBox.setPadding(new Insets(20, 0, 0, 0));
-		HBox.setHgrow(saveButton, Priority.ALWAYS);
 		buttonBox.setMaxWidth(400);
 
-		this.add(buttonBox, 0, 4, 2, 1);
-		GridPane.setHalignment(buttonBox, HPos.CENTER);
+		return buttonBox;
+	}
+
+	private VBox createTitleSection()
+	{
+		HBox hbox = new HBox(10);
+		hbox.setAlignment(Pos.CENTER_LEFT);
+
+		FontIcon icon = new FontIcon("fas-arrow-left");
+		icon.setIconSize(20);
+		Button backButton = new Button();
+		backButton.setGraphic(icon);
+		backButton.getStyleClass().add("back-button");
+		backButton.setOnAction(e -> mainLayout.showUserManagementScreen());
+		this.add(backButton, 0, 0, 2, 1);
+
+		Label title = new Label(isNewUser ? "Gebruiker toevoegen" : "Gebruiker aanpassen");
+		title.getStyleClass().add("title-label");
+
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+
+		hbox.getChildren().addAll(backButton, title, spacer);
+
+		return new VBox(10, hbox);
 	}
 
 	private void fillUserData(User user)
@@ -151,25 +156,6 @@ public class AddOrEditUserForm extends GridPane
 		Label sectionLabel = new Label("Gebruikersgegevens");
 		sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 		pane.add(sectionLabel, 0, 0, 2, 1);
-
-		firstNameError = createErrorLabel();
-		lastNameError = createErrorLabel();
-		emailError = createErrorLabel();
-		phoneError = createErrorLabel();
-		birthdateError = createErrorLabel();
-
-		firstNameField = new TextField();
-		lastNameField = new TextField();
-		emailField = new TextField();
-		phoneField = new TextField();
-		birthdatePicker = new DatePicker();
-		birthdatePicker.setEditable(false);
-
-		firstNameField.setPrefWidth(200);
-		lastNameField.setPrefWidth(200);
-		emailField.setPrefWidth(200);
-		phoneField.setPrefWidth(200);
-		birthdatePicker.setPrefWidth(200);
 
 		int row = 1;
 		pane.add(new Label("Voornaam:"), 0, row);
@@ -205,21 +191,6 @@ public class AddOrEditUserForm extends GridPane
 		sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 		pane.add(sectionLabel, 0, 0, 2, 1);
 
-		streetError = createErrorLabel();
-		houseNumberError = createErrorLabel();
-		postalCodeError = createErrorLabel();
-		cityError = createErrorLabel();
-
-		streetField = new TextField();
-		houseNumberField = new TextField();
-		postalCodeField = new TextField();
-		cityField = new TextField();
-
-		streetField.setPrefWidth(200);
-		houseNumberField.setPrefWidth(200);
-		postalCodeField.setPrefWidth(200);
-		cityField.setPrefWidth(200);
-
 		int row = 1;
 		pane.add(new Label("Straat:"), 0, row);
 		pane.add(streetField, 1, row++);
@@ -253,14 +224,6 @@ public class AddOrEditUserForm extends GridPane
 		sectionLabel.setStyle("-fx-font-weight: bold; -fx-font-size: 14px;");
 		pane.add(sectionLabel, 0, 0, 2, 1);
 
-		roleError = createErrorLabel();
-		statusError = createErrorLabel();
-
-		roleBox = new ComboBox<>();
-		roleBox.getItems().addAll(Role.values());
-		roleBox.setPromptText("Selecteer een rol");
-		roleBox.setPrefWidth(200);
-
 		int row = 1;
 		pane.add(new Label("Rol:"), 0, row);
 		pane.add(roleBox, 1, row++);
@@ -268,11 +231,6 @@ public class AddOrEditUserForm extends GridPane
 
 		if (!isNewUser)
 		{
-			statusBox = new ComboBox<>();
-			statusBox.getItems().addAll(Status.values());
-			statusBox.setPromptText("Wijzig de status");
-			statusBox.setPrefWidth(200);
-
 			pane.add(new Label("Status:"), 0, row);
 			pane.add(statusBox, 1, row++);
 			pane.add(statusError, 1, row++);
@@ -329,10 +287,7 @@ public class AddOrEditUserForm extends GridPane
 	private Label createErrorLabel()
 	{
 		Label errorLabel = new Label();
-		errorLabel.setTextFill(Color.RED);
-		errorLabel.setStyle("-fx-font-size: 10px;");
-		errorLabel.setMaxWidth(150);
-		errorLabel.setWrapText(true);
+		errorLabel.getStyleClass().add("error-label");
 		return errorLabel;
 	}
 
@@ -435,5 +390,40 @@ public class AddOrEditUserForm extends GridPane
 		cityError.setText("");
 		roleError.setText("");
 		statusError.setText("");
+	}
+
+	private void initializeFields()
+	{
+		streetError = createErrorLabel();
+		houseNumberError = createErrorLabel();
+		postalCodeError = createErrorLabel();
+		cityError = createErrorLabel();
+		roleError = createErrorLabel();
+		statusError = createErrorLabel();
+		firstNameError = createErrorLabel();
+		lastNameError = createErrorLabel();
+		emailError = createErrorLabel();
+		phoneError = createErrorLabel();
+		birthdateError = createErrorLabel();
+		errorLabel = createErrorLabel();
+
+		statusBox = new ComboBox<>();
+		statusBox.getItems().addAll(Status.values());
+		statusBox.setPromptText("Wijzig de status");
+
+		roleBox = new ComboBox<>();
+		roleBox.getItems().addAll(Role.values());
+		roleBox.setPromptText("Selecteer een rol");
+
+		firstNameField = new TextField();
+		lastNameField = new TextField();
+		emailField = new TextField();
+		phoneField = new TextField();
+		birthdatePicker = new DatePicker();
+		birthdatePicker.setEditable(false);
+		streetField = new TextField();
+		houseNumberField = new TextField();
+		postalCodeField = new TextField();
+		cityField = new TextField();
 	}
 }

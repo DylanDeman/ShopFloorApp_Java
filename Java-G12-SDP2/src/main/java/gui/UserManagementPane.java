@@ -104,9 +104,11 @@ public class UserManagementPane extends GridPane implements Observer
 		TableColumn<User, Integer> idColumn = new TableColumn<>("ID");
 		idColumn.setCellValueFactory(cellData -> new SimpleIntegerProperty(cellData.getValue().getId()).asObject());
 
-		TableColumn<User, String> nameColumn = new TableColumn<>("Naam");
-		nameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(
-				cellData.getValue().getFirstName() + " " + cellData.getValue().getLastName()));
+		TableColumn<User, String> firstnameColumn = new TableColumn<>("Voornaam");
+		firstnameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getFirstName()));
+
+		TableColumn<User, String> lastnameColumn = new TableColumn<>("Voornaam");
+		lastnameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getLastName()));
 
 		TableColumn<User, String> emailColumn = new TableColumn<>("Email");
 		emailColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().getEmail()));
@@ -165,7 +167,8 @@ public class UserManagementPane extends GridPane implements Observer
 		userTable.getColumns().add(editColumn);
 
 		userTable.getColumns().add(idColumn);
-		userTable.getColumns().add(nameColumn);
+		userTable.getColumns().add(firstnameColumn);
+		userTable.getColumns().add(lastnameColumn);
 		userTable.getColumns().add(emailColumn);
 		userTable.getColumns().add(roleColumn);
 		userTable.getColumns().add(statusColumn);

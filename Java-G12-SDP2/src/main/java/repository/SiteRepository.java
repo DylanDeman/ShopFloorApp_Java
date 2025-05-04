@@ -132,9 +132,10 @@ public class SiteRepository implements Subject
 	{
 		return machines.stream()
 				.map(machine -> new MachineDTO(machine.getId(), toSiteDTO(machine.getSite()), machine.getTechnician(),
-						machine.getCode(), machine.getStatus(), machine.getProductieStatus(), machine.getLocation(),
-						machine.getProductInfo(), machine.getLastMaintenance(), machine.getFutureMaintenance(),
-						machine.getNumberDaysSinceLastMaintenance(), machine.getUpTimeInHours()))
+						machine.getCode(), machine.getMachineStatus(), machine.getProductionStatus(),
+						machine.getLocation(), machine.getProductInfo(), machine.getLastMaintenance(),
+						machine.getFutureMaintenance(), machine.getNumberDaysSinceLastMaintenance(),
+						machine.getUpTimeInHours()))
 				.collect(Collectors.toUnmodifiableSet());
 	}
 

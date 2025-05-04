@@ -38,9 +38,9 @@ public class MachineController
 	private MachineDTO convertToMachineDTO(Machine machine)
 	{
 		SiteDTO siteDTO = convertToSiteDTO(machine.getSite()); // Convert the Site object to a SiteDTO
-		return new MachineDTO(machine.getId(), siteDTO, machine.getTechnician(), machine.getCode(), machine.getStatus(),
-				machine.getProductieStatus(), machine.getLocation(), machine.getProductInfo(),
-				machine.getLastMaintenance(), machine.getFutureMaintenance(),
+		return new MachineDTO(machine.getId(), siteDTO, machine.getTechnician(), machine.getCode(),
+				machine.getMachineStatus(), machine.getProductionStatus(), machine.getLocation(),
+				machine.getProductInfo(), machine.getLastMaintenance(), machine.getFutureMaintenance(),
 				machine.getNumberDaysSinceLastMaintenance(), machine.getUpTimeInHours());
 	}
 
@@ -92,8 +92,8 @@ public class MachineController
 		machine.setUpTimeInHours(dto.upTimeInHours());
 		machine.setCode(dto.code());
 		machine.setLocation(dto.location());
-		machine.setStatus(dto.status());
-		machine.setProductieStatus(dto.productieStatus());
+		machine.setMachineStatus(dto.machineStatus());
+		machine.setProductionStatus(dto.productionStatus());
 		machine.setFutureMaintenance(dto.futureMaintenance());
 
 		return machine;
