@@ -12,19 +12,12 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
-import javafx.stage.Stage;
 import repository.UserRepository;
 import util.RequiredElement;
 import util.Role;
@@ -33,9 +26,7 @@ import util.Status;
 public class AddOrEditUserForm extends GridPane
 {
 	private User user;
-	private final UserManagementPane userManagementPane;
 	private final UserRepository userRepo;
-	private final Stage primaryStage;
 
 	private TextField firstNameField, lastNameField, emailField, phoneField;
 	private DatePicker birthdatePicker;
@@ -48,15 +39,14 @@ public class AddOrEditUserForm extends GridPane
 	private Label roleError, statusError;
 
 	private boolean isNewUser;
+	private final MainLayout mainLayout;
 
-	public AddOrEditUserForm(Stage primaryStage, UserRepository userRepo, UserManagementPane userManagementPane,
-			User user)
+	public AddOrEditUserForm(MainLayout mainLayout, UserRepository userRepo, User user)
 	{
-		this.primaryStage = primaryStage;
 		this.userRepo = userRepo;
-		this.userManagementPane = userManagementPane;
 		this.user = user;
 		this.isNewUser = user == null;
+		this.mainLayout = mainLayout;
 
 		buildGUI();
 
@@ -69,18 +59,8 @@ public class AddOrEditUserForm extends GridPane
 
 	private void buildGUI()
 	{
-		this.setPadding(new Insets(20));
-		this.setHgap(20);
-		this.setVgap(20);
-
-		BackgroundImage backgroundImage = new BackgroundImage(
-				new Image(getClass().getResourceAsStream("/images/background.png")), BackgroundRepeat.NO_REPEAT,
-				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
-				new BackgroundSize(100, 100, true, true, true, true));
-		setBackground(new Background(backgroundImage));
-
 		Button backButton = new Button("← Terug");
-		backButton.setOnAction(e -> userManagementPane.returnToUserManagement(primaryStage));
+		backButton.setOnAction(e -> mainLayout.showUserManagementScreen());
 		this.add(backButton, 0, 0, 2, 1);
 
 		errorLabel = new Label();
@@ -332,7 +312,7 @@ public class AddOrEditUserForm extends GridPane
 				userRepo.updateUser(updatedUser);
 			}
 
-			userManagementPane.returnToUserManagement(primaryStage);
+			mainLayout.showUserManagementScreen();
 		} catch (InformationRequiredException e)
 		{
 			handleInformationRequiredException(e);

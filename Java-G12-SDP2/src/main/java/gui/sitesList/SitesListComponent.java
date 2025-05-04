@@ -10,7 +10,7 @@ import domain.site.Site;
 import domain.site.SiteController;
 import domain.site.SiteDTO;
 import gui.AddOrEditSiteForm;
-import gui.ChoicePane;
+import gui.MainLayout;
 import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;
@@ -18,9 +18,8 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
+import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -39,14 +38,13 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 import repository.SiteRepository;
 
 public class SitesListComponent extends VBox implements Observer
 {
+	private final MainLayout mainLayout;
 	private SiteController sc;
 	private SiteRepository siteRepo;
-	private Stage stage;
 	private TableView<SiteDTO> table;
 	private TextField searchField;
 	private List<SiteDTO> allSites;
@@ -58,12 +56,12 @@ public class SitesListComponent extends VBox implements Observer
 	private int totalPages = 0;
 	private Pagination pagination;
 
-	public SitesListComponent(Stage stage, SiteController sc, SiteRepository siteRepo)
+	public SitesListComponent(MainLayout mainLayout)
 	{
-		this.sc = sc;
-		this.siteRepo = siteRepo;
+		this.mainLayout = mainLayout;
+		this.sc = mainLayout.getServices().getSiteController();
+		this.siteRepo = mainLayout.getServices().getSiteRepo();
 		this.siteRepo.addObserver(this);
-		this.stage = stage;
 		this.table = new TableView<>();
 		initializeGUI();
 		loadSites();
@@ -87,25 +85,16 @@ public class SitesListComponent extends VBox implements Observer
 	private void initializeGUI()
 	{
 
-		stage.setMinWidth(800);
 		allSites = sc.getSites();
 		filteredSites = allSites;
-		updatePadding(stage);
-		stage.widthProperty().addListener((obs, oldWidth, newWidth) -> updatePadding(stage));
 
 		VBox titleSection = createTitleSection();
 		VBox tableSection = createTableSection();
 
 		this.setSpacing(20);
+
 		this.getChildren().addAll(titleSection, tableSection);
 		updateTable(filteredSites);
-	}
-
-	private void updatePadding(Stage stage)
-	{
-		double amountOfPixels = stage.getWidth();
-		double calculatedPadding = amountOfPixels < 1200 ? amountOfPixels * 0.05 : amountOfPixels * 0.10;
-		this.setPadding(new Insets(50, calculatedPadding, 0, calculatedPadding));
 	}
 
 	private VBox createTitleSection()
@@ -127,7 +116,7 @@ public class SitesListComponent extends VBox implements Observer
 		icon.setIconSize(20);
 		backButton.setGraphic(icon);
 		backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
-		backButton.setOnAction(e -> handleGoBack(stage));
+		backButton.setOnAction(e -> mainLayout.showHomeScreen());
 
 		Label title = new Label("Sites");
 		title.setStyle("-fx-font: 40 arial;");
@@ -136,7 +125,7 @@ public class SitesListComponent extends VBox implements Observer
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 
 		Button addButton = new CustomButton(new FontIcon("fas-plus"), "Site toevoegen");
-		addButton.setOnAction(e -> openAddSiteForm(stage));
+		addButton.setOnAction(e -> openAddSiteForm());
 
 		hbox.getChildren().addAll(backButton, title, spacer, addButton);
 		return hbox;
@@ -172,8 +161,7 @@ public class SitesListComponent extends VBox implements Observer
 				editIcon.setFitHeight(16);
 				editButton.setGraphic(editIcon);
 				editButton.setBackground(Background.EMPTY);
-				editButton.setOnAction(
-						event -> openEditSiteForm(stage, siteRepo.makeSiteObject(getTableRow().getItem())));
+				editButton.setOnAction(event -> openEditSiteForm(siteRepo.makeSiteObject(getTableRow().getItem())));
 			}
 
 			@Override
@@ -374,14 +362,16 @@ public class SitesListComponent extends VBox implements Observer
 				"Hieronder vindt u een overzicht van alle sites. Klik op een site om de details van de site te bekijken!");
 	}
 
-	private void openAddSiteForm(Stage primaryStage)
+	private void openAddSiteForm()
 	{
-		primaryStage.getScene().setRoot(new AddOrEditSiteForm(primaryStage, siteRepo, this, null));
+		Parent addSiteForm = new AddOrEditSiteForm(mainLayout, siteRepo, null);
+		mainLayout.setContent(addSiteForm, true);
 	}
 
-	private void openEditSiteForm(Stage primaryStage, Site site)
+	private void openEditSiteForm(Site site)
 	{
-		primaryStage.getScene().setRoot(new AddOrEditSiteForm(primaryStage, siteRepo, this, site));
+		Parent editSiteForm = new AddOrEditSiteForm(mainLayout, siteRepo, site);
+		mainLayout.setContent(editSiteForm, true);
 	}
 
 	@Override
@@ -393,19 +383,6 @@ public class SitesListComponent extends VBox implements Observer
 			filteredSites = new ArrayList<>(allSites);
 			updateTable(filteredSites);
 		});
-	}
-
-	private void handleGoBack(Stage stage)
-	{
-		ChoicePane choicePane = new ChoicePane(stage);
-		Scene choicePaneScene = new Scene(choicePane);
-		stage.setScene(choicePaneScene);
-	}
-
-	public void returnToSiteList(Stage primaryStage)
-	{
-		loadSites();
-		primaryStage.getScene().setRoot(this);
 	}
 
 }

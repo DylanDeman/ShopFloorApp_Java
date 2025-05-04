@@ -7,7 +7,6 @@ import domain.site.Site;
 import domain.site.SiteBuilder;
 import domain.user.User;
 import exceptions.InformationRequiredExceptionSite;
-import gui.sitesList.SitesListComponent;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,19 +15,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.stage.Stage;
 import repository.SiteRepository;
 import util.RequiredElementSite;
 import util.Status;
@@ -36,9 +28,8 @@ import util.Status;
 public class AddOrEditSiteForm extends GridPane
 {
 	private Site site;
-	private final SitesListComponent sitesListComponent;
-	private final Stage primaryStage;
 	private final SiteRepository siteRepo;
+	private final MainLayout mainLayout;
 
 	private TextField siteNameField;
 	private TextField streetField, houseNumberField, postalCodeField, cityField;
@@ -52,12 +43,10 @@ public class AddOrEditSiteForm extends GridPane
 
 	private boolean isNewSite;
 
-	public AddOrEditSiteForm(Stage primaryStage, SiteRepository siteRepo, SitesListComponent sitesListComponent,
-			Site site)
+	public AddOrEditSiteForm(MainLayout mainLayout, SiteRepository siteRepo, Site site)
 	{
 		this.siteRepo = siteRepo;
-		this.primaryStage = primaryStage;
-		this.sitesListComponent = sitesListComponent;
+		this.mainLayout = mainLayout;
 		this.site = site;
 		this.isNewSite = site == null;
 
@@ -75,23 +64,13 @@ public class AddOrEditSiteForm extends GridPane
 	{
 		this.getStylesheets().add(getClass().getResource("/css/form.css").toExternalForm());
 
-		this.setPadding(new Insets(20));
-		this.setHgap(20);
-		this.setVgap(20);
-
-		BackgroundImage backgroundImage = new BackgroundImage(
-				new Image(getClass().getResourceAsStream("/images/background.png")), BackgroundRepeat.NO_REPEAT,
-				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
-				new BackgroundSize(100, 100, true, true, true, true));
-		setBackground(new Background(backgroundImage));
-
 		FontIcon icon = new FontIcon("fas-arrow-left");
 		icon.setIconSize(20);
 
 		Button backButton = new Button();
 		backButton.setGraphic(icon);
 		backButton.getStyleClass().add("back-button");
-		backButton.setOnAction(e -> sitesListComponent.returnToSiteList(primaryStage));
+		backButton.setOnAction(e -> mainLayout.showSiteList());
 
 		errorLabel.setTextFill(Color.RED);
 		errorLabel.setWrapText(true);
@@ -107,8 +86,6 @@ public class AddOrEditSiteForm extends GridPane
 		headerBox.getChildren().addAll(backButton, titleLabel, spacer);
 
 		this.add(headerBox, 0, 2, 2, 1);
-
-		GridPane.setMargin(headerBox, new Insets(0, 0, 0, 0));
 
 		VBox mainContent = new VBox(30);
 		mainContent.setAlignment(Pos.TOP_CENTER);
@@ -208,7 +185,8 @@ public class AddOrEditSiteForm extends GridPane
 				siteRepo.updateSite(updatedSite);
 			}
 
-			sitesListComponent.returnToSiteList(primaryStage);
+			mainLayout.showSiteList();
+			;
 		} catch (InformationRequiredExceptionSite e)
 		{
 			handleInformationRequiredException(e);

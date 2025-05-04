@@ -9,7 +9,7 @@ import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
-import javafx.scene.Scene;
+import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
@@ -26,7 +26,6 @@ import javafx.scene.layout.BackgroundRepeat;
 import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
-import javafx.stage.Stage;
 import repository.UserRepository;
 
 public class UserManagementPane extends GridPane implements Observer
@@ -34,14 +33,14 @@ public class UserManagementPane extends GridPane implements Observer
 
 	private TableView<User> userTable;
 	private Button addButton;
-	private Stage primaryStage;
 	private final UserRepository userRepo;
+	private final MainLayout mainLayout;
 
-	public UserManagementPane(Stage primaryStage, UserRepository userRepo)
+	public UserManagementPane(MainLayout mainLayout)
 	{
-		this.userRepo = userRepo;
+		this.mainLayout = mainLayout;
+		this.userRepo = mainLayout.getServices().getUserRepo();
 		this.userRepo.addObserver(this);
-		this.primaryStage = primaryStage;
 
 		buildGUI();
 		loadUsers();
@@ -60,14 +59,14 @@ public class UserManagementPane extends GridPane implements Observer
 		setBackground(new Background(backgroundImage));
 
 		Button backButton = new Button("← Terug");
-		backButton.setOnAction(e -> returnToChoicePane(primaryStage));
+		backButton.setOnAction(e -> mainLayout.showHomeScreen());
 		this.add(backButton, 0, 0, 2, 1);
 
 		userTable = new TableView<>();
 		buildColumns();
 
 		addButton = new Button("Gebruiker toevoegen +");
-		addButton.setOnAction(e -> openAddUserForm(primaryStage));
+		addButton.setOnAction(e -> openAddUserForm());
 
 		String buttonStyle = "-fx-background-color: #f0453c; " + "-fx-text-fill: white; " + "-fx-font-weight: bold; "
 				+ "-fx-padding: 8 15 8 15; " + "-fx-background-radius: 5;";
@@ -115,7 +114,7 @@ public class UserManagementPane extends GridPane implements Observer
 				editIcon.setFitHeight(16);
 				editButton.setGraphic(editIcon);
 				editButton.setBackground(Background.EMPTY);
-				editButton.setOnAction(event -> openEditUserForm(primaryStage, getTableRow().getItem()));
+				editButton.setOnAction(event -> openEditUserForm(getTableRow().getItem()));
 			}
 
 			@Override
@@ -168,27 +167,22 @@ public class UserManagementPane extends GridPane implements Observer
 		userTable.getItems().setAll(users);
 	}
 
-	private void openAddUserForm(Stage primaryStage)
+	private void openAddUserForm()
 	{
-		primaryStage.getScene().setRoot(new AddOrEditUserForm(primaryStage, userRepo, this, null));
+		Parent addUserForm = new AddOrEditUserForm(mainLayout, userRepo, null);
+		mainLayout.setContent(addUserForm, true);
 	}
 
-	private void openEditUserForm(Stage primaryStage, User user)
+	private void openEditUserForm(User user)
 	{
-		primaryStage.getScene().setRoot(new AddOrEditUserForm(primaryStage, userRepo, this, user));
+		Parent editUserForm = new AddOrEditUserForm(mainLayout, userRepo, user);
+		mainLayout.setContent(editUserForm, true);
 	}
 
-	public void returnToUserManagement(Stage primaryStage)
+	public void returnToUserManagement()
 	{
-		primaryStage.getScene().setRoot(this);
+		mainLayout.setContent(this, true);
 		loadUsers();
-	}
-
-	private void returnToChoicePane(Stage stage)
-	{
-		ChoicePane choicePane = new ChoicePane(stage);
-		Scene choicePaneScene = new Scene(choicePane);
-		stage.setScene(choicePaneScene);
 	}
 
 	private void deleteUser(User user)

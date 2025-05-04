@@ -9,15 +9,13 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import domain.machine.MachineDTO;
 import domain.maintenance.MaintenanceController;
 import domain.maintenance.MaintenanceDTO;
-import gui.ChoicePane;
+import gui.MainLayout;
 import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
 import gui.report.AddReportForm;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -26,23 +24,15 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
 public class MaintenanceListComponent extends VBox
 {
-
+	private final MainLayout mainLayout;
 	private MaintenanceController mc;
-	private Stage stage;
 	private TableView<MaintenanceDTO> table;
 	private TextField searchField;
 	private List<MaintenanceDTO> allMaintenances;
@@ -54,51 +44,37 @@ public class MaintenanceListComponent extends VBox
 	private int totalPages = 0;
 	private Pagination pagination;
 
-	public MaintenanceListComponent(Stage stage, MaintenanceController mc)
+	public MaintenanceListComponent(MainLayout mainLayout)
 	{
-		this.mc = mc;
-		this.stage = stage;
+		this.mainLayout = mainLayout;
+		this.mc = new MaintenanceController();
 		this.table = new TableView<>();
 		initializeGUI();
 	}
 
-	public MaintenanceListComponent(Stage stage, MaintenanceController mc, MachineDTO machineDTO)
+	public MaintenanceListComponent(MainLayout mainLayout, MachineDTO machineDTO)
 	{
-		this.mc = mc;
+		this.mc = new MaintenanceController();
 		this.machineDTO = machineDTO;
-		this.stage = stage;
+		this.mainLayout = mainLayout;
 		this.table = new TableView<>();
 		initializeGUI();
 	}
 
 	private void initializeGUI()
 	{
-		stage.setMinWidth(800);
-		BackgroundImage backgroundImage = new BackgroundImage(
-				new Image(getClass().getResourceAsStream("/images/background.png")), BackgroundRepeat.NO_REPEAT,
-				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
-				new BackgroundSize(100, 100, true, true, true, true));
-		setBackground(new Background(backgroundImage));
 
 		allMaintenances = machineDTO == null ? mc.getMaintenances()
 				: mc.getMaintenances().stream().filter((m) -> m.machine().equals(machineDTO)).toList();
 		filteredMaintenances = allMaintenances;
-		updatePadding(stage);
-		stage.widthProperty().addListener((obs, oldWidth, newWidth) -> updatePadding(stage));
 
 		VBox titleSection = createTitleSection();
 		VBox tableSection = createTableSection();
 
 		this.setSpacing(20);
+
 		this.getChildren().addAll(titleSection, tableSection);
 		updateTable(filteredMaintenances);
-	}
-
-	private void updatePadding(Stage stage)
-	{
-		double amountOfPixels = stage.getWidth();
-		double calculatedPadding = amountOfPixels < 1200 ? amountOfPixels * 0.05 : amountOfPixels * 0.10;
-		this.setPadding(new Insets(50, calculatedPadding, 0, calculatedPadding));
 	}
 
 	private VBox createTitleSection()
@@ -120,7 +96,7 @@ public class MaintenanceListComponent extends VBox
 		Button backButton = new Button();
 		backButton.setGraphic(icon);
 		backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
-		backButton.setOnAction(e -> handleGoBack(stage));
+		backButton.setOnAction(e -> mainLayout.showHomeScreen());
 
 		Label title = new Label("Onderhoudslijst");
 		title.setStyle("-fx-font: 40 arial;");
@@ -146,7 +122,7 @@ public class MaintenanceListComponent extends VBox
 		TableColumn<MaintenanceDTO, String> col5 = createColumn("Reden", MaintenanceDTO::reason);
 		TableColumn<MaintenanceDTO, String> col6 = createColumn("Opmerkingen", MaintenanceDTO::comments);
 		TableColumn<MaintenanceDTO, String> col7 = createColumn("Status", m -> m.status().toString());
-		TableColumn<MaintenanceDTO, Void> col8 = createAddRapportButtonColumn(stage);
+		TableColumn<MaintenanceDTO, Void> col8 = createAddRapportButtonColumn();
 		TableColumn<MaintenanceDTO, String> col9 = createColumn("Machine",
 				m -> String.format("Machine %d", m.machine().id()));
 
@@ -225,7 +201,7 @@ public class MaintenanceListComponent extends VBox
 		return col;
 	}
 
-	private TableColumn<MaintenanceDTO, Void> createAddRapportButtonColumn(Stage stage)
+	private TableColumn<MaintenanceDTO, Void> createAddRapportButtonColumn()
 	{
 		TableColumn<MaintenanceDTO, Void> col = new TableColumn<>("Rapport toevoegen");
 
@@ -233,10 +209,9 @@ public class MaintenanceListComponent extends VBox
 		{
 			private final CustomButton btn = new CustomButton("Toevoegen");
 			{
-				btn.setOnAction(e ->
-				{
+				btn.setOnAction(e -> {
 					MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
-					goToAddRapport(stage, selectedMaintenance);
+					goToAddRapport(mainLayout, selectedMaintenance);
 				});
 			}
 
@@ -255,8 +230,7 @@ public class MaintenanceListComponent extends VBox
 		updateTotalPages();
 		Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
 		pagination.setPageFactory(this::createPage);
-		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) ->
-		{
+		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
 			currentPage = newIndex.intValue();
 			updateTableItems();
 		});
@@ -304,17 +278,10 @@ public class MaintenanceListComponent extends VBox
 		updateTableItems();
 	}
 
-	private void handleGoBack(Stage stage)
+	private void goToAddRapport(MainLayout mainLayout, MaintenanceDTO maintenance)
 	{
-		stage.setScene(new Scene(new ChoicePane(stage)));
-	}
-
-	private void goToAddRapport(Stage stage, MaintenanceDTO maintenance)
-	{
-		AddReportForm form = new AddReportForm(stage, maintenance);
-		Scene scene = new Scene(form);
+		AddReportForm form = new AddReportForm(mainLayout, maintenance);
 		form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
-		stage.setScene(scene);
 	}
 
 }

@@ -2,10 +2,9 @@ package gui.login;
 
 import domain.user.UserController;
 import exceptions.InvalidInputException;
-import gui.ChoicePane;
+import gui.MainLayout;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -17,16 +16,16 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
-import javafx.stage.Stage;
 
 // TODO 
-public class LoginPane extends VBox {
+public class LoginPane extends VBox
+{
 
 	private static final String CSS_PATH = "/css/login.css";
 	private static final String LOGO_PATH = "/images/delaware_logo.png";
 
 	private final UserController userController = new UserController();
-	private final Stage stage;
+	private final MainLayout mainLayout;
 
 	private final Label errorLabel = new Label();
 	private final TextField emailField = new TextField();
@@ -35,19 +34,20 @@ public class LoginPane extends VBox {
 	private final Label emailValidationLabel = new Label();
 	private final Label passwordValidationLabel = new Label();
 
-	public LoginPane(Stage stage) {
+	public LoginPane(MainLayout mainLayout)
+	{
 		// TODO Tijdelijk terug wegdoen later
 		emailField.setText("jan@email.com");
 		passwordField.setText("password");
-		
-		this.stage = stage;
+
+		this.mainLayout = mainLayout;
 		this.getStylesheets().add(getClass().getResource(CSS_PATH).toExternalForm());
 		this.getStyleClass().add("login-pane");
 		setupLayout();
 	}
 
-	private void setupLayout() {
-		this.stage.setMaximized(true);
+	private void setupLayout()
+	{
 		this.setAlignment(Pos.CENTER);
 		this.setPadding(new Insets(40));
 
@@ -57,7 +57,8 @@ public class LoginPane extends VBox {
 		this.getChildren().addAll(logoContainer, mainLayout);
 	}
 
-	private HBox createLogoContainer() {
+	private HBox createLogoContainer()
+	{
 		Image logoImage = new Image(getClass().getResourceAsStream(LOGO_PATH));
 		ImageView logoView = new ImageView(logoImage);
 		logoView.setFitHeight(120);
@@ -71,7 +72,8 @@ public class LoginPane extends VBox {
 		return logoContainer;
 	}
 
-	private HBox createMainLayout() {
+	private HBox createMainLayout()
+	{
 		HBox mainLayout = new HBox(40);
 		mainLayout.setAlignment(Pos.CENTER);
 		mainLayout.setPadding(new Insets(20));
@@ -83,7 +85,8 @@ public class LoginPane extends VBox {
 		return mainLayout;
 	}
 
-	private VBox createLoginForm() {
+	private VBox createLoginForm()
+	{
 		VBox form = new VBox(15);
 		form.setAlignment(Pos.CENTER_LEFT);
 		form.getStyleClass().add("login-form");
@@ -111,7 +114,6 @@ public class LoginPane extends VBox {
 		emailValidationLabel.getStyleClass().add("validation-label");
 		emailValidationLabel.setStyle("-fx-text-fill: red; -fx-font-size: 12px;");
 		emailValidationLabel.setVisible(false);
-		
 
 		// Password input
 		Label passwordLabel = new Label("Wachtwoord:");
@@ -146,7 +148,8 @@ public class LoginPane extends VBox {
 		return form;
 	}
 
-	private VBox createInfoBox() {
+	private VBox createInfoBox()
+	{
 		VBox infoBox = new VBox(5);
 
 		Label infoTitle = new Label("Nog geen account?");
@@ -159,7 +162,8 @@ public class LoginPane extends VBox {
 		return infoBox;
 	}
 
-	private StackPane createLoginImage(VBox loginForm) {
+	private StackPane createLoginImage(VBox loginForm)
+	{
 		StackPane imageContainer = new StackPane();
 		imageContainer.setPrefWidth(800);
 		imageContainer.prefHeightProperty().bind(loginForm.heightProperty());
@@ -176,54 +180,56 @@ public class LoginPane extends VBox {
 		return imageContainer;
 	}
 
-	private void handleLogin() {
+	private void handleLogin()
+	{
 		String email = emailField.getText().trim();
 		String password = passwordField.getText();
-		
+
 		errorLabel.setVisible(false);
 		emailValidationLabel.setVisible(false);
 		passwordValidationLabel.setVisible(false);
 
-		
 		// TODO beter in domein laag zetten:
 		boolean isValid = true;
 
-		if (email.isEmpty()) {
+		if (email.isEmpty())
+		{
 			emailValidationLabel.setText("verplicht");
 			emailValidationLabel.setVisible(true);
 			isValid = false;
-		} else if (!isValidEmailFormat(email)) {
+		} else if (!isValidEmailFormat(email))
+		{
 			emailValidationLabel.setText("Gelieve een geldig E-mail adres in te voeren!");
 			emailValidationLabel.setVisible(true);
 			isValid = false;
 		}
 
-		if (password.isEmpty()) {
+		if (password.isEmpty())
+		{
 			passwordValidationLabel.setVisible(true);
 			isValid = false;
 		}
 
 		// Als alle velden zijn ingevuld, authenticatie doen:
-		if (isValid) {
-			try {
+		if (isValid)
+		{
+			try
+			{
 				userController.authenticate(email, password);
 				errorLabel.setText("");
-				navigateToChoicePane();
-			} catch (InvalidInputException e) {
+				mainLayout.showHomeScreen();
+			} catch (InvalidInputException e)
+			{
 				errorLabel.setVisible(true);
 				errorLabel.setText(e.getMessage());
 			}
 		}
 	}
 
-	private boolean isValidEmailFormat(String email) {
-	    String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0]+\\.[A-Za-z]{2,}$";
-	    return email.matches(emailRegex);
+	private boolean isValidEmailFormat(String email)
+	{
+		String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0]+\\.[A-Za-z]{2,}$";
+		return email.matches(emailRegex);
 	}
 
-	private void navigateToChoicePane() {
-		ChoicePane choicePane = new ChoicePane(stage);
-		Scene scene = new Scene(choicePane);
-		stage.setScene(scene);
-	}
 }

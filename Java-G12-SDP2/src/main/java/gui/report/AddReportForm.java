@@ -17,31 +17,23 @@ import domain.report.ReportController;
 import domain.site.Site;
 import domain.site.SiteController;
 import domain.user.User;
-import gui.ChoicePane;
+import gui.MainLayout;
 import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
-import javafx.scene.image.Image;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
 public class AddReportForm extends BorderPane
 {
@@ -62,28 +54,26 @@ public class AddReportForm extends BorderPane
 	private MaintenanceController maintenanceController;
 	private SiteController siteController;
 
-	public AddReportForm(Stage primaryStage, MaintenanceDTO maintenanceDTO)
+	private final MainLayout mainLayout;
+
+	public AddReportForm(MainLayout mainLayout, MaintenanceDTO maintenanceDTO)
 	{
 		maintenanceController = new MaintenanceController();
 		siteController = new SiteController();
 
-		BackgroundImage backgroundImage = new BackgroundImage(
-				new Image(getClass().getResourceAsStream("/images/background.png")), BackgroundRepeat.NO_REPEAT,
-				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
-				new BackgroundSize(100, 100, true, true, true, true));
-		this.setBackground(new Background(backgroundImage));
+		this.mainLayout = mainLayout;
 
 		reportController = new ReportController();
 
 		if (maintenanceDTO == null)
 		{
-			returnToChoicePane(primaryStage);
+			mainLayout.showHomeScreen();
 			throw new IllegalArgumentException("Het onderhoud is ongeldig");
 		}
 
 		this.selectedMaintenanceDTO = maintenanceDTO;
 
-		VBox titleSection = createTitleSection(primaryStage);
+		VBox titleSection = createTitleSection();
 
 		generalMessageLabel = new Label();
 		generalMessageLabel.setVisible(false);
@@ -119,32 +109,19 @@ public class AddReportForm extends BorderPane
 		content.setAlignment(Pos.TOP_CENTER);
 		content.setPadding(new Insets(50, 80, 0, 80));
 
-		this.widthProperty().addListener((obs, oldVal, newVal) ->
-		{
-			adjustFormLayout(newVal.doubleValue());
-			updatePadding(primaryStage);
-		});
-
 		this.setCenter(content);
 
 		loadTechnicians();
 	}
 
-	private void updatePadding(Stage stage)
+	private VBox createTitleSection()
 	{
-		double amountOfPixels = stage.getWidth();
-		double calculatedPadding = amountOfPixels < 1200 ? amountOfPixels * 0.05 : amountOfPixels * 0.10;
-		this.setPadding(new Insets(50, calculatedPadding, 0, calculatedPadding));
-	}
-
-	private VBox createTitleSection(Stage primaryStage)
-	{
-		HBox header = createWindowHeader(primaryStage);
+		HBox header = createWindowHeader();
 		HBox infoBox = new CustomInformationBox("Maak een rapport aan voor het geselecteerde onderhoud.");
 		return new VBox(10, header, infoBox);
 	}
 
-	private HBox createWindowHeader(Stage primaryStage)
+	private HBox createWindowHeader()
 	{
 		HBox hbox = new HBox(10);
 		hbox.setAlignment(Pos.CENTER_LEFT);
@@ -154,7 +131,7 @@ public class AddReportForm extends BorderPane
 		Button backButton = new Button();
 		backButton.setGraphic(icon);
 		backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
-		backButton.setOnAction(e -> returnToChoicePane(primaryStage));
+		backButton.setOnAction(e -> mainLayout.showHomeScreen());
 
 		titleLabel = new Label("Rapport aanmaken");
 		titleLabel.setStyle("-fx-font: 40 arial;");
@@ -509,13 +486,6 @@ public class AddReportForm extends BorderPane
 		List<String> technicianNames = reportController.getTechnicians().stream().map(User::getFullName)
 				.collect(Collectors.toList());
 		technicianComboBox.getItems().addAll(technicianNames);
-	}
-
-	private void returnToChoicePane(Stage primaryStage)
-	{
-		Scene scene = new Scene(new ChoicePane(primaryStage), 800, 600);
-		scene.getStylesheets().add(getClass().getResource("/css/styles.css").toExternalForm());
-		primaryStage.setScene(scene);
 	}
 
 	private Label createErrorLabel(String text)

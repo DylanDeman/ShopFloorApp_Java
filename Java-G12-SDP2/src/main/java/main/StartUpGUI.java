@@ -14,10 +14,9 @@ import domain.maintenance.MaintenanceController;
 import domain.report.Report;
 import domain.site.Site;
 import domain.user.User;
-import gui.login.LoginPane;
+import gui.MainLayout;
 import jakarta.persistence.EntityManager;
 import javafx.application.Application;
-import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import util.JPAUtil;
@@ -31,16 +30,11 @@ public class StartUpGUI extends Application
 	@Override
 	public void start(Stage primaryStage)
 	{
-		// ChoicePane pane = new ChoicePane(primaryStage);
-
-		// Login pagina tonen:
-		LoginPane loginPane = new LoginPane(primaryStage);
+		MainLayout mainLayout = new MainLayout(primaryStage);
 
 		primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/images/favicon-32x32.png")));
+		primaryStage.setTitle("Shopfloor application");
 
-		Scene scene = new Scene(loginPane, 800, 800);
-		primaryStage.setTitle("Kies je paneel");
-		primaryStage.setScene(scene);
 		primaryStage.show();
 
 		String gehashteWW = PasswordHasher.hash("password");
