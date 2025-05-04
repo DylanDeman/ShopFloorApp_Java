@@ -1,5 +1,6 @@
 package gui.maintenance;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -7,32 +8,28 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import org.opentest4j.FileInfo;
+import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.machine.MachineDTO;
+import domain.maintenance.FileInfo;
+import domain.maintenance.FileInfoController;
+import domain.maintenance.Maintenance;
 import domain.maintenance.MaintenanceController;
 import domain.maintenance.MaintenanceDTO;
-import domain.maintenance.Maintenance;
-import domain.user.User;
+import gui.report.AddReportForm;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -42,16 +39,17 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import util.MaintenanceStatus;
 
 public class MaintenanceDetailView extends BorderPane
 {
 	private MaintenanceController maintenanceController;
+	private FileInfoController fileInfoController;
 	private MaintenanceDTO currentMaintenance;
 	private Stage primaryStage;
 	private static final String FILE_STORAGE_PATH = "maintenance_files";
@@ -62,8 +60,6 @@ public class MaintenanceDetailView extends BorderPane
 	private VBox filesSection;
 	private FlowPane filesContainer;
 	private List<FileInfo> currentFiles;
-	private Button editButton;
-	private Button completeButton;
 
 	// File types
 	private final List<String> supportedFileTypes = Arrays.asList("*.pdf", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.mp4",
@@ -75,6 +71,7 @@ public class MaintenanceDetailView extends BorderPane
 	{
 		this.primaryStage = primaryStage;
 		this.maintenanceController = new MaintenanceController();
+		this.fileInfoController = new FileInfoController();
 
 		// Load maintenance data
 		if (maintenance != null)
@@ -88,45 +85,33 @@ public class MaintenanceDetailView extends BorderPane
 		// Get files from database for this maintenance
 		this.currentFiles = getFilesFromDatabase();
 
+		// Load CSS
+		getStylesheets().add(getClass().getResource("/css/maintenanceDetails.css").toExternalForm());
+		getStyleClass().add("maintenance-details");
+
 		initialize();
 	}
 
 	private List<FileInfo> getFilesFromDatabase()
 	{
-		// TODO Auto-generated method stub
-		return null;
+		if (currentMaintenance == null)
+		{
+			return new ArrayList<>();
+		}
+
+		// Get files from controller
+		return fileInfoController.getFilesForMaintenance(currentMaintenance.id());
 	}
 
 	private void createFileStorageDirectory()
 	{
-		try
-		{
-			// Create maintenance files directory structure
-			Path mainPath = Paths.get(FILE_STORAGE_PATH);
-			if (!Files.exists(mainPath))
-			{
-				Files.createDirectory(mainPath);
-			}
-
-			// Create directory for this specific maintenance if needed
-			if (currentMaintenance != null)
-			{
-				Path maintenancePath = Paths.get(FILE_STORAGE_PATH, "maintenance_" + currentMaintenance.id());
-				if (!Files.exists(maintenancePath))
-				{
-					Files.createDirectory(maintenancePath);
-				}
-			}
-		} catch (IOException e)
-		{
-			showAlert(Alert.AlertType.ERROR, "Error", "Could not create file storage directory: " + e.getMessage());
-		}
+		// No longer needed as files are stored in database
 	}
 
 	private void initialize()
 	{
 		setStyle("-fx-background-color: #f5f5f5;");
-		setPadding(new Insets(20, 30, 30, 30));
+		setPadding(new Insets(10, 30, 10, 30));
 
 		// Create top navigation area
 		createTopNavigation();
@@ -154,8 +139,11 @@ public class MaintenanceDetailView extends BorderPane
 	{
 		// Back button and title
 		Button backButton = new Button();
-		backButton.setGraphic(new Label("←"));
-		backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+		FontIcon backIcon = new FontIcon("fas-arrow-left");
+		backIcon.setIconSize(16);
+		backIcon.setIconColor(Color.web("#333333"));
+		backButton.setGraphic(backIcon);
+		backButton.getStyleClass().add("back-button");
 		backButton.setOnAction(e ->
 		{
 			// Navigate back to maintenance list
@@ -163,7 +151,7 @@ public class MaintenanceDetailView extends BorderPane
 		});
 
 		titleLabel = new Label("Onderhoud (onderhoudsnummer)");
-		titleLabel.setFont(Font.font("System", FontWeight.BOLD, 22));
+		titleLabel.getStyleClass().add("title-label");
 		if (currentMaintenance != null)
 		{
 			titleLabel.setText("Onderhoud #" + currentMaintenance.id());
@@ -171,8 +159,8 @@ public class MaintenanceDetailView extends BorderPane
 			// Add machine info if available
 			if (currentMaintenance.machine() != null)
 			{
-				machineInfoLabel = new Label("Machine: " + currentMaintenance.machine().getCode());
-				machineInfoLabel.setFont(Font.font("System", FontWeight.NORMAL, 14));
+				machineInfoLabel = new Label("Machine: " + currentMaintenance.machine().code());
+				machineInfoLabel.getStyleClass().add("machine-info-label");
 			}
 		}
 
@@ -189,34 +177,27 @@ public class MaintenanceDetailView extends BorderPane
 
 		// Action buttons
 		Button reportButton = new Button("Rapport aanmaken");
-		reportButton.setStyle(
-				"-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 4px; -fx-padding: 8px 16px;");
-		reportButton.setOnAction(e -> generateReport());
+		FontIcon reportIcon = new FontIcon("fas-file-alt");
+		reportIcon.setIconSize(16);
+		reportIcon.setIconColor(Color.WHITE);
+		reportButton.setGraphic(reportIcon);
+		reportButton.getStyleClass().add("action-button");
+		reportButton.setOnAction(e ->
+		{
+			goToAddRapport(primaryStage, currentMaintenance);
+		});
 
 		Button uploadButton = new Button("Bestanden toevoegen");
-		uploadButton.setStyle(
-				"-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 4px; -fx-padding: 8px 16px;");
+		FontIcon uploadIcon = new FontIcon("fas-upload");
+		uploadIcon.setIconSize(16);
+		uploadIcon.setIconColor(Color.WHITE);
+		uploadButton.setGraphic(uploadIcon);
+		uploadButton.getStyleClass().add("action-button");
 		uploadButton.setOnAction(e -> uploadFiles());
-
-		editButton = new Button("Bewerken");
-		editButton.setStyle(
-				"-fx-background-color: #2196F3; -fx-text-fill: white; -fx-background-radius: 4px; -fx-padding: 8px 16px;");
-		editButton.setOnAction(e -> editMaintenance());
-
-		completeButton = new Button("Voltooien");
-		completeButton.setStyle(
-				"-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-background-radius: 4px; -fx-padding: 8px 16px;");
-		completeButton.setOnAction(e -> completeMaintenance());
-
-		// Only show complete button if maintenance is not already completed
-		if (currentMaintenance != null && currentMaintenance.status() == MaintenanceStatus.COMPLETED)
-		{
-			completeButton.setDisable(true);
-		}
 
 		HBox actionsBox = new HBox(10);
 		actionsBox.setAlignment(Pos.CENTER_RIGHT);
-		actionsBox.getChildren().addAll(editButton, completeButton, reportButton, uploadButton);
+		actionsBox.getChildren().addAll(reportButton, uploadButton);
 
 		// Combine title and actions in a header bar
 		BorderPane headerPane = new BorderPane();
@@ -227,10 +208,12 @@ public class MaintenanceDetailView extends BorderPane
 		setTop(headerPane);
 	}
 
-	private Object generateReport()
+	private void goToAddRapport(Stage stage, MaintenanceDTO maintenance)
 	{
-		// TODO Auto-generated method stub
-		return null;
+		AddReportForm form = new AddReportForm(stage, maintenance);
+		Scene scene = new Scene(form);
+		form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
+		stage.setScene(scene);
 	}
 
 	private void createMaintenanceInfoSection()
@@ -243,7 +226,7 @@ public class MaintenanceDetailView extends BorderPane
 		// Table for maintenance details
 		GridPane table = createMaintenanceTable();
 
-		VBox contentBox = new VBox(15);
+		VBox contentBox = new VBox(10);
 		contentBox.getChildren().addAll(infoLabel, table);
 
 		setCenter(contentBox);
@@ -252,19 +235,18 @@ public class MaintenanceDetailView extends BorderPane
 	private GridPane createMaintenanceTable()
 	{
 		GridPane table = new GridPane();
-		table.setStyle(
-				"-fx-background-color: white; -fx-background-radius: 4px; -fx-border-color: #e0e0e0; -fx-border-radius: 4px;");
+		table.getStyleClass().add("maintenance-table");
 
 		// Column headers
 		String[] headers =
-		{ "Nr", "Uitvoeringsdatum", "Starttijdstip", "Eindtijdstip", "Naam technicus", "Reden", "Opmerkingen",
-				"Bestanden", "Status" };
+		{ "Onderhoudsnummer", "Uitvoeringsdatum", "Starttijd", "Eindtijd", "Technicus", "Reden", "Opmerkingen",
+				"Status" };
 
 		// Create header cells
 		for (int i = 0; i < headers.length; i++)
 		{
 			Label headerLabel = new Label(headers[i]);
-			headerLabel.setStyle("-fx-font-weight: bold; -fx-padding: 10px;");
+			headerLabel.getStyleClass().add("table-header");
 			headerLabel.setMaxWidth(Double.MAX_VALUE);
 			headerLabel.setAlignment(Pos.CENTER_LEFT);
 
@@ -283,50 +265,43 @@ public class MaintenanceDetailView extends BorderPane
 		{
 			// Add data cells for each column
 			Label idLabel = new Label(String.valueOf(currentMaintenance.id()));
-			idLabel.setStyle("-fx-padding: 10px;");
+			idLabel.getStyleClass().add("table-cell");
 			table.add(idLabel, 0, 2);
 
 			Label executionDateLabel = new Label(currentMaintenance.executionDate() != null
 					? currentMaintenance.executionDate().format(dateFormatter)
 					: "");
-			executionDateLabel.setStyle("-fx-padding: 10px;");
+			executionDateLabel.getStyleClass().add("table-cell");
 			table.add(executionDateLabel, 1, 2);
 
 			Label startTimeLabel = new Label(
 					currentMaintenance.startDate() != null ? currentMaintenance.startDate().format(timeFormatter) : "");
-			startTimeLabel.setStyle("-fx-padding: 10px;");
+			startTimeLabel.getStyleClass().add("table-cell");
 			table.add(startTimeLabel, 2, 2);
 
 			Label endDateLabel = new Label(
 					currentMaintenance.endDate() != null ? currentMaintenance.endDate().format(timeFormatter) : "");
-			endDateLabel.setStyle("-fx-padding: 10px;");
+			endDateLabel.getStyleClass().add("table-cell");
 			table.add(endDateLabel, 3, 2);
 
 			Label technicianLabel = new Label(
 					currentMaintenance.technician() != null ? currentMaintenance.technician().getFirstName() + " "
 							+ currentMaintenance.technician().getLastName() : "");
-			technicianLabel.setStyle("-fx-padding: 10px;");
+			technicianLabel.getStyleClass().add("table-cell");
 			table.add(technicianLabel, 4, 2);
 
 			Label reasonLabel = new Label(currentMaintenance.reason() != null ? currentMaintenance.reason() : "");
-			reasonLabel.setStyle("-fx-padding: 10px;");
+			reasonLabel.getStyleClass().add("table-cell");
 			table.add(reasonLabel, 5, 2);
 
 			Label commentsLabel = new Label(currentMaintenance.comments() != null ? currentMaintenance.comments() : "");
-			commentsLabel.setStyle("-fx-padding: 10px;");
+			commentsLabel.getStyleClass().add("table-cell");
 			table.add(commentsLabel, 6, 2);
-
-			Button addFilesBtn = new Button("Bestanden toevoegen");
-			addFilesBtn.setStyle("-fx-background-color: #f44336; -fx-text-fill: white; -fx-background-radius: 4px;");
-			addFilesBtn.setOnAction(e -> uploadFiles());
-			HBox fileBox = new HBox(addFilesBtn);
-			fileBox.setPadding(new Insets(5));
-			table.add(fileBox, 7, 2);
 
 			Label statusLabel = new Label(
 					currentMaintenance.status() != null ? currentMaintenance.status().toString() : "");
-			statusLabel.setStyle("-fx-padding: 10px;");
-			table.add(statusLabel, 8, 2);
+			statusLabel.getStyleClass().add("table-cell");
+			table.add(statusLabel, 7, 2);
 		}
 
 		return table;
@@ -334,8 +309,8 @@ public class MaintenanceDetailView extends BorderPane
 
 	private void createFilesSection()
 	{
-		filesSection = new VBox(20);
-		filesSection.setPadding(new Insets(20, 0, 0, 0));
+		filesSection = new VBox(10);
+		filesSection.setPadding(new Insets(5, 0, 0, 0));
 
 		// Files header
 		Label filesHeader = new Label("Bestanden");
@@ -354,128 +329,155 @@ public class MaintenanceDetailView extends BorderPane
 
 		filesSection.getChildren().addAll(filesHeader, filesContainer);
 
-		// Add files section to bottom of layout
-		BorderPane.setMargin(filesSection, new Insets(20, 0, 0, 0));
+		// Add files section to bottom of layout with minimal top margin
+		BorderPane.setMargin(filesSection, new Insets(5, 0, 0, 0));
 		setBottom(filesSection);
 	}
 
 	private VBox createFileBox(FileInfo fileInfo)
 	{
 		VBox fileBox = new VBox();
+		fileBox.getStyleClass().add("file-box");
 		fileBox.setPrefWidth(217);
 
 		// File preview/thumbnail area
-		String fileType = getFileType(fileInfo.name);
+		String fileType = fileInfo.getType();
+		Node previewArea;
+		previewArea = new Region();
+		((Region) previewArea).setPrefSize(217, 160);
+		((Region) previewArea).getStyleClass().add("file-preview");
 
 		// Create appropriate preview based on file type
 		if (fileType.equals("pdf"))
 		{
-			// Create PDF preview
-			VBox pdfPreview = new VBox();
-			pdfPreview.setStyle("-fx-background-color: white; -fx-border-color: #e0e0e0;");
-			pdfPreview.setPrefSize(217, 280);
+			// PDF preview with icon
+			VBox pdfPreview = new VBox(10);
 			pdfPreview.setAlignment(Pos.CENTER);
+			pdfPreview.setPrefSize(217, 160);
 
-			// Add PDF icon
-			ImageView pdfIcon = new ImageView(); // In a real app, load a PDF icon
-			pdfIcon.setFitHeight(100);
-			pdfIcon.setPreserveRatio(true);
+			FontIcon pdfIcon = new FontIcon("fas-file-pdf");
+			pdfIcon.setIconSize(60);
+			pdfIcon.setIconColor(Color.web("#333333"));
 
-			Label pdfName = new Label(fileInfo.name);
-			pdfName.setStyle("-fx-font-size: 14px;");
+			Label pdfName = new Label(fileInfo.getName());
+			pdfName.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
+			pdfName.setMaxWidth(200);
+			pdfName.setWrapText(true);
+
 			pdfPreview.getChildren().addAll(pdfIcon, pdfName);
-
-			fileBox.getChildren().add(pdfPreview);
+			previewArea = pdfPreview;
 		} else if (fileType.equals("image"))
 		{
-			// For image files, try to load the actual image if available
-			Region imagePlaceholder = new Region();
-			imagePlaceholder.setPrefSize(217, 160);
-			imagePlaceholder.setStyle("-fx-background-color: #e0e0e0;");
-
-			// In a real app, we would load the image from the file path
-			if (fileInfo.path != null && !fileInfo.path.isEmpty())
+			// Image preview
+			try
 			{
-				try
+				byte[] imageContent = fileInfoController.getFileContent(fileInfo);
+				if (imageContent != null)
 				{
-					// Attempt to load the image if it exists
-					File imageFile = new File(fileInfo.path);
-					if (imageFile.exists())
-					{
-						Image image = new Image(new FileInputStream(imageFile));
-						ImageView imageView = new ImageView(image);
-						imageView.setFitWidth(217);
-						imageView.setFitHeight(160);
-						imageView.setPreserveRatio(true);
-						fileBox.getChildren().add(imageView);
-					} else
-					{
-						fileBox.getChildren().add(imagePlaceholder);
-					}
-				} catch (Exception e)
+					Image image = new Image(new ByteArrayInputStream(imageContent));
+					ImageView imageView = new ImageView(image);
+					imageView.setFitWidth(217);
+					imageView.setFitHeight(160);
+					imageView.setPreserveRatio(true);
+					imageView.setSmooth(true);
+					previewArea = imageView;
+				} else
 				{
-					fileBox.getChildren().add(imagePlaceholder);
+					throw new IOException("No image content available");
 				}
-			} else
+			} catch (Exception e)
 			{
-				fileBox.getChildren().add(imagePlaceholder);
+				// If image loading fails, show placeholder
+				VBox imagePreview = new VBox(10);
+				imagePreview.setAlignment(Pos.CENTER);
+				imagePreview.setPrefSize(217, 160);
+
+				FontIcon imageIcon = new FontIcon("fas-image");
+				imageIcon.setIconSize(60);
+				imageIcon.setIconColor(Color.web("#333333"));
+
+				Label imageName = new Label(fileInfo.getName());
+				imageName.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
+				imageName.setMaxWidth(200);
+				imageName.setWrapText(true);
+
+				imagePreview.getChildren().addAll(imageIcon, imageName);
+				previewArea = imagePreview;
 			}
+		} else if (fileType.equals("video"))
+		{
+			// Video preview with icon
+			VBox videoPreview = new VBox(10);
+			videoPreview.setAlignment(Pos.CENTER);
+			videoPreview.setPrefSize(217, 160);
+
+			FontIcon videoIcon = new FontIcon("fas-video");
+			videoIcon.setIconSize(60);
+			videoIcon.setIconColor(Color.web("#333333"));
+
+			Label videoName = new Label(fileInfo.getName());
+			videoName.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
+			videoName.setMaxWidth(200);
+			videoName.setWrapText(true);
+
+			videoPreview.getChildren().addAll(videoIcon, videoName);
+			previewArea = videoPreview;
 		} else
 		{
 			// Generic file preview
-			VBox genericPreview = new VBox();
-			genericPreview.setStyle("-fx-background-color: white; -fx-border-color: #e0e0e0;");
-			genericPreview.setPrefSize(217, 160);
+			VBox genericPreview = new VBox(10);
 			genericPreview.setAlignment(Pos.CENTER);
+			genericPreview.setPrefSize(217, 160);
 
-			Label fileName = new Label(fileInfo.name);
-			fileName.setStyle("-fx-font-size: 14px;");
-			genericPreview.getChildren().add(fileName);
+			FontIcon fileIcon = new FontIcon("fas-file");
+			fileIcon.setIconSize(60);
+			fileIcon.setIconColor(Color.web("#333333"));
 
-			fileBox.getChildren().add(genericPreview);
+			Label fileName = new Label(fileInfo.getName());
+			fileName.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
+			fileName.setMaxWidth(200);
+			fileName.setWrapText(true);
+
+			genericPreview.getChildren().addAll(fileIcon, fileName);
+			previewArea = genericPreview;
 		}
 
-		// File info area (file name + download button)
-		HBox filebox = new HBox();
-		filebox.setStyle("-fx-background-color: #f44336; -fx-padding: 8px;");
-		filebox.setPrefWidth(217);
+		// File name and actions area
+		HBox fileActions = new HBox();
+		fileActions.getStyleClass().add("file-actions");
+		fileActions.setPrefWidth(217);
+		fileActions.setAlignment(Pos.CENTER_LEFT);
 
-		Label fileName = new Label(fileInfo.name);
-		fileName.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+		Label fileName = new Label(fileInfo.getName());
+		fileName.getStyleClass().add("file-name");
 		fileName.setMaxWidth(170);
 		HBox.setHgrow(fileName, Priority.ALWAYS);
 
+		// Download button
 		Button downloadBtn = new Button();
-		downloadBtn.setGraphic(new Label("↓"));
-		downloadBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
+		FontIcon downloadIcon = new FontIcon("fas-download");
+		downloadIcon.setIconSize(16);
+		downloadIcon.setIconColor(Color.WHITE);
+		downloadBtn.setGraphic(downloadIcon);
+		downloadBtn.setStyle("-fx-background-color: transparent; -fx-padding: 4px;");
 		downloadBtn.setOnAction(e -> downloadFile(fileInfo));
 
+		// Delete button
 		Button deleteBtn = new Button();
-		deleteBtn.setGraphic(new Label("✕"));
-		deleteBtn.setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
+		FontIcon deleteIcon = new FontIcon("fas-trash");
+		deleteIcon.setIconSize(16);
+		deleteIcon.setIconColor(Color.WHITE);
+		deleteBtn.setGraphic(deleteIcon);
+		deleteBtn.setStyle("-fx-background-color: transparent; -fx-padding: 4px;");
 		deleteBtn.setOnAction(e -> deleteFile(fileInfo));
 
-		filebox.getChildren().addAll(fileName, downloadBtn, deleteBtn);
+		// Add buttons to actions area
+		fileActions.getChildren().addAll(fileName, downloadBtn, deleteBtn);
 
-		fileBox.getChildren().add(filebox);
+		// Add all components to file box
+		fileBox.getChildren().addAll(previewArea, fileActions);
 
 		return fileBox;
-	}
-
-	private String getFileType(String fileName)
-	{
-		String lowerCaseName = fileName.toLowerCase();
-		if (lowerCaseName.endsWith(".pdf"))
-		{
-			return "pdf";
-		} else if (lowerCaseName.matches(".*\\.(jpg|jpeg|png|gif)$"))
-		{
-			return "image";
-		} else if (lowerCaseName.matches(".*\\.(mp4|mov|avi)$"))
-		{
-			return "video";
-		}
-		return "other";
 	}
 
 	private void uploadFiles()
@@ -516,12 +518,12 @@ public class MaintenanceDetailView extends BorderPane
 				createFilesSection();
 			}
 
-			// Create target directory for this maintenance if it doesn't exist
-			String maintenanceDir = FILE_STORAGE_PATH + "/maintenance_" + currentMaintenance.id();
-			File directory = new File(maintenanceDir);
-			if (!directory.exists())
+			// Get maintenance entity for database relationship
+			Maintenance maintenance = maintenanceController.getMaintenance(currentMaintenance.id());
+			if (maintenance == null)
 			{
-				directory.mkdirs();
+				showAlert(Alert.AlertType.ERROR, "Upload Error", "Could not find maintenance in database.");
+				return;
 			}
 
 			// Add each selected file
@@ -529,20 +531,15 @@ public class MaintenanceDetailView extends BorderPane
 			{
 				try
 				{
-					// Copy file to maintenance directory
-					String targetPath = maintenanceDir + "/" + file.getName();
-					File targetFile = new File(targetPath);
+					// Create FileInfo entity
+					FileInfo newFile = new FileInfo(file.getName(), getFileType(file.getName()), null, maintenance);
 
-					// Copy the file
-					Files.copy(file.toPath(), targetFile.toPath());
+					// Save file content to database
+					fileInfoController.saveFileContent(file, newFile);
 
 					// Add to UI and list
-					FileInfo newFile = new FileInfo(file.getName(), null, targetPath);
 					currentFiles.add(newFile);
 					filesContainer.getChildren().add(createFileBox(newFile));
-
-					// Here we would add to database in a real application
-					// saveFileToDatabase(newFile, currentMaintenance.id());
 
 				} catch (IOException e)
 				{
@@ -552,21 +549,24 @@ public class MaintenanceDetailView extends BorderPane
 		}
 	}
 
+	private String getFileType(String fileName)
+	{
+		String lowerCaseName = fileName.toLowerCase();
+		if (lowerCaseName.endsWith(".pdf"))
+		{
+			return "pdf";
+		} else if (lowerCaseName.matches(".*\\.(jpg|jpeg|png|gif)$"))
+		{
+			return "image";
+		} else if (lowerCaseName.matches(".*\\.(mp4|mov|avi)$"))
+		{
+			return "video";
+		}
+		return "other";
+	}
+
 	private void downloadFile(FileInfo fileInfo)
 	{
-		if (fileInfo.path == null || fileInfo.path.isEmpty())
-		{
-			showAlert(Alert.AlertType.WARNING, "Download Error", "Bestand pad niet beschikbaar.");
-			return;
-		}
-
-		File sourceFile = new File(fileInfo.path);
-		if (!sourceFile.exists())
-		{
-			showAlert(Alert.AlertType.WARNING, "Download Error", "Bestand niet gevonden: " + fileInfo.name);
-			return;
-		}
-
 		// Choose the download location
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 		directoryChooser.setTitle("Selecteer download locatie");
@@ -576,11 +576,22 @@ public class MaintenanceDetailView extends BorderPane
 		{
 			try
 			{
-				// Create target file
-				File targetFile = new File(selectedDirectory.getAbsolutePath() + File.separator + fileInfo.name);
+				// Get file content from database
+				byte[] content = fileInfoController.getFileContent(fileInfo);
+				if (content == null)
+				{
+					showAlert(Alert.AlertType.WARNING, "Download Error", "Bestand niet beschikbaar.");
+					return;
+				}
 
-				// Copy the file
-				Files.copy(sourceFile.toPath(), targetFile.toPath());
+				// Create target file
+				File targetFile = new File(selectedDirectory.getAbsolutePath() + File.separator + fileInfo.getName());
+
+				// Write content to file
+				try (FileOutputStream fos = new FileOutputStream(targetFile))
+				{
+					fos.write(content);
+				}
 
 				showAlert(Alert.AlertType.INFORMATION, "Download Succesvol",
 						"Bestand is gedownload naar: " + targetFile.getAbsolutePath());
@@ -598,29 +609,19 @@ public class MaintenanceDetailView extends BorderPane
 		Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
 		confirmAlert.setTitle("Bevestig verwijderen");
 		confirmAlert.setHeaderText("Weet u zeker dat u dit bestand wilt verwijderen?");
-		confirmAlert.setContentText("Bestand: " + fileInfo.name);
+		confirmAlert.setContentText("Bestand: " + fileInfo.getName());
 
 		Optional<ButtonType> result = confirmAlert.showAndWait();
 		if (result.isPresent() && result.get() == ButtonType.OK)
 		{
 			try
 			{
-				// Delete from filesystem if path exists
-				if (fileInfo.path != null && !fileInfo.path.isEmpty())
-				{
-					File file = new File(fileInfo.path);
-					if (file.exists())
-					{
-						file.delete();
-					}
-				}
+				// Delete from database
+				fileInfoController.deleteFile(fileInfo);
 
 				// Remove from current list and UI
 				currentFiles.remove(fileInfo);
 				refreshFilesSection();
-
-				// In a real app: Remove from database
-				// deleteFileFromDatabase(fileInfo.id);
 
 			} catch (Exception e)
 			{
@@ -644,207 +645,12 @@ public class MaintenanceDetailView extends BorderPane
 		}
 	}
 
-	private void editMaintenance()
+	private void showAlert(Alert.AlertType alertType, String title, String content)
 	{
-		if (currentMaintenance == null)
-		{
-			return;
-		}
-
-		// Create the custom dialog
-		Dialog<MaintenanceDTO> dialog = new Dialog<>();
-		dialog.setTitle("Onderhoud Bewerken");
-		dialog.setHeaderText("Wijzig onderhoud #" + currentMaintenance.id());
-
-		// Set the button types
-		ButtonType saveButtonType = new ButtonType("Opslaan");
-		dialog.getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
-
-		// Create the form grid
-		GridPane grid = new GridPane();
-		grid.setHgap(10);
-		grid.setVgap(10);
-		grid.setPadding(new Insets(20, 150, 10, 10));
-
-		// Create form fields with current values
-		DatePicker executionDatePicker = new DatePicker(currentMaintenance.executionDate());
-		executionDatePicker.setPromptText("Uitvoeringsdatum");
-
-		TextField startTimeField = new TextField();
-		if (currentMaintenance.startDate() != null)
-		{
-			startTimeField.setText(currentMaintenance.startDate().format(timeFormatter));
-		}
-		startTimeField.setPromptText("Start tijd (HH:MM)");
-
-		TextField endTimeField = new TextField();
-		if (currentMaintenance.endDate() != null)
-		{
-			endTimeField.setText(currentMaintenance.endDate().format(timeFormatter));
-		}
-		endTimeField.setPromptText("Eind tijd (HH:MM)");
-
-		TextField reasonField = new TextField(currentMaintenance.reason());
-		reasonField.setPromptText("Reden");
-
-		TextArea commentsArea = new TextArea(currentMaintenance.comments());
-		commentsArea.setPromptText("Opmerkingen");
-		commentsArea.setPrefRowCount(3);
-
-		ComboBox<MaintenanceStatus> statusComboBox = new ComboBox<>();
-		statusComboBox.getItems().addAll(MaintenanceStatus.values());
-		statusComboBox.setValue(currentMaintenance.status());
-
-		// Add labels and fields to grid
-		grid.add(new Label("Uitvoeringsdatum:"), 0, 0);
-		grid.add(executionDatePicker, 1, 0);
-		grid.add(new Label("Start tijd:"), 0, 1);
-		grid.add(startTimeField, 1, 1);
-		grid.add(new Label("Eind tijd:"), 0, 2);
-		grid.add(endTimeField, 1, 2);
-		grid.add(new Label("Reden:"), 0, 3);
-		grid.add(reasonField, 1, 3);
-		grid.add(new Label("Opmerkingen:"), 0, 4);
-		grid.add(commentsArea, 1, 4);
-		grid.add(new Label("Status:"), 0, 5);
-		grid.add(statusComboBox, 1, 5);
-
-		dialog.getDialogPane().setContent(grid);
-
-		// Request focus on the first field
-		executionDatePicker.requestFocus();
-
-		// Convert the result to maintenance data when the save button is clicked
-		dialog.setResultConverter(dialogButton ->
-		{
-			if (dialogButton == saveButtonType)
-			{
-				try
-				{
-					// Validate and parse input
-					LocalDate executionDate = executionDatePicker.getValue();
-
-					// Parse time fields
-					LocalDateTime startDateTime = null;
-					LocalDateTime endDateTime = null;
-
-					if (executionDate != null && !startTimeField.getText().isEmpty())
-					{
-						startDateTime = LocalDateTime.of(executionDate, LocalDateTime
-								.parse(executionDate + "T" + startTimeField.getText() + ":00").toLocalTime());
-					}
-
-					if (executionDate != null && !endTimeField.getText().isEmpty())
-					{
-						endDateTime = LocalDateTime.of(executionDate, LocalDateTime
-								.parse(executionDate + "T" + endTimeField.getText() + ":00").toLocalTime());
-					}
-
-					// Validate end time is after start time
-					if (startDateTime != null && endDateTime != null && endDateTime.isBefore(startDateTime))
-					{
-						throw new IllegalStateException("Eindtijd moet na starttijd liggen.");
-					}
-
-					// Create updated MaintenanceDTO (using the record constructor)
-					return new MaintenanceDTO(currentMaintenance.id(), executionDate, startDateTime, endDateTime,
-							currentMaintenance.technician(), reasonField.getText(), commentsArea.getText(),
-							statusComboBox.getValue(), currentMaintenance.machine());
-				} catch (Exception e)
-				{
-					showAlert(Alert.AlertType.ERROR, "Invoer fout", e.getMessage());
-					return null;
-				}
-			}
-			return null;
-		});
-
-		// Show the dialog and process the result
-		Optional<MaintenanceDTO> result = dialog.showAndWait();
-		result.ifPresent(updatedMaintenance ->
-		{
-			try
-			{
-				// Update maintenance in controller/database
-				Maintenance maintenance = maintenanceController.getMaintenance(updatedMaintenance.id());
-				if (maintenance != null)
-				{
-					maintenance.setExecutionDate(updatedMaintenance.executionDate());
-					maintenance.setStartDate(updatedMaintenance.startDate());
-					maintenance.setEndDate(updatedMaintenance.endDate());
-					maintenance.setReason(updatedMaintenance.reason());
-					maintenance.setComments(updatedMaintenance.comments());
-					maintenance.setStatus(updatedMaintenance.status());
-
-					// Update the current maintenance DTO reference
-					currentMaintenance = updatedMaintenance;
-
-					// Refresh the view
-					getChildren().clear();
-					initialize();
-
-					showAlert(Alert.AlertType.INFORMATION, "Success", "Onderhoud succesvol bijgewerkt.");
-				}
-			} catch (Exception e)
-			{
-				showAlert(Alert.AlertType.ERROR, "Update fout", "Fout bij bijwerken van onderhoud: " + e.getMessage());
-			}
-		});
+		Alert alert = new Alert(alertType);
+		alert.setTitle(title);
+		alert.setHeaderText(null);
+		alert.setContentText(content);
+		alert.showAndWait();
 	}
-
-	private void completeMaintenance() {
-		if (currentMaintenance == null) {
-			return;
-		}
-		
-		// Confirm completion
-		Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-		confirmAlert.setTitle("Onderhoud voltooien");
-		confirmAlert.setHeaderText("Weet u zeker dat u dit onderhoud wilt voltooien?");
-		confirmAlert.setContentText("Onderhoud #" + currentMaintenance.id() + " zal worden gemarkeerd als voltooid.");
-		
-		Optional<ButtonType> result = confirmAlert.showAndWait();
-		if (result.isPresent() && result.get() == ButtonType.OK) {
-			try {
-				// Get maintenance entity from database
-				Maintenance maintenance = maintenanceController.getMaintenance(currentMaintenance.id());
-				if (maintenance != null) {
-					// Set status to completed
-					maintenance.setStatus(MaintenanceStatus.COMPLETED);
-					
-					// Set end date if not already set
-					if (maintenance.getEndDate() == null) {
-						maintenance.setEndDate(LocalDateTime.now());
-					}
-					
-					// Update in database via controller
-					// In a real app, you would have something like:
-					// maintenanceController.updateMaintenance(maintenance);
-					
-					// Update the current DTO reference
-					currentMaintenance = new MaintenanceDTO(
-						maintenance.getId(),
-						maintenance.getExecutionDate(),
-						maintenance.getStartDate(),
-						maintenance.getEndDate(),
-						maintenance.getTechnician(),
-						maintenance.getReason(),
-						maintenance.getComments(),
-						maintenance.getStatus(),
-						currentMaintenance.machine()
-					);
-					
-					// Refresh the view
-					getChildren().clear();
-					initialize();
-					
-					// Disable the complete button
-					completeButton.setDisable(true);
-					
-					showAlert(Alert.AlertType.INFORMATION, "Success", "Onderhoud succesvol voltooid.");
-				}
-			} catch (Exception e) {
-				showAlert(Alert.AlertType.ERROR, "Complete Error", "Fout bij het voltooien van onderhoud: " + e.getMessage());
-			}
-		}
-	}
+}

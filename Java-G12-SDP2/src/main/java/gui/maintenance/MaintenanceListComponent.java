@@ -322,7 +322,7 @@ public class MaintenanceListComponent extends VBox
 	{
 		MaintenanceDetailView form = new MaintenanceDetailView(stage, maintenance);
 		Scene scene = new Scene(form);
-		// form.getStylesheets().add(getClass().getResource("/css/reportDetails.css").toExternalForm());
+		form.getStylesheets().add(getClass().getResource("/css/maintenanceDetails.css").toExternalForm());
 		stage.setScene(scene);
 	}
 
