@@ -270,7 +270,7 @@ public class AddReportForm extends GridPane
 		Button backButton = new Button();
 		backButton.setGraphic(icon);
 		backButton.getStyleClass().add("back-button");
-		backButton.setOnAction(e -> mainLayout.showSiteList());
+		backButton.setOnAction(e -> mainLayout.showHomeScreen());
 		this.add(backButton, 0, 0, 2, 1);
 
 		Label title = new Label("Rapport aanmaken");

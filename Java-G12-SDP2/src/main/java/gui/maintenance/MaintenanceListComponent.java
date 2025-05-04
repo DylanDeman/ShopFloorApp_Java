@@ -284,12 +284,10 @@ public class MaintenanceListComponent extends VBox
 		form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
 	}
 
-	private void goToDetails(Stage stage, MaintenanceDTO maintenance)
+	private void goToDetails(MainLayout mainLayout, MaintenanceDTO maintenance)
 	{
-		MaintenanceDetailView form = new MaintenanceDetailView(stage, maintenance);
-		Scene scene = new Scene(form);
+		MaintenanceDetailView form = new MaintenanceDetailView(mainLayout, maintenance);
 		form.getStylesheets().add(getClass().getResource("/css/maintenanceDetails.css").toExternalForm());
-		stage.setScene(scene);
 	}
 
 }

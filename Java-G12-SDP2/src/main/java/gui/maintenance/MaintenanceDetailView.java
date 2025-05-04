@@ -2,12 +2,8 @@ package gui.maintenance;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,11 +17,11 @@ import domain.maintenance.FileInfoController;
 import domain.maintenance.Maintenance;
 import domain.maintenance.MaintenanceController;
 import domain.maintenance.MaintenanceDTO;
+import gui.MainLayout;
 import gui.report.AddReportForm;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -66,10 +62,11 @@ public class MaintenanceDetailView extends BorderPane
 			"*.mov", "*.avi");
 	private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+	private final MainLayout mainLayout;
 
-	public MaintenanceDetailView(Stage primaryStage, MaintenanceDTO maintenance)
+	public MaintenanceDetailView(MainLayout mainLayout, MaintenanceDTO maintenance)
 	{
-		this.primaryStage = primaryStage;
+		this.mainLayout = mainLayout;
 		this.maintenanceController = new MaintenanceController();
 		this.fileInfoController = new FileInfoController();
 
@@ -144,8 +141,7 @@ public class MaintenanceDetailView extends BorderPane
 		backIcon.setIconColor(Color.web("#333333"));
 		backButton.setGraphic(backIcon);
 		backButton.getStyleClass().add("back-button");
-		backButton.setOnAction(e ->
-		{
+		backButton.setOnAction(e -> {
 			// Navigate back to maintenance list
 			// mainApp.showMaintenanceList();
 		});
@@ -182,9 +178,8 @@ public class MaintenanceDetailView extends BorderPane
 		reportIcon.setIconColor(Color.WHITE);
 		reportButton.setGraphic(reportIcon);
 		reportButton.getStyleClass().add("action-button");
-		reportButton.setOnAction(e ->
-		{
-			goToAddRapport(primaryStage, currentMaintenance);
+		reportButton.setOnAction(e -> {
+			goToAddRapport(mainLayout, currentMaintenance);
 		});
 
 		Button uploadButton = new Button("Bestanden toevoegen");
@@ -208,12 +203,10 @@ public class MaintenanceDetailView extends BorderPane
 		setTop(headerPane);
 	}
 
-	private void goToAddRapport(Stage stage, MaintenanceDTO maintenance)
+	private void goToAddRapport(MainLayout mainLayout, MaintenanceDTO maintenance)
 	{
-		AddReportForm form = new AddReportForm(stage, maintenance);
-		Scene scene = new Scene(form);
+		AddReportForm form = new AddReportForm(mainLayout, maintenance);
 		form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
-		stage.setScene(scene);
 	}
 
 	private void createMaintenanceInfoSection()
@@ -238,9 +231,8 @@ public class MaintenanceDetailView extends BorderPane
 		table.getStyleClass().add("maintenance-table");
 
 		// Column headers
-		String[] headers =
-		{ "Onderhoudsnummer", "Uitvoeringsdatum", "Starttijd", "Eindtijd", "Technicus", "Reden", "Opmerkingen",
-				"Status" };
+		String[] headers = { "Onderhoudsnummer", "Uitvoeringsdatum", "Starttijd", "Eindtijd", "Technicus", "Reden",
+				"Opmerkingen", "Status" };
 
 		// Create header cells
 		for (int i = 0; i < headers.length; i++)
