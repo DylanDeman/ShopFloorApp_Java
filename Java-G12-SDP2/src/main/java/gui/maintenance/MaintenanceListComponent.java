@@ -236,7 +236,8 @@ public class MaintenanceListComponent extends VBox
 				btn.setOnAction(e ->
 				{
 					MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
-					goToAddRapport(stage, selectedMaintenance);
+					goToDetails(stage, selectedMaintenance);
+					// goToAddRapport(stage, selectedMaintenance);
 				});
 			}
 
@@ -314,6 +315,14 @@ public class MaintenanceListComponent extends VBox
 		AddReportForm form = new AddReportForm(stage, maintenance);
 		Scene scene = new Scene(form);
 		form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
+		stage.setScene(scene);
+	}
+
+	private void goToDetails(Stage stage, MaintenanceDTO maintenance)
+	{
+		MaintenanceDetailView form = new MaintenanceDetailView(stage, maintenance);
+		Scene scene = new Scene(form);
+		form.getStylesheets().add(getClass().getResource("/css/maintenanceDetails.css").toExternalForm());
 		stage.setScene(scene);
 	}
 
