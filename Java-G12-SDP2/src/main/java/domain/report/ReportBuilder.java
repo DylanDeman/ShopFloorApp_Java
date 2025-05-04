@@ -2,35 +2,125 @@ package domain.report;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashMap;
+import java.util.Map;
 
 import domain.maintenance.Maintenance;
 import domain.site.Site;
 import domain.user.User;
+import exceptions.InformationRequiredExceptionReport;
+import util.RequiredElementReport;
 
-/**
- * Builder interface for creating Report objects. Specifies all the steps needed
- * to build a Report.
- */
-public interface ReportBuilder
+public class ReportBuilder
 {
-	ReportBuilder setMaintenance(Maintenance maintenance);
+	private Report report;
+	private Map<String, RequiredElementReport> requiredElements;
 
-	ReportBuilder setSite(Site site);
+	public void createReport()
+	{
+		report = new Report();
+		requiredElements = new HashMap<>();
+	}
 
-	ReportBuilder setTechnician(User Technician);
+	public void buildMaintenance(Maintenance maintenance)
+	{
+		report.setMaintenance(maintenance);
+	}
 
-	ReportBuilder setStartDate(LocalDate startDate);
+	public void buildTechnician(User technician)
+	{
+		report.setTechnician(technician);
+	}
 
-	ReportBuilder setStartTime(LocalTime startTime);
+	public void buildStartDate(LocalDate startDate)
+	{
+		report.setStartDate(startDate);
+	}
 
-	ReportBuilder setEndDate(LocalDate endDate);
+	public void buildStartTime(LocalTime startTime)
+	{
+		report.setStartTime(startTime);
+	}
 
-	ReportBuilder setEndTime(LocalTime endTime);
+	public void buildEndDate(LocalDate endDate)
+	{
+		report.setEndDate(endDate);
+	}
 
-	ReportBuilder setReason(String reason);
+	public void buildEndTime(LocalTime endTime)
+	{
+		report.setEndTime(endTime);
+	}
 
-	ReportBuilder setRemarks(String remarks);
+	public void buildReason(String reason)
+	{
+		report.setReason(reason);
+	}
 
-	Report build();
+	public void buildRemarks(String comments)
+	{
+		report.setRemarks(comments);
+	}
 
+	public void buildSite(Site site)
+	{
+		report.setSite(site);
+	}
+
+	public Report getReport() throws InformationRequiredExceptionReport
+	{
+		// Verplichte velden controleren
+		if (report.getMaintenance() == null)
+		{
+			requiredElements.put("maintenance", RequiredElementReport.MAINTENANCE_REQUIRED);
+		}
+		if (report.getTechnician() == null)
+		{
+			requiredElements.put("technician", RequiredElementReport.TECHNICIAN_REQUIRED);
+		}
+		if (report.getStartDate() == null)
+		{
+			requiredElements.put("startDate", RequiredElementReport.STARTDATE_REQUIRED);
+		}
+		if (report.getStartTime() == null)
+		{
+			requiredElements.put("startTime", RequiredElementReport.STARTTIME_REQUIRED);
+		}
+		if (report.getEndDate() == null)
+		{
+			requiredElements.put("endDate", RequiredElementReport.ENDDATE_REQUIRED);
+		}
+		if (report.getEndTime() == null)
+		{
+			requiredElements.put("endTime", RequiredElementReport.ENDTIME_REQUIRED);
+		}
+		if (report.getReason() == null || report.getReason().isEmpty())
+		{
+			requiredElements.put("reason", RequiredElementReport.REASON_REQUIRED);
+		}
+		if (report.getSite() == null)
+		{
+			requiredElements.put("site", RequiredElementReport.SITE_REQUIRED);
+		}
+
+		// Datum/tijd validaties
+		if (report.getEndDate() != null && report.getStartDate() != null)
+		{
+			if (report.getEndDate().isBefore(report.getStartDate()))
+			{
+				requiredElements.put("endDate", RequiredElementReport.END_DATE_BEFORE_START);
+			} else if (report.getEndDate().equals(report.getStartDate()) && report.getEndTime() != null
+					&& report.getStartTime() != null && report.getEndTime().isBefore(report.getStartTime()))
+			{
+				requiredElements.put("endTime", RequiredElementReport.END_TIME_BEFORE_START);
+			}
+		}
+
+		if (!requiredElements.isEmpty())
+		{
+			throw new InformationRequiredExceptionReport(requiredElements);
+		}
+
+		return report;
+	}
 }

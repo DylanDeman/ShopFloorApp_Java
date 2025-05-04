@@ -14,15 +14,16 @@ import domain.maintenance.MaintenanceController;
 import domain.report.Report;
 import domain.site.Site;
 import domain.user.User;
-import gui.login.LoginPane;
+import gui.MainLayout;
 import jakarta.persistence.EntityManager;
 import javafx.application.Application;
-import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import util.JPAUtil;
+import util.MachineStatus;
 import util.MaintenanceStatus;
 import util.PasswordHasher;
+import util.ProductionStatus;
 import util.Role;
 import util.Status;
 
@@ -31,16 +32,11 @@ public class StartUpGUI extends Application
 	@Override
 	public void start(Stage primaryStage)
 	{
-		// ChoicePane pane = new ChoicePane(primaryStage);
-
-		// Login pagina tonen:
-		LoginPane loginPane = new LoginPane(primaryStage);
+		MainLayout mainLayout = new MainLayout(primaryStage);
 
 		primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/images/favicon-32x32.png")));
+		primaryStage.setTitle("Shopfloor application");
 
-		Scene scene = new Scene(loginPane, 800, 800);
-		primaryStage.setTitle("Kies je paneel");
-		primaryStage.setScene(scene);
 		primaryStage.show();
 
 		String gehashteWW = PasswordHasher.hash("password");
@@ -92,10 +88,10 @@ public class StartUpGUI extends Application
 		try
 		{
 
-			Machine m1 = Machine.builder().site(site1).technician(u2).code("M1-3096").status("Active")
-					.productieStatus("Idle").location("Line 1").productInfo("Product A")
-					.lastMaintenance(LocalDateTime.of(2025, 2, 26, 15, 0))
-					.futureMaintenance(LocalDateTime.of(2025, 5, 8, 16, 0)).build();
+			Machine m1 = new Machine(site1, u1, "M1-3096", "Line 1", "Product A", MachineStatus.DRAAIT,
+					ProductionStatus.GEZOND, LocalDate.of(2025, 6, 2));
+			Machine m2 = new Machine(site1, u4, "M2-2359", "Line 4", "Product B", MachineStatus.MANUEEL_GESTOPT,
+					ProductionStatus.FALEND, LocalDate.of(2025, 8, 15));
 
 			List<Maintenance> maintenances = IntStream.range(0, 14)
 					.mapToObj(i -> new Maintenance(LocalDate.now().plusDays(i), LocalDateTime.now().plusDays(i),
@@ -108,11 +104,6 @@ public class StartUpGUI extends Application
 					site1);
 
 			entityManager.getTransaction().begin();
-
-			Machine m2 = Machine.builder().site(site1).technician(u2).code("M2-5678").status("Inactive")
-					.productieStatus("Idle").location("Line 2").productInfo("Product B")
-					.lastMaintenance(LocalDateTime.of(2025, 3, 15, 10, 0))
-					.futureMaintenance(LocalDateTime.of(2025, 6, 10, 10, 0)).build();
 
 			entityManager.persist(m1);
 			entityManager.persist(m2);

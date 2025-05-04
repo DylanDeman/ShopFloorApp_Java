@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 import domain.maintenance.MaintenanceController;
-import domain.maintenance.MaintenanceDTO;
 import domain.site.Site;
 import domain.site.SiteController;
 import domain.user.User;
@@ -44,28 +43,18 @@ public class ReportController
 		return userDao.findAll().stream().filter(user -> user.getRole() == Role.TECHNIEKER).toList();
 	}
 
-	public void createReport(Report report, MaintenanceDTO maintenanceDTO) throws InvalidRapportException
+	public void createReport(Report report)
 	{
 
-		reportDao.startTransaction();
 		try
 		{
-			String reportId = generateReportId();
-			ReportBuilder builder = new ConcreteReportBuilder(reportId);
-
-			Report newReport = builder.setSite(siteController.getSite(maintenanceDTO.machine().site().id()))
-					.setTechnician(report.getTechnician()).setStartDate(report.getStartDate())
-					.setStartTime(report.getStartTime()).setEndDate(report.getEndDate()).setEndTime(report.getEndTime())
-					.setReason(report.getReason()).setRemarks(report.getRemarks())
-					.setMaintenance(maintenanceController.getMaintenance(maintenanceDTO.id())).build();
-
-			reportDao.insert(newReport);
-
+			reportDao.startTransaction();
+			reportDao.insert(report);
 			reportDao.commitTransaction();
 		} catch (Exception e)
 		{
 			reportDao.rollbackTransaction();
-			throw new InvalidRapportException("Er ging iets mis bij het aanmaken van een rapport: " + e.getMessage());
+			throw e;
 		}
 	}
 

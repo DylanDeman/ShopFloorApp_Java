@@ -2,248 +2,236 @@ package gui.machine;
 
 import java.util.List;
 
+import org.kordamp.ikonli.javafx.FontIcon;
+
 import domain.machine.MachineController;
 import domain.machine.MachineDTO;
-import domain.maintenance.MaintenanceController;
 import domain.site.SiteController;
 import domain.user.UserController;
-import gui.ChoicePane;
-import gui.maintenance.MaintenanceListComponent;
-import javafx.beans.property.SimpleIntegerProperty;
+import gui.MainLayout;
+import gui.customComponents.CustomInformationBox;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
+import javafx.scene.Parent;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
 
-public class MachinesListComponent extends VBox {
+public class MachinesListComponent extends GridPane
+{
 
-    private TableView<MachineDTO> machineTable;
-    private MachineController machineController;
-    private SiteController siteController;
-    private UserController userController;
-    private Stage stage;
+	private TableView<MachineDTO> machineTable;
+	private MachineController machineController;
+	private SiteController siteController;
+	private UserController userController;
+	private final MainLayout mainLayout;
 
-    public MachinesListComponent(Stage stage, MachineController machineController, SiteController siteController, UserController userController) {
-        this.stage = stage;
-        this.machineTable = new TableView<>();
-        this.machineController = machineController;
-        this.siteController = siteController;
-        this.userController = userController;
-        initializeGUI();
-    }
+	private Button addButton;
 
-    private void initializeGUI() {
-        HBox titleSection = createTitleSection();
-        this.getChildren().add(titleSection);
+	public MachinesListComponent(MainLayout mainLayout)
+	{
+		this.mainLayout = mainLayout;
+		this.machineTable = new TableView<>();
+		this.machineController = mainLayout.getServices().getMachineController();
+		this.siteController = mainLayout.getServices().getSiteController();
+		this.userController = new UserController();
+		initializeGUI();
+	}
 
-        machineTable = new TableView<>();
-        
-        TableColumn<MachineDTO, String> idCol = new TableColumn<>("ID");
-        idCol.setCellValueFactory(data ->
-            new SimpleStringProperty(String.valueOf(data.getValue().id())));
-        
-        TableColumn<MachineDTO, String> siteCol = new TableColumn<>("Site");
-        siteCol.setCellValueFactory(data -> new SimpleStringProperty(
-            data.getValue().site() != null ? data.getValue().site().siteName() : "Onbekend"));
+	private void initializeGUI()
+	{
+		this.getStylesheets().add(getClass().getResource("/css/tablePane.css").toExternalForm());
 
-        TableColumn<MachineDTO, String> technicianCol = new TableColumn<>("Technieker");
-        technicianCol.setCellValueFactory(data -> new SimpleStringProperty(
-            data.getValue().technician() != null ? data.getValue().technician().getFullName() : "Onbekend"));
+		this.getChildren().add(createTitleSection());
 
-        TableColumn<MachineDTO, String> productInfoCol = new TableColumn<>("Product info");
-        productInfoCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().productInfo()));
+		machineTable = new TableView<>();
 
-        TableColumn<MachineDTO, String> lastMaintenanceCol = new TableColumn<>("Laatste onderhoud");
-        lastMaintenanceCol.setCellValueFactory(data -> new SimpleStringProperty(
-            data.getValue().lastMaintenance() != null ? data.getValue().lastMaintenance().toString() : "Geen"));
+		buildColumns();
 
-        TableColumn<MachineDTO, String> daysSinceMaintenanceCol = new TableColumn<>("Dagen sinds laatste onderhoud");
-        daysSinceMaintenanceCol.setCellValueFactory(data ->
-            new SimpleStringProperty(String.valueOf(data.getValue().numberDaysSinceLastMaintenance())));
+		addButton = new Button("Machine toevoegen +");
+		addButton.getStyleClass().add("add-button");
+		addButton.setOnAction(e -> openAddMachineForm());
 
-        TableColumn<MachineDTO, String> uptimeCol = new TableColumn<>("Uptime (uren)");
-        uptimeCol.setCellValueFactory(data ->
-            new SimpleStringProperty(String.format("%.2f", data.getValue().upTimeInHours())));
+		GridPane.setHalignment(addButton, HPos.RIGHT);
+		GridPane.setMargin(addButton, new Insets(0, 0, 10, 0));
 
+		add(addButton, 0, 0);
+		add(machineTable, 0, 1);
 
-        TableColumn<MachineDTO, String> codeCol = new TableColumn<>("Code");
-        codeCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().code()));
+		GridPane.setHgrow(machineTable, Priority.ALWAYS);
+		GridPane.setVgrow(machineTable, Priority.ALWAYS);
 
-        TableColumn<MachineDTO, String> locationCol = new TableColumn<>("Locatie");
-        locationCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().location()));
+	}
 
-        TableColumn<MachineDTO, String> statusCol = new TableColumn<>("Status");
-        statusCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().status()));
+	private void buildColumns()
+	{
+		TableColumn<MachineDTO, String> idCol = new TableColumn<>("ID");
+		idCol.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().id())));
 
-        TableColumn<MachineDTO, String> prodStatusCol = new TableColumn<>("Productie");
-        prodStatusCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().productieStatus()));
+		TableColumn<MachineDTO, String> siteCol = new TableColumn<>("Site");
+		siteCol.setCellValueFactory(data -> new SimpleStringProperty(
+				data.getValue().site() != null ? data.getValue().site().siteName() : "Onbekend"));
 
-        TableColumn<MachineDTO, String> maintenanceCol = new TableColumn<>("Onderhoud gepland");
-        maintenanceCol.setCellValueFactory(data -> new SimpleStringProperty(
-            data.getValue().futureMaintenance().toString()));
-        
+		TableColumn<MachineDTO, String> technicianCol = new TableColumn<>("Technieker");
+		technicianCol.setCellValueFactory(data -> new SimpleStringProperty(
+				data.getValue().technician() != null ? data.getValue().technician().getFullName() : "Onbekend"));
 
-        TableColumn<MachineDTO, Void> editCol = new TableColumn<>("Bewerken");
-        editCol.setCellFactory(param -> {
-        TableCell<MachineDTO, Void> cell = new TableCell<MachineDTO, Void>() {
-             private final Button editButton = new Button();
+		TableColumn<MachineDTO, String> productInfoCol = new TableColumn<>("Product info");
+		productInfoCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().productInfo()));
 
-             {
-            	ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/edit.png")));
- 				editIcon.setFitWidth(16);
- 				editIcon.setFitHeight(16);
- 				editButton.setGraphic(editIcon);
- 				editButton.setBackground(Background.EMPTY);
-                 editButton.setOnAction(event -> {
-                     MachineDTO selectedMachine = getTableView().getItems().get(getIndex());
-                     openEditMachineForm(selectedMachine);
-                 });
-             }
+		TableColumn<MachineDTO, String> lastMaintenanceCol = new TableColumn<>("Laatste onderhoud");
+		lastMaintenanceCol.setCellValueFactory(data -> new SimpleStringProperty(
+				data.getValue().lastMaintenance() != null ? data.getValue().lastMaintenance().toString() : "Geen"));
 
-             @Override
-             public void updateItem(Void item, boolean empty) {
-                 super.updateItem(item, empty);
-                 if (empty) {
-                     setGraphic(null);
-                 } else {
-                     setGraphic(editButton);
-                 }
-             }
-         };
-         return cell;
-     });
-        
-        TableColumn<MachineDTO, Void> onderhoudCol = new TableColumn<>("Onderhouden");
-        onderhoudCol.setCellFactory(param -> new TableCell<>() {
-            private final Button onderhoudButton = new Button("🔧");
+		TableColumn<MachineDTO, String> daysSinceMaintenanceCol = new TableColumn<>("Dagen sinds laatste onderhoud");
+		daysSinceMaintenanceCol.setCellValueFactory(
+				data -> new SimpleStringProperty(String.valueOf(data.getValue().numberDaysSinceLastMaintenance())));
 
-            {
-                onderhoudButton.setOnAction(event -> {
-                    MachineDTO selectedMachine = getTableView().getItems().get(getIndex());
-                    System.out.println("Onderhoud for machine: " + selectedMachine.code());
-                    goToMaintenanceList(stage, selectedMachine);
-                });
-                onderhoudButton.setStyle("-fx-background-color: transparent;");
-            }
+		TableColumn<MachineDTO, String> uptimeCol = new TableColumn<>("Uptime (uren)");
+		uptimeCol.setCellValueFactory(
+				data -> new SimpleStringProperty(String.format("%.2f", data.getValue().upTimeInHours())));
 
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                if (empty) {
-                    setGraphic(null);
-                } else {
-                    setGraphic(onderhoudButton);
-                }
-            }
-        });        
+		TableColumn<MachineDTO, String> codeCol = new TableColumn<>("Code");
+		codeCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().code()));
 
-     machineTable.getColumns().addAll(editCol, onderhoudCol);
+		TableColumn<MachineDTO, String> locationCol = new TableColumn<>("Locatie");
+		locationCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().location()));
 
+		TableColumn<MachineDTO, String> statusCol = new TableColumn<>("Machinestatus");
+		statusCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().machineStatus().toString()));
 
-     machineTable.getColumns().addAll(
-        	    idCol, codeCol, locationCol, statusCol, prodStatusCol, maintenanceCol,
-        	    siteCol, technicianCol, productInfoCol, lastMaintenanceCol,
-        	    daysSinceMaintenanceCol, uptimeCol
-        	);
-        machineTable.setPrefHeight(300);
+		TableColumn<MachineDTO, String> prodStatusCol = new TableColumn<>("Productiestatus");
+		prodStatusCol
+				.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().productionStatus().toString()));
 
-        List<MachineDTO> dtos = machineController.getMachineList();
-        machineTable.getItems().setAll(dtos);
+		TableColumn<MachineDTO, String> maintenanceCol = new TableColumn<>("Onderhoud gepland");
+		maintenanceCol
+				.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().futureMaintenance().toString()));
 
-        Button backButton = new Button("Terug naar keuzescherm");
-        backButton.setOnAction(event -> goBackToChoicePane());
+		TableColumn<MachineDTO, Void> editCol = new TableColumn<>("Bewerken");
+		editCol.setCellFactory(param -> {
+			TableCell<MachineDTO, Void> cell = new TableCell<MachineDTO, Void>()
+			{
+				private final Button editButton = new Button();
 
-        backButton.setPrefWidth(200); 
-        backButton.setStyle("-fx-font-size: 14px;");
+				{
+					FontIcon editIcon = new FontIcon("fas-pen");
+					editIcon.setIconSize(20);
+					editButton.setGraphic(editIcon);
+					editButton.setBackground(Background.EMPTY);
+					editButton.setOnAction(event -> {
+						MachineDTO selectedMachine = getTableView().getItems().get(getIndex());
+						openEditMachineForm(selectedMachine);
+					});
+				}
 
-        HBox buttonSection = new HBox(backButton);
-        buttonSection.setAlignment(Pos.CENTER);
-        buttonSection.setSpacing(10);
+				@Override
+				public void updateItem(Void item, boolean empty)
+				{
+					super.updateItem(item, empty);
+					if (empty)
+					{
+						setGraphic(null);
+					} else
+					{
+						setGraphic(editButton);
+					}
+				}
+			};
+			return cell;
+		});
 
-        this.setPrefHeight(600); 
-        this.setPadding(new Insets(20, 20, 20, 20));
-        
+		TableColumn<MachineDTO, Void> onderhoudCol = new TableColumn<>("Onderhouden");
+		onderhoudCol.setCellFactory(param -> new TableCell<>()
+		{
 
+			private final Button onderhoudButton = new Button();
+			{
+				FontIcon wrenchIcon = new FontIcon("fas-tools");
 
-        this.getChildren().addAll(machineTable, backButton);
+				wrenchIcon.setIconSize(20);
+				onderhoudButton.setGraphic(wrenchIcon);
+				onderhoudButton.setBackground(Background.EMPTY);
+				onderhoudButton.setOnAction(event -> {
+					MachineDTO selectedMachine = getTableView().getItems().get(getIndex());
+					System.out.println("Onderhoud for machine: " + selectedMachine.code());
+					mainLayout.showMaintenanceList();
+				});
+				onderhoudButton.setStyle("-fx-background-color: transparent;");
+			}
 
-		BackgroundImage backgroundImage = new BackgroundImage(
-				new Image(getClass().getResourceAsStream("/images/background.png")), BackgroundRepeat.NO_REPEAT,
-				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
-				new BackgroundSize(100, 100, true, true, true, true));
-		setBackground(new Background(backgroundImage));
-    }
-    
-    
-    private void goToMaintenanceList(Stage stage, MachineDTO machine) {
-		MaintenanceController mc = new MaintenanceController();
-		MaintenanceListComponent maintenanceListComponent = new MaintenanceListComponent(stage, mc, machine);
-		Scene maintenanceListScene = new Scene(maintenanceListComponent);
-		stage.setScene(maintenanceListScene);
-    }
+			@Override
+			protected void updateItem(Void item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				if (empty)
+				{
+					setGraphic(null);
+				} else
+				{
+					setGraphic(onderhoudButton);
+				}
+			}
+		});
 
-    private void goBackToChoicePane() {
-        ChoicePane choicePane = new ChoicePane(stage); 
-        Scene choiceScene = new Scene(choicePane, 800, 600); 
-        stage.setScene(choiceScene);
-    }
+		machineTable.getColumns().addAll(editCol, onderhoudCol);
 
-    private HBox createTitleSection() {
-        HBox hbox = new HBox();
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        hbox.setSpacing(10);
-        hbox.setPadding(new Insets(0, 0, 20, 0)); // Optional: space below title section
+		machineTable.getColumns().addAll(idCol, codeCol, locationCol, statusCol, prodStatusCol, maintenanceCol, siteCol,
+				technicianCol, productInfoCol, lastMaintenanceCol, daysSinceMaintenanceCol, uptimeCol);
 
-        Label title = new Label("Machines");
-        title.setStyle("-fx-font-size: 30px; -fx-font-weight: bold;");
+		List<MachineDTO> dtos = machineController.getMachineList();
+		machineTable.getItems().setAll(dtos);
+	}
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+	private VBox createTitleSection()
+	{
+		HBox hbox = new HBox(10);
+		hbox.setAlignment(Pos.CENTER_LEFT);
 
-        Button addButton = new Button("➕ Machine toevoegen");
-        addButton.setOnAction(event -> openAddMachineForm());
-        addButton.setPrefWidth(200);
-        String buttonStyle = "-fx-background-color: #f0453c; " +
-                             "-fx-text-fill: white; " +
-                             "-fx-font-weight: bold; " +
-                             "-fx-padding: 8 15 8 15; " +
-                             "-fx-background-radius: 5;";
-        addButton.setStyle(buttonStyle);
+		FontIcon icon = new FontIcon("fas-arrow-left");
+		icon.setIconSize(20);
+		Button backButton = new Button();
+		backButton.setGraphic(icon);
+		backButton.getStyleClass().add("back-button");
+		backButton.setOnAction(e -> mainLayout.showHomeScreen());
+		this.add(backButton, 0, 0, 2, 1);
 
-        hbox.getChildren().addAll(title, spacer, addButton);
-        return hbox;
-    }
+		Label title = new Label("Machineoverzicht");
+		title.getStyleClass().add("title-label");
 
-    
-    private void openAddMachineForm() {
-        AddOrEditMachineForm addForm = new AddOrEditMachineForm(stage, machineController, null, siteController, userController);
-        Scene addScene = new Scene(addForm, 800, 600);
-        stage.setScene(addScene);
-    }
-    
-    private void openEditMachineForm(MachineDTO machine) {
-        AddOrEditMachineForm editForm = new AddOrEditMachineForm(stage, machineController, machine, siteController, userController);
-        Scene editScene = new Scene(editForm, 800, 600);
-        stage.setScene(editScene);
-    }
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
 
+		hbox.getChildren().addAll(backButton, title, spacer);
+
+		HBox infoBox = new CustomInformationBox("Hieronder vindt u een overzicht van alle machines.");
+		VBox.setMargin(infoBox, new Insets(20, 0, 10, 0));
+
+		return new VBox(10, hbox, infoBox);
+	}
+
+	private void openAddMachineForm()
+	{
+		Parent addMachineForm = new AddOrEditMachineForm(mainLayout, machineController, null, siteController,
+				userController);
+		mainLayout.setContent(addMachineForm, true, false);
+	}
+
+	private void openEditMachineForm(MachineDTO machine)
+	{
+		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machineController, machine, siteController,
+				userController);
+		mainLayout.setContent(editMachineForm, true, false);
+	}
 
 }

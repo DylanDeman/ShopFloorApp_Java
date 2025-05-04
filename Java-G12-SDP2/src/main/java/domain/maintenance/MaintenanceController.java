@@ -42,9 +42,9 @@ public class MaintenanceController
 	public MachineDTO convertToMachineDTO(Machine machine)
 	{
 		SiteDTO siteDTO = convertToSiteDTO(machine.getSite()); // Convert the Site object to a SiteDTO
-		return new MachineDTO(machine.getId(), siteDTO, machine.getTechnician(), machine.getCode(), machine.getStatus(),
-				machine.getProductieStatus(), machine.getLocation(), machine.getProductInfo(),
-				machine.getLastMaintenance(), machine.getFutureMaintenance(),
+		return new MachineDTO(machine.getId(), siteDTO, machine.getTechnician(), machine.getCode(),
+				machine.getMachineStatus(), machine.getProductionStatus(), machine.getLocation(),
+				machine.getProductInfo(), machine.getLastMaintenance(), machine.getFutureMaintenance(),
 				machine.getNumberDaysSinceLastMaintenance(), machine.getUpTimeInHours());
 	}
 

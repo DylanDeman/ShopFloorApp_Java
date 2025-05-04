@@ -43,6 +43,11 @@ public class SiteController
 		return new ArrayList<>();
 	}
 
+	public List<Site> getSiteObjects()
+	{
+		return siteRepo.findAll();
+	}
+
 	public void setSiteNaam(int id, String name)
 	{
 		boolean hasRole = AuthenticationUtil.hasRole(Role.ADMIN);
@@ -80,9 +85,14 @@ public class SiteController
 		return machines.stream().map(machine -> new MachineDTO(machine.getId(), null, // Or use a SiteDTO if available.
 																						// Avoid circular references!
 				machine.getTechnician(), // Later UserDTO
-				machine.getCode(), machine.getStatus(), machine.getProductieStatus(), machine.getLocation(),
+				machine.getCode(), machine.getMachineStatus(), machine.getProductionStatus(), machine.getLocation(),
 				machine.getProductInfo(), machine.getLastMaintenance(), machine.getFutureMaintenance(),
 				machine.getNumberDaysSinceLastMaintenance(), machine.getUpTimeInHours())).collect(Collectors.toSet());
+	}
+
+	public Site getSiteObject(SiteDTO site)
+	{
+		return siteRepo.get(site.id());
 	}
 
 }
