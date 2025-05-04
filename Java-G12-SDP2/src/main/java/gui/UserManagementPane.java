@@ -2,13 +2,18 @@ package gui;
 
 import java.util.List;
 
+import org.kordamp.ikonli.javafx.FontIcon;
+
 import domain.user.User;
+import domain.user.UserDTO;
+import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -17,15 +22,12 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundImage;
-import javafx.scene.layout.BackgroundPosition;
-import javafx.scene.layout.BackgroundRepeat;
-import javafx.scene.layout.BackgroundSize;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.VBox;
 import repository.UserRepository;
 
 public class UserManagementPane extends GridPane implements Observer
@@ -48,29 +50,16 @@ public class UserManagementPane extends GridPane implements Observer
 
 	private void buildGUI()
 	{
-		setVgap(10);
-		setHgap(10);
-		setPadding(new Insets(20));
+		this.getStylesheets().add(getClass().getResource("/css/tablePane.css").toExternalForm());
 
-		BackgroundImage backgroundImage = new BackgroundImage(
-				new Image(getClass().getResourceAsStream("/images/background.png")), BackgroundRepeat.NO_REPEAT,
-				BackgroundRepeat.NO_REPEAT, BackgroundPosition.CENTER,
-				new BackgroundSize(100, 100, true, true, true, true));
-		setBackground(new Background(backgroundImage));
-
-		Button backButton = new Button("← Terug");
-		backButton.setOnAction(e -> mainLayout.showHomeScreen());
-		this.add(backButton, 0, 0, 2, 1);
+		this.getChildren().add(createTitleSection());
 
 		userTable = new TableView<>();
 		buildColumns();
 
 		addButton = new Button("Gebruiker toevoegen +");
+		addButton.getStyleClass().add("add-button");
 		addButton.setOnAction(e -> openAddUserForm());
-
-		String buttonStyle = "-fx-background-color: #f0453c; " + "-fx-text-fill: white; " + "-fx-font-weight: bold; "
-				+ "-fx-padding: 8 15 8 15; " + "-fx-background-radius: 5;";
-		addButton.setStyle(buttonStyle);
 
 		GridPane.setHalignment(addButton, HPos.RIGHT);
 		GridPane.setMargin(addButton, new Insets(0, 0, 10, 0));
@@ -80,6 +69,32 @@ public class UserManagementPane extends GridPane implements Observer
 
 		GridPane.setHgrow(userTable, Priority.ALWAYS);
 		GridPane.setVgrow(userTable, Priority.ALWAYS);
+	}
+
+	private VBox createTitleSection()
+	{
+		HBox hbox = new HBox(10);
+		hbox.setAlignment(Pos.CENTER_LEFT);
+
+		FontIcon icon = new FontIcon("fas-arrow-left");
+		icon.setIconSize(20);
+		Button backButton = new Button();
+		backButton.setGraphic(icon);
+		backButton.getStyleClass().add("back-button");
+		backButton.setOnAction(e -> mainLayout.showHomeScreen());
+		this.add(backButton, 0, 0, 2, 1);
+
+		Label title = new Label("Gebruikerslijst");
+		title.getStyleClass().add("title-label");
+
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+
+		hbox.getChildren().addAll(backButton, title, spacer);
+
+		HBox infoBox = new CustomInformationBox("Hieronder vindt u een overzicht van alle gebruikers.");
+
+		return new VBox(10, hbox, infoBox);
 	}
 
 	private void buildColumns()
@@ -109,9 +124,8 @@ public class UserManagementPane extends GridPane implements Observer
 			private final Button editButton = new Button();
 
 			{
-				ImageView editIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/edit.png")));
-				editIcon.setFitWidth(16);
-				editIcon.setFitHeight(16);
+				FontIcon editIcon = new FontIcon("fas-pen");
+				editIcon.setIconSize(20);
 				editButton.setGraphic(editIcon);
 				editButton.setBackground(Background.EMPTY);
 				editButton.setOnAction(event -> openEditUserForm(getTableRow().getItem()));
@@ -131,9 +145,8 @@ public class UserManagementPane extends GridPane implements Observer
 			private final Button deleteButton = new Button();
 
 			{
-				ImageView deleteIcon = new ImageView(new Image(getClass().getResourceAsStream("/images/delete.png")));
-				deleteIcon.setFitHeight(16);
-				deleteIcon.setFitWidth(16);
+				FontIcon deleteIcon = new FontIcon("far-trash-alt");
+				deleteIcon.setIconSize(20);
 				deleteButton.setGraphic(deleteIcon);
 				deleteButton.setBackground(Background.EMPTY);
 				deleteButton.setOnAction(event -> deleteUser(getTableRow().getItem()));
@@ -170,18 +183,18 @@ public class UserManagementPane extends GridPane implements Observer
 	private void openAddUserForm()
 	{
 		Parent addUserForm = new AddOrEditUserForm(mainLayout, userRepo, null);
-		mainLayout.setContent(addUserForm, true);
+		mainLayout.setContent(addUserForm, true, false);
 	}
 
 	private void openEditUserForm(User user)
 	{
 		Parent editUserForm = new AddOrEditUserForm(mainLayout, userRepo, user);
-		mainLayout.setContent(editUserForm, true);
+		mainLayout.setContent(editUserForm, true, false);
 	}
 
 	public void returnToUserManagement()
 	{
-		mainLayout.setContent(this, true);
+		mainLayout.setContent(this, true, false);
 		loadUsers();
 	}
 

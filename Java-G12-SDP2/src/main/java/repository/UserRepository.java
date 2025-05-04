@@ -2,8 +2,10 @@ package repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import domain.user.User;
+import domain.user.UserDTO;
 import interfaces.Observer;
 import interfaces.Subject;
 
@@ -94,6 +96,22 @@ public class UserRepository implements Subject
 			userDao.rollbackTransaction();
 			throw new RuntimeException("Kon gebruiker niet verwijderen: " + e.getMessage(), e);
 		}
+	}
+
+	public List<UserDTO> toDTOs(List<User> users)
+	{
+		return users.stream().map(this::makeDTO).collect(Collectors.toUnmodifiableList());
+	}
+
+	private UserDTO makeDTO(User user)
+	{
+		return new UserDTO(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail(), user.getRole(),
+				user.getStatus());
+	}
+
+	public User getUserById(int id)
+	{
+		return userDao.get(id);
 	}
 
 }
