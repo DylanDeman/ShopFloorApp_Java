@@ -110,6 +110,8 @@ public class AddOrEditMachineForm extends VBox {
 
         // Prefill fields if editing
         if (machineDTO != null) {
+            System.out.println("Updating machine with ID: " + machineDTO.id());
+
             codeField.setText(machineDTO.code());
             locationField.setText(machineDTO.location());
         }
@@ -131,38 +133,67 @@ public class AddOrEditMachineForm extends VBox {
                     System.out.println("All fields must be filled.");
                     return;
                 }
-                
+
                 System.out.println("Saving machine with values:");
                 System.out.println("Code: " + code);
                 System.out.println("Location: " + location);
                 System.out.println("Site: " + selectedSite);
                 System.out.println("Technician: " + selectedTechnician);
                 System.out.println("Future maintenance: " + futureMaintenanceDate);
-                
 
-                // Build MachineDTO
-                MachineDTO newMachine = new MachineDTO(
-                    0, // Assuming ID is auto-generated
-                    selectedSite,
-                    selectedTechnician,
-                    code,
-                    "Actief",           // Default status?
-                    "Productie OK",     // Default productieStatus?
-                    location,
-                    productInfo,
-                    LocalDateTime.now(),                      // lastMaintenance = now
-                    futureMaintenanceDate.atStartOfDay(),     // convert to LocalDateTime
-                    0,                                         // number of days since last maintenance
-                    0.0                                        // uptime in hours
-                );
+                MachineDTO updatedMachine;
 
-                machineController.addNewMachine(newMachine);
-                System.out.println("Machine saved successfully!");
+                if (machineDTO != null) {
+                    // We're in "edit" mode, so update the existing machine's fields
+                    //System.out.println("Updating machine with ID: " + machineDTO.id());
+                    System.out.println("Editing machine with ID: " + machineDTO.id());
+                    updatedMachine = new MachineDTO(
+                        machineDTO.id(), // Use existing machine's ID (so we update the correct one)
+                        selectedSite,
+                        selectedTechnician,
+                        code,
+                        machineDTO.status(),           // Retain the existing status or modify if needed
+                        machineDTO.productieStatus(),  // Retain the existing production status
+                        location,
+                        productInfo,
+                        machineDTO.lastMaintenance(),  // Keep the same last maintenance
+                        futureMaintenanceDate.atStartOfDay(), // Update future maintenance date
+                        machineDTO.numberDaysSinceLastMaintenance(), // Keep or modify as needed
+                        machineDTO.upTimeInHours()     // Keep or update uptime if needed
+                    );
+
+                    // Convert the updated DTO to a Machine and call update
+                    machineController.updateMachine(machineController.convertDTOToMachine(updatedMachine));
+                    System.out.println("Machine updated successfully!");
+
+                } else {
+                    // We're in "add" mode, so create a new machine
+                    updatedMachine = new MachineDTO(
+                        0, // New machine, so ID is 0
+                        selectedSite,
+                        selectedTechnician,
+                        code,
+                        "Actief",           // Default status?
+                        "Productie OK",     // Default productieStatus?
+                        location,
+                        productInfo,
+                        LocalDateTime.now(),  // Last maintenance = now
+                        futureMaintenanceDate.atStartOfDay(), // Convert to LocalDateTime
+                        0,                    // Days since last maintenance (initial)
+                        0.0                   // Uptime in hours (initial)
+                    );
+
+                    // Add new machine
+                    machineController.addNewMachine(updatedMachine);
+                    System.out.println("Machine saved successfully!");
+                }
+
                 goBack();
             } catch (Exception ex) {
                 ex.printStackTrace(); // For debugging
             }
         });
+
 
 
         Button cancelButton = new Button("Annuleer");

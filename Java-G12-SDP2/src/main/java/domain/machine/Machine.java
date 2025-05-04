@@ -1,6 +1,7 @@
 package domain.machine;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
@@ -48,6 +49,7 @@ public class Machine implements Serializable {
     private LocalDateTime lastMaintenance, futureMaintenance;
     private int numberDaysSinceLastMaintenance;
     private double upTimeInHours = 0.0;
+
     
     private Machine(Builder builder) {
     	site = builder.site;
