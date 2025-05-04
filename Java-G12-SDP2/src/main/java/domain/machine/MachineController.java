@@ -87,10 +87,13 @@ public class MachineController {
 	}
 
 	public void updateMachine(Machine machine) {
-		machineRepo.startTransaction();
-		machineRepo.update(machine);
-		machineRepo.commitTransaction();
+	    System.out.println("Updating machine with IDd: " + machine.getId());
+	    machineRepo.startTransaction();
+	    machineRepo.update(machine); // Assuming update is properly implemented
+	    machineRepo.commitTransaction();
+	    System.out.println("Machine update committed.");
 	}
+
 	
 	public void addNewMachine(MachineDTO machineDTO) {
 	    Machine machine = convertDTOToMachine(machineDTO);
@@ -102,6 +105,7 @@ public class MachineController {
 	    Machine machine = new Machine();
 	    
 	    // Convert SiteDTO to Site before setting it
+	    machine.setId(dto.id()); // Make sure to set the ID
 	    Site site = convertDTOToSite(dto.site());
 	    machine.setSite(site);
 	    machine.setTechnician(dto.technician());
@@ -116,7 +120,8 @@ public class MachineController {
 	    machine.setFutureMaintenance(dto.futureMaintenance());
 
 	    return machine;
-	}
+	}  
+	
 
 
 	public Site convertDTOToSite(SiteDTO dto) {
