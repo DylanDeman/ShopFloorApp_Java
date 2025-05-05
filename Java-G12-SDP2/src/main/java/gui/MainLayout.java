@@ -1,9 +1,12 @@
 package gui;
 
+import domain.maintenance.MaintenanceDTO;
 import gui.customComponents.Navbar;
 import gui.login.LoginPane;
 import gui.machine.MachinesListComponent;
+import gui.maintenance.MaintenanceDetailView;
 import gui.maintenance.MaintenanceListComponent;
+import gui.report.AddReportForm;
 import gui.sitesList.SitesListComponent;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
@@ -95,6 +98,18 @@ public class MainLayout
 	{
 		MaintenanceListComponent maintenanceList = new MaintenanceListComponent(this);
 		setContent(maintenanceList, true, false);
+	}
+
+	public void showMaintenanceDetails(MaintenanceDTO maintenance)
+	{
+		MaintenanceDetailView detailView = new MaintenanceDetailView(this, maintenance);
+		setContent(detailView, true, false);
+	}
+
+	public void showAddReport(MaintenanceDTO maintenance)
+	{
+		AddReportForm addReport = new AddReportForm(this, maintenance);
+		setContent(addReport, true, false);
 	}
 
 	public void setContent(Parent content, boolean showNavbar, boolean isHomeScreen)

@@ -21,11 +21,13 @@ import gui.MainLayout;
 import gui.report.AddReportForm;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.OverrunStyle;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.ScrollPane.ScrollBarPolicy;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
@@ -34,13 +36,13 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import gui.customComponents.CustomInformationBox;
 
 public class MaintenanceDetailView extends BorderPane
 {
@@ -76,9 +78,6 @@ public class MaintenanceDetailView extends BorderPane
 			this.currentMaintenance = maintenance;
 		}
 
-		// Create file storage directory if it doesn't exist
-		createFileStorageDirectory();
-
 		// Get files from database for this maintenance
 		this.currentFiles = getFilesFromDatabase();
 
@@ -100,11 +99,6 @@ public class MaintenanceDetailView extends BorderPane
 		return fileInfoController.getFilesForMaintenance(currentMaintenance.id());
 	}
 
-	private void createFileStorageDirectory()
-	{
-		// No longer needed as files are stored in database
-	}
-
 	private void initialize()
 	{
 		setStyle("-fx-background-color: #f5f5f5;");
@@ -116,10 +110,10 @@ public class MaintenanceDetailView extends BorderPane
 		// Create header with back button and title
 		createHeaderSection();
 
-		// Create maintenance info section
+		// Create maintenance info section first
 		createMaintenanceInfoSection();
 
-		// Create files section (only if files exist)
+		// Create files section if files exist
 		if (currentFiles != null && !currentFiles.isEmpty())
 		{
 			createFilesSection();
@@ -137,13 +131,13 @@ public class MaintenanceDetailView extends BorderPane
 		// Back button and title
 		Button backButton = new Button();
 		FontIcon backIcon = new FontIcon("fas-arrow-left");
-		backIcon.setIconSize(16);
+		backIcon.setIconSize(20);
 		backIcon.setIconColor(Color.web("#333333"));
 		backButton.setGraphic(backIcon);
 		backButton.getStyleClass().add("back-button");
-		backButton.setOnAction(e -> {
-			// Navigate back to maintenance list
-			// mainApp.showMaintenanceList();
+		backButton.setOnAction(e ->
+		{
+			mainLayout.showMaintenanceList();
 		});
 
 		titleLabel = new Label("Onderhoud (onderhoudsnummer)");
@@ -178,7 +172,8 @@ public class MaintenanceDetailView extends BorderPane
 		reportIcon.setIconColor(Color.WHITE);
 		reportButton.setGraphic(reportIcon);
 		reportButton.getStyleClass().add("action-button");
-		reportButton.setOnAction(e -> {
+		reportButton.setOnAction(e ->
+		{
 			goToAddRapport(mainLayout, currentMaintenance);
 		});
 
@@ -207,21 +202,22 @@ public class MaintenanceDetailView extends BorderPane
 	{
 		AddReportForm form = new AddReportForm(mainLayout, maintenance);
 		form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
+		mainLayout.showAddReport(maintenance);
 	}
 
 	private void createMaintenanceInfoSection()
 	{
 		// Info message
-		Label infoLabel = new Label("Hieronder vindt de details van dit onderhoud");
-		infoLabel.setStyle(
-				"-fx-font-size: 14px; -fx-padding: 10px; -fx-background-color: #f9f9f9; -fx-background-radius: 4px; -fx-border-color: #e0e0e0; -fx-border-radius: 4px;");
+		HBox infoBox = new CustomInformationBox("Hieronder vindt u de details van dit onderhoud");
+		VBox.setMargin(infoBox, new Insets(20, 0, 10, 0));
 
 		// Table for maintenance details
 		GridPane table = createMaintenanceTable();
 
 		VBox contentBox = new VBox(10);
-		contentBox.getChildren().addAll(infoLabel, table);
+		contentBox.getChildren().addAll(infoBox, table);
 
+		// Always set the maintenance info in the center
 		setCenter(contentBox);
 	}
 
@@ -231,8 +227,9 @@ public class MaintenanceDetailView extends BorderPane
 		table.getStyleClass().add("maintenance-table");
 
 		// Column headers
-		String[] headers = { "Onderhoudsnummer", "Uitvoeringsdatum", "Starttijd", "Eindtijd", "Technicus", "Reden",
-				"Opmerkingen", "Status" };
+		String[] headers =
+		{ "Onderhoudsnummer", "Uitvoeringsdatum", "Starttijd", "Eindtijd", "Technicus", "Reden", "Opmerkingen",
+				"Status" };
 
 		// Create header cells
 		for (int i = 0; i < headers.length; i++)
@@ -299,19 +296,23 @@ public class MaintenanceDetailView extends BorderPane
 		return table;
 	}
 
+	private void goToDetails(MainLayout mainLayout, MaintenanceDTO maintenance)
+	{
+		mainLayout.showMaintenanceDetails(maintenance);
+	}
+
 	private void createFilesSection()
 	{
 		filesSection = new VBox(10);
-		filesSection.setPadding(new Insets(5, 0, 0, 0));
+		filesSection.getStyleClass().add("files-section");
 
 		// Files header
 		Label filesHeader = new Label("Bestanden");
-		filesHeader.setFont(Font.font("System", FontWeight.BOLD, 18));
+		filesHeader.getStyleClass().add("files-header");
 
 		// File container
 		filesContainer = new FlowPane();
-		filesContainer.setHgap(20);
-		filesContainer.setVgap(20);
+		filesContainer.getStyleClass().add("files-container");
 
 		// Add files to container
 		for (FileInfo file : currentFiles)
@@ -319,33 +320,48 @@ public class MaintenanceDetailView extends BorderPane
 			filesContainer.getChildren().add(createFileBox(file));
 		}
 
-		filesSection.getChildren().addAll(filesHeader, filesContainer);
+		// Wrap FlowPane in a ScrollPane to enable scrolling
+		ScrollPane scrollPane = new ScrollPane(filesContainer);
+		scrollPane.setFitToWidth(true);
+		scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
+		scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
+		scrollPane.getStyleClass().add("files-scroll-pane");
 
-		// Add files section to bottom of layout with minimal top margin
-		BorderPane.setMargin(filesSection, new Insets(5, 0, 0, 0));
-		setBottom(filesSection);
+		// Make the ScrollPane fill the available space
+		VBox.setVgrow(scrollPane, Priority.ALWAYS);
+		scrollPane.setPrefViewportHeight(Integer.MAX_VALUE);
+		scrollPane.setMaxHeight(Double.MAX_VALUE);
+		scrollPane.setMinHeight(400); // Minimum height to ensure it's always visible
+
+		// Add components to files section
+		filesSection.getChildren().addAll(filesHeader, scrollPane);
+
+		// Create a container for both maintenance info and files
+		VBox mainContent = new VBox(20);
+		mainContent.getChildren().addAll((VBox) getCenter(), filesSection);
+
+		// Set the combined content as the center
+		setCenter(mainContent);
 	}
 
 	private VBox createFileBox(FileInfo fileInfo)
 	{
 		VBox fileBox = new VBox();
 		fileBox.getStyleClass().add("file-box");
-		fileBox.setPrefWidth(217);
+		// Fixed width is now applied in CSS
 
-		// File preview/thumbnail area
+		// Image/preview container with fixed dimensions
+		StackPane previewContainer = new StackPane();
+		previewContainer.getStyleClass().add("image-container");
+
+		// Determine preview based on file type
 		String fileType = fileInfo.getType();
-		Node previewArea;
-		previewArea = new Region();
-		((Region) previewArea).setPrefSize(217, 160);
-		((Region) previewArea).getStyleClass().add("file-preview");
 
-		// Create appropriate preview based on file type
 		if (fileType.equals("pdf"))
 		{
 			// PDF preview with icon
 			VBox pdfPreview = new VBox(10);
 			pdfPreview.setAlignment(Pos.CENTER);
-			pdfPreview.setPrefSize(217, 160);
 
 			FontIcon pdfIcon = new FontIcon("fas-file-pdf");
 			pdfIcon.setIconSize(60);
@@ -357,10 +373,11 @@ public class MaintenanceDetailView extends BorderPane
 			pdfName.setWrapText(true);
 
 			pdfPreview.getChildren().addAll(pdfIcon, pdfName);
-			previewArea = pdfPreview;
+			previewContainer.getChildren().add(pdfPreview);
+
 		} else if (fileType.equals("image"))
 		{
-			// Image preview
+			// Image preview with proper aspect ratio
 			try
 			{
 				byte[] imageContent = fileInfoController.getFileContent(fileInfo);
@@ -368,11 +385,17 @@ public class MaintenanceDetailView extends BorderPane
 				{
 					Image image = new Image(new ByteArrayInputStream(imageContent));
 					ImageView imageView = new ImageView(image);
+
+					// Set max dimensions but preserve aspect ratio
 					imageView.setFitWidth(217);
 					imageView.setFitHeight(160);
 					imageView.setPreserveRatio(true);
 					imageView.setSmooth(true);
-					previewArea = imageView;
+
+					// Center the image in the container
+					StackPane.setAlignment(imageView, Pos.CENTER);
+
+					previewContainer.getChildren().add(imageView);
 				} else
 				{
 					throw new IOException("No image content available");
@@ -382,7 +405,6 @@ public class MaintenanceDetailView extends BorderPane
 				// If image loading fails, show placeholder
 				VBox imagePreview = new VBox(10);
 				imagePreview.setAlignment(Pos.CENTER);
-				imagePreview.setPrefSize(217, 160);
 
 				FontIcon imageIcon = new FontIcon("fas-image");
 				imageIcon.setIconSize(60);
@@ -394,14 +416,13 @@ public class MaintenanceDetailView extends BorderPane
 				imageName.setWrapText(true);
 
 				imagePreview.getChildren().addAll(imageIcon, imageName);
-				previewArea = imagePreview;
+				previewContainer.getChildren().add(imagePreview);
 			}
 		} else if (fileType.equals("video"))
 		{
 			// Video preview with icon
 			VBox videoPreview = new VBox(10);
 			videoPreview.setAlignment(Pos.CENTER);
-			videoPreview.setPrefSize(217, 160);
 
 			FontIcon videoIcon = new FontIcon("fas-video");
 			videoIcon.setIconSize(60);
@@ -413,13 +434,12 @@ public class MaintenanceDetailView extends BorderPane
 			videoName.setWrapText(true);
 
 			videoPreview.getChildren().addAll(videoIcon, videoName);
-			previewArea = videoPreview;
+			previewContainer.getChildren().add(videoPreview);
 		} else
 		{
 			// Generic file preview
 			VBox genericPreview = new VBox(10);
 			genericPreview.setAlignment(Pos.CENTER);
-			genericPreview.setPrefSize(217, 160);
 
 			FontIcon fileIcon = new FontIcon("fas-file");
 			fileIcon.setIconSize(60);
@@ -431,18 +451,19 @@ public class MaintenanceDetailView extends BorderPane
 			fileName.setWrapText(true);
 
 			genericPreview.getChildren().addAll(fileIcon, fileName);
-			previewArea = genericPreview;
+			previewContainer.getChildren().add(genericPreview);
 		}
 
 		// File name and actions area
 		HBox fileActions = new HBox();
 		fileActions.getStyleClass().add("file-actions");
-		fileActions.setPrefWidth(217);
 		fileActions.setAlignment(Pos.CENTER_LEFT);
 
 		Label fileName = new Label(fileInfo.getName());
 		fileName.getStyleClass().add("file-name");
-		fileName.setMaxWidth(170);
+		fileName.setMaxWidth(140); // Reduced to make room for buttons
+		fileName.setWrapText(true);
+		fileName.setTextOverrun(OverrunStyle.ELLIPSIS); // Add ellipsis for long names
 		HBox.setHgrow(fileName, Priority.ALWAYS);
 
 		// Download button
@@ -451,7 +472,7 @@ public class MaintenanceDetailView extends BorderPane
 		downloadIcon.setIconSize(16);
 		downloadIcon.setIconColor(Color.WHITE);
 		downloadBtn.setGraphic(downloadIcon);
-		downloadBtn.setStyle("-fx-background-color: transparent; -fx-padding: 4px;");
+		downloadBtn.getStyleClass().add("action-button-small");
 		downloadBtn.setOnAction(e -> downloadFile(fileInfo));
 
 		// Delete button
@@ -460,14 +481,14 @@ public class MaintenanceDetailView extends BorderPane
 		deleteIcon.setIconSize(16);
 		deleteIcon.setIconColor(Color.WHITE);
 		deleteBtn.setGraphic(deleteIcon);
-		deleteBtn.setStyle("-fx-background-color: transparent; -fx-padding: 4px;");
+		deleteBtn.getStyleClass().add("action-button-small");
 		deleteBtn.setOnAction(e -> deleteFile(fileInfo));
 
 		// Add buttons to actions area
 		fileActions.getChildren().addAll(fileName, downloadBtn, deleteBtn);
 
 		// Add all components to file box
-		fileBox.getChildren().addAll(previewArea, fileActions);
+		fileBox.getChildren().addAll(previewContainer, fileActions);
 
 		return fileBox;
 	}

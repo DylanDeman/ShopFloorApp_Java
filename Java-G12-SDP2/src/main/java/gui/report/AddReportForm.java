@@ -2,6 +2,7 @@ package gui.report;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -10,7 +11,6 @@ import domain.maintenance.MaintenanceDTO;
 import domain.report.ReportBuilder;
 import domain.report.ReportController;
 import domain.site.SiteController;
-import domain.user.User;
 import domain.user.UserController;
 import exceptions.InformationRequiredExceptionReport;
 import gui.MainLayout;
@@ -33,7 +33,7 @@ import util.RequiredElementReport;
 public class AddReportForm extends GridPane
 {
 	private Label siteNameLabel, responsiblePersonLabel, maintenanceNumberLabel;
-	private ComboBox<User> technicianComboBox;
+	private ComboBox<String> technicianComboBox;
 	private DatePicker startDatePicker, endDatePicker;
 	private ComboBox<LocalTime> startTimeField;
 	private ComboBox<LocalTime> endTimeField;
@@ -140,7 +140,9 @@ public class AddReportForm extends GridPane
 		pane.add(sectionLabel, 0, 0, 2, 1);
 
 		technicianComboBox = new ComboBox<>();
-		technicianComboBox.getItems().addAll(userController.getAllTechniekers());
+		technicianComboBox.getItems().addAll(userController.getAllTechniekers().stream().map(user -> user.getFullName())
+				.collect(Collectors.toList()));
+
 		technicianComboBox.setPromptText("Selecteer een technieker");
 		technicianComboBox.setPrefWidth(200);
 
@@ -328,7 +330,10 @@ public class AddReportForm extends GridPane
 			reportBuilder.createReport();
 
 			reportBuilder.buildMaintenance(maintenanceController.getMaintenance(selectedMaintenanceDTO.id()));
-			reportBuilder.buildTechnician(technicianComboBox.getValue());
+			userController.getAllTechniekers().stream()
+					.filter(user -> user.getFullName().equals(technicianComboBox.getValue())).findFirst()
+					.ifPresent(reportBuilder::buildTechnician);
+
 			reportBuilder.buildStartDate(startDatePicker.getValue());
 			reportBuilder.buildStartTime(startTimeField.getValue());
 			reportBuilder.buildEndDate(endDatePicker.getValue());
@@ -339,7 +344,7 @@ public class AddReportForm extends GridPane
 
 			reportController.createReport(reportBuilder.getReport());
 
-			mainLayout.showHomeScreen();
+			mainLayout.showMaintenanceDetails(selectedMaintenanceDTO);
 		} catch (InformationRequiredExceptionReport e)
 		{
 			handleInformationRequiredException(e);
@@ -352,7 +357,8 @@ public class AddReportForm extends GridPane
 
 	private void handleInformationRequiredException(InformationRequiredExceptionReport e)
 	{
-		e.getInformationRequired().forEach((field, requiredElement) -> {
+		e.getInformationRequired().forEach((field, requiredElement) ->
+		{
 			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
 			showFieldError(field, errorMessage);
 		});
