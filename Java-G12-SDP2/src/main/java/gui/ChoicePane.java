@@ -3,7 +3,7 @@ package gui;
 import gui.machine.MachinesListComponent;
 import gui.maintenance.MaintenanceListComponent;
 import gui.report.AddReportForm;
-import gui.sitesList.SitesListComponent;
+import gui.site.SitesListComponent;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
