@@ -78,33 +78,19 @@ public class MachineController
 		addNewMachine(machine); // <-- now it actually saves it
 	}
 
-	
-	public Machine convertDTOToMachine(MachineDTO dto) {
-	    Machine machine = new Machine();
-	    
-	    // Convert SiteDTO to Site before setting it
-	    machine.setId(dto.id()); // Make sure to set the ID
-	    Site site = convertDTOToSite(dto.site());
-	    machine.setSite(site);
-	    machine.setTechnician(dto.technician());
-	    machine.setProductInfo(dto.productInfo());
-	    machine.setLastMaintenance(dto.lastMaintenance());
-	    machine.setNumberDaysSinceLastMaintenance(dto.numberDaysSinceLastMaintenance());
-	    //machine.setUpTimeInHours(dto.upTimeInHours());
-	    machine.setCode(dto.code());
-	    machine.setLocation(dto.location());
-	    machine.setStatus(dto.status());
-	    machine.setProductieStatus(dto.productieStatus());
-	    machine.setFutureMaintenance(dto.futureMaintenance());
+	public Machine convertDTOToMachine(MachineDTO dto)
+	{
+		Machine machine = new Machine();
 
 		// Convert SiteDTO to Site before setting it
+		machine.setId(dto.id()); // Make sure to set the ID
 		Site site = convertDTOToSite(dto.site());
 		machine.setSite(site);
 		machine.setTechnician(dto.technician());
 		machine.setProductInfo(dto.productInfo());
 		machine.setLastMaintenance(dto.lastMaintenance());
 		machine.setNumberDaysSinceLastMaintenance(dto.numberDaysSinceLastMaintenance());
-		machine.setUpTimeInHours(dto.upTimeInHours());
+		// machine.setUpTimeInHours(dto.upTimeInHours());
 		machine.setCode(dto.code());
 		machine.setLocation(dto.location());
 		machine.setMachineStatus(dto.machineStatus());
