@@ -88,8 +88,10 @@ public class StartUpGUI extends Application
 		try
 		{
 
-			Machine m1 = new Machine(site1, u1, "M1-3096", "Line 1", "Product A", MachineStatus.DRAAIT,
-					ProductionStatus.GEZOND, LocalDate.of(2025, 6, 2));
+			Machine m1 = new Machine(site1, u1, "M1-3096", "Line 1", "Product A", 
+				    MachineStatus.DRAAIT, ProductionStatus.GEZOND, LocalDate.of(2025, 6, 2));
+				m1.setLastMaintenance(LocalDate.of(2025, 5, 1));
+
 			Machine m2 = new Machine(site1, u4, "M2-2359", "Line 4", "Product B", MachineStatus.MANUEEL_GESTOPT,
 					ProductionStatus.FALEND, LocalDate.of(2025, 8, 15));
 
