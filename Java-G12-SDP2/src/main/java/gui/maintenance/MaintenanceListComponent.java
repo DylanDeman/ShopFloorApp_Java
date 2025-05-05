@@ -12,7 +12,6 @@ import domain.maintenance.MaintenanceDTO;
 import gui.MainLayout;
 import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
-import gui.report.AddReportForm;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
@@ -203,15 +202,16 @@ public class MaintenanceListComponent extends VBox
 
 	private TableColumn<MaintenanceDTO, Void> createAddRapportButtonColumn()
 	{
-		TableColumn<MaintenanceDTO, Void> col = new TableColumn<>("Rapport toevoegen");
+		TableColumn<MaintenanceDTO, Void> col = new TableColumn<>("Details");
 
 		col.setCellFactory(param -> new TableCell<>()
 		{
-			private final CustomButton btn = new CustomButton("Toevoegen");
+			private final CustomButton btn = new CustomButton("Details");
 			{
-				btn.setOnAction(e -> {
+				btn.setOnAction(e ->
+				{
 					MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
-					goToAddRapport(mainLayout, selectedMaintenance);
+					goToDetails(mainLayout, selectedMaintenance);
 				});
 			}
 
@@ -230,7 +230,8 @@ public class MaintenanceListComponent extends VBox
 		updateTotalPages();
 		Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
 		pagination.setPageFactory(this::createPage);
-		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) ->
+		{
 			currentPage = newIndex.intValue();
 			updateTableItems();
 		});
@@ -278,16 +279,19 @@ public class MaintenanceListComponent extends VBox
 		updateTableItems();
 	}
 
-	private void goToAddRapport(MainLayout mainLayout, MaintenanceDTO maintenance)
-	{
-		AddReportForm form = new AddReportForm(mainLayout, maintenance);
-		form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
-	}
+	/*
+	 * private void goToAddRapport(MainLayout mainLayout, MaintenanceDTO
+	 * maintenance) { AddReportForm form = new AddReportForm(mainLayout,
+	 * maintenance);
+	 * form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").
+	 * toExternalForm()); }
+	 */
 
 	private void goToDetails(MainLayout mainLayout, MaintenanceDTO maintenance)
 	{
 		MaintenanceDetailView form = new MaintenanceDetailView(mainLayout, maintenance);
 		form.getStylesheets().add(getClass().getResource("/css/maintenanceDetails.css").toExternalForm());
+		mainLayout.showMaintenanceDetails(maintenance);
 	}
 
 }

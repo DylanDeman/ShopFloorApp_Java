@@ -1,12 +1,11 @@
 package machine;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,132 +15,114 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import domain.machine.Machine;
 import domain.site.Site;
 import domain.user.User;
-import exceptions.InvalidMachineException;
+import util.MachineStatus;
+import util.ProductionStatus;
 
 @ExtendWith(MockitoExtension.class)
-class MachineTest {
-
-	
+class MachineTest
+{
 	@Mock
 	private User mockTechnician;
-	
+
 	@Mock
 	private Site site;
-	
+
 	private Machine machine;
-	
-	
+
 	@Test
-	void constructor_validParameters_createMachine() {
-	    LocalDateTime lastMaintenance = LocalDateTime.now(); 
-	    LocalDateTime futureMaintenance = LocalDateTime.now().plusDays(30);
-	    
-	    assertDoesNotThrow(() -> {
-	        machine = Machine.builder()
-	                .site(site)
-	                .technician(mockTechnician)
-	                .code("testCode")
-	                .status("actief")
-	                .productieStatus("actief")
-	                .location("gent")
-	                .productInfo("testProduct")
-	                .lastMaintenance(lastMaintenance)
-	                .futureMaintenance(futureMaintenance)
-	                .build();
-	    });
-	    
-	    assertNotNull(machine);
-	    assertEquals("testCode", machine.getCode());
-	    assertEquals("actief", machine.getStatus());
-	    assertEquals("gent", machine.getLocation());
-	    assertEquals("testProduct", machine.getProductInfo());
-	    assertEquals(lastMaintenance, machine.getLastMaintenance());
-	    assertEquals(futureMaintenance, machine.getFutureMaintenance());
-	}
-	
-	@Test
-	void builder_missingSite_throwsInvalidMachineException() {
-	    assertThrows(InvalidMachineException.class, () -> {
-	        validMachineBuilder()
-	            .site(null)
-	            .build();
-	    });
+	void constructor_validParameters_createMachine()
+	{
+		LocalDate futureMaintenance = LocalDate.now().plusDays(30);
+
+		machine = new Machine(site, mockTechnician, "testCode", "gent", "testProduct", 
+				MachineStatus.DRAAIT, ProductionStatus.GEZOND, futureMaintenance);
+
+		assertNotNull(machine);
+		assertEquals("testCode", machine.getCode());
+		assertEquals(MachineStatus.DRAAIT, machine.getMachineStatus());
+		assertEquals("gent", machine.getLocation());
+		assertEquals("testProduct", machine.getProductInfo());
+		assertEquals(futureMaintenance, machine.getFutureMaintenance());
+		assertEquals(ProductionStatus.GEZOND, machine.getProductionStatus());
 	}
 
 	@Test
-	void builder_missingTechnician_throwsInvalidMachineException() {
-	    assertThrows(InvalidMachineException.class, () -> {
-	        validMachineBuilder()
-	            .technician(null)
-	            .build();
-	    });
+	void constructor_nullSite_throwsNullPointerException()
+	{
+		assertThrows(NullPointerException.class, () ->
+		{
+			new Machine(null, mockTechnician, "testCode", "gent", "testProduct", 
+					MachineStatus.DRAAIT, ProductionStatus.GEZOND, LocalDate.now().plusDays(10));
+		});
 	}
 
 	@Test
-	void builder_missingCode_throwsInvalidMachineException() {
-	    assertThrows(InvalidMachineException.class, () -> {
-	        validMachineBuilder()
-	            .code(null)
-	            .build();
-	    });
-	}
-	
-	@Test
-	void builder_missingStatus_throwsInvalidMachineException() {
-	    assertThrows(InvalidMachineException.class, () -> {
-	        validMachineBuilder()
-	            .status(null)
-	            .build();
-	    });
-	}
-	
-	@Test
-	void builder_missingProductieStatus_throwsInvalidMachineException() {
-	    assertThrows(InvalidMachineException.class, () -> {
-	        validMachineBuilder()
-	            .productieStatus(null)
-	            .build();
-	    });
-	}
-	
-	@Test
-	void builder_missingLocation_throwsInvalidMachineException() {
-	    assertThrows(InvalidMachineException.class, () -> {
-	        validMachineBuilder()
-	            .location(null)
-	            .build();
-	    });
-	}
-	
-	@Test
-	void builder_missingProductInfo_throwsInvalidMachineException() {
-	    assertThrows(InvalidMachineException.class, () -> {
-	        validMachineBuilder()
-	            .productInfo(null)
-	            .build();
-	    });
-	}
-	
-	@Test
-	void builder_missingFutureMaintenance_throwsInvalidMachineException() {
-	    assertThrows(InvalidMachineException.class, () -> {
-	        validMachineBuilder()
-	            .futureMaintenance(null)
-	            .build();
-	    });
+	void constructor_nullTechnician_throwsNullPointerException()
+	{
+		assertThrows(NullPointerException.class, () ->
+		{
+			new Machine(site, null, "testCode", "gent", "testProduct", 
+					MachineStatus.DRAAIT, ProductionStatus.GEZOND, LocalDate.now().plusDays(10));
+		});
 	}
 
-
-	private Machine.Builder validMachineBuilder() {
-	    return Machine.builder()
-	        .site(mock(Site.class))
-	        .technician(mock(User.class))
-	        .code("testCode")
-	        .status("actief")
-	        .productieStatus("actief")
-	        .location("Gent")
-	        .productInfo("testInfo")
-	        .futureMaintenance(LocalDateTime.now().plusDays(10));
+	@Test
+	void constructor_nullCode_throwsNullPointerException()
+	{
+		assertThrows(NullPointerException.class, () ->
+		{
+			new Machine(site, mockTechnician, null, "gent", "testProduct", 
+					MachineStatus.DRAAIT, ProductionStatus.GEZOND, LocalDate.now().plusDays(10));
+		});
 	}
 
+	@Test
+	void constructor_nullLocation_throwsNullPointerException()
+	{
+		assertThrows(NullPointerException.class, () ->
+		{
+			new Machine(site, mockTechnician, "testCode", null, "testProduct", 
+					MachineStatus.DRAAIT, ProductionStatus.GEZOND, LocalDate.now().plusDays(10));
+		});
+	}
+
+	@Test
+	void constructor_nullProductInfo_throwsNullPointerException()
+	{
+		assertThrows(NullPointerException.class, () ->
+		{
+			new Machine(site, mockTechnician, "testCode", "gent", null, 
+					MachineStatus.DRAAIT, ProductionStatus.GEZOND, LocalDate.now().plusDays(10));
+		});
+	}
+
+	@Test
+	void constructor_nullMachineStatus_throwsNullPointerException()
+	{
+		assertThrows(NullPointerException.class, () ->
+		{
+			new Machine(site, mockTechnician, "testCode", "gent", "testProduct", 
+					null, ProductionStatus.GEZOND, LocalDate.now().plusDays(10));
+		});
+	}
+
+	@Test
+	void constructor_nullProductionStatus_throwsNullPointerException()
+	{
+		assertThrows(NullPointerException.class, () ->
+		{
+			new Machine(site, mockTechnician, "testCode", "gent", "testProduct", 
+					MachineStatus.DRAAIT, null, LocalDate.now().plusDays(10));
+		});
+	}
+
+	@Test
+	void constructor_nullFutureMaintenance_throwsNullPointerException()
+	{
+		assertThrows(NullPointerException.class, () ->
+		{
+			new Machine(site, mockTechnician, "testCode", "gent", "testProduct", 
+					MachineStatus.DRAAIT, ProductionStatus.GEZOND, null);
+		});
+	}
 }

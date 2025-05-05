@@ -1,3 +1,20 @@
+/* Additional styles for flowpane to ensure proper spacing */
+.files-container {
+    -fx-hgap: 20px;
+    -fx-vgap: 20px;
+    -fx-padding: 10px;
+}
+
+.files-header {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-padding: 10px 0;
+}
+
+.files-section {
+    -fx-padding: 5 0 0 0;
+}
+
 .maintenance-details {
     -fx-background-color: #f5f5f5;
     -fx-padding: 10 30 10 30;
@@ -9,12 +26,7 @@
 
 .back-button {
     -fx-background-color: transparent;
-    -fx-padding: 8px;
-    -fx-border-radius: 4px;
-    -fx-background-radius: 4px;
-    -fx-border-color: #e0e0e0;
-    -fx-border-width: 1px;
-    -fx-cursor: hand;
+    -fx-padding: 0;
 }
 
 .back-button:hover {
@@ -27,12 +39,12 @@
 }
 
 .title-label {
-    -fx-font-size: 22px;
-    -fx-font-weight: bold;
+    -fx-font: 40 arial;
 }
 
 .machine-info-label {
-    -fx-font-size: 14px;
+    -fx-font-size: 16px;
+    -fx-text-fill: #666666;
 }
 
 .action-button {
@@ -40,15 +52,6 @@
     -fx-text-fill: white;
     -fx-background-radius: 4px;
     -fx-padding: 8px 16px;
-}
-
-.info-label {
-    -fx-font-size: 14px;
-    -fx-padding: 10px;
-    -fx-background-color: #f9f9f9;
-    -fx-background-radius: 4px;
-    -fx-border-color: #e0e0e0;
-    -fx-border-radius: 4px;
 }
 
 .maintenance-table {
@@ -67,27 +70,130 @@
     -fx-padding: 10px;
 }
 
+/* File box styling with fixed dimensions */
 .file-box {
     -fx-background-color: white;
     -fx-border-color: #e0e0e0;
     -fx-border-radius: 4px;
+    -fx-pref-width: 217px;
+    -fx-max-width: 217px;
+    -fx-min-width: 217px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 4, 0, 0, 1);
 }
 
+/* Fixed height for preview area */
 .file-preview {
-    -fx-background-color: #f5f5f5;
+    -fx-background-color: #f9f9f9;
+    -fx-min-height: 160px;
+    -fx-max-height: 160px;
+    -fx-pref-height: 160px;
+    -fx-alignment: center;
 }
 
+/* Center content in preview areas */
+.file-box VBox {
+    -fx-alignment: center;
+}
+
+/* Style for image previews to ensure uniform size */
+.file-box .image-container {
+    -fx-background-color: #f9f9f9;
+    -fx-alignment: center;
+    -fx-min-height: 160px;
+    -fx-max-height: 160px;
+    -fx-pref-height: 160px;
+    -fx-min-width: 217px;
+    -fx-max-width: 217px;
+    -fx-pref-width: 217px;
+}
+
+/* ImageView styling cannot be directly set via CSS, must be done in Java code */
+
+/* Style for icons in file previews */
+.file-box .ikonli-font-icon {
+    -fx-icon-size: 60px;
+    -fx-icon-color: #333333;
+}
+
+/* File information area */
 .file-actions {
     -fx-background-color: #f44336;
     -fx-padding: 8px;
+    -fx-min-height: 36px;
+    -fx-max-height: 36px;
+    -fx-pref-height: 36px;
+    -fx-alignment: center-left;
 }
 
 .file-name {
     -fx-text-fill: white;
     -fx-font-size: 12px;
+    -fx-text-overflow: ellipsis;
+    -fx-max-width: 140px;
 }
 
-.action-icon {
+/* Action icons in file box */
+.action-button-small {
+    -fx-background-color: transparent;
+    -fx-padding: 4px;
+    -fx-cursor: hand;
+}
+
+.action-button-small:hover {
+    -fx-background-color: rgba(255, 255, 255, 0.2);
+    -fx-background-radius: 4px;
+}
+
+.file-actions .button .ikonli-font-icon {
     -fx-icon-size: 16px;
     -fx-icon-color: white;
-} 
+}
+
+/* ScrollPane styling for files section */
+.files-scroll-pane {
+    -fx-background-color: transparent;
+    -fx-border-color: #e0e0e0;
+    -fx-border-radius: 4px;
+    -fx-padding: 0;
+    -fx-fit-to-width: true;
+    -fx-fit-to-height: true;
+    -fx-min-height: 400px;
+}
+
+.files-scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.files-scroll-pane > .scroll-bar:vertical {
+    -fx-background-color: transparent;
+    -fx-pref-width: 12px;
+    -fx-min-width: 12px;
+}
+
+.files-scroll-pane > .scroll-bar:horizontal {
+    -fx-background-color: transparent;
+    -fx-pref-height: 12px;
+    -fx-opacity: 0;
+    -fx-min-height: 0;
+    -fx-max-height: 0;
+}
+
+.files-scroll-pane > .scroll-bar > .thumb {
+    -fx-background-color: #c0c0c0;
+    -fx-background-radius: 6px;
+}
+
+.files-scroll-pane > .scroll-bar > .thumb:hover {
+    -fx-background-color: #a0a0a0;
+}
+
+.files-scroll-pane > .corner {
+    -fx-background-color: transparent;
+}
+
+.file-preview-image {
+    -fx-fit-width: 180px;
+    -fx-fit-height: 140px;
+    -fx-preserve-ratio: true;
+    -fx-smooth: true;
+}
