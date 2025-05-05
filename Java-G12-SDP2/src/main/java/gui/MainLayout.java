@@ -8,7 +8,7 @@ import gui.maintenance.MaintenanceDetailView;
 import gui.maintenance.MaintenanceListComponent;
 import gui.notification.NotificationListComponent;
 import gui.report.AddReportForm;
-import gui.sitesList.SitesListComponent;
+import gui.site.SitesListComponent;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
