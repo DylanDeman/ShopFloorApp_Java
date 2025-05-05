@@ -65,6 +65,11 @@ public class MachineBuilder
 	{
 		machine.setFutureMaintenance(futureMaintenance);
 	}
+	
+	public MachineBuilder buildId(int id) {
+	    this.machine.setId(id);
+	    return this;
+	}
 
 	public Machine getMachine() throws InformationRequiredExceptionMachine
 	{
