@@ -11,6 +11,7 @@ import domain.user.User;
 import domain.user.UserController;
 import exceptions.InformationRequiredExceptionMachine;
 import gui.MainLayout;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -18,6 +19,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -80,11 +83,23 @@ public class AddOrEditMachineForm extends GridPane
 		this.setVgap(15);
 		this.setPadding(new Insets(20));
 
-		VBox mainContainer = new VBox();
-		mainContainer.setAlignment(Pos.CENTER);
-		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, createFormContent());
+		VBox mainContainer = new VBox(10);
+		mainContainer.setAlignment(Pos.TOP_CENTER);
+		mainContainer.setPadding(new Insets(10));
+
+		// Create a scrollable container for the form content only
+		ScrollPane scrollPane = new ScrollPane();
+		scrollPane.setContent(createFormContent());
+		scrollPane.setFitToWidth(true);
+		scrollPane.setPrefViewportHeight(800); // or any height that works for your design
+		scrollPane.getStyleClass().add("scroll-pane");
+		scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+
+		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, scrollPane);
 
 		this.add(mainContainer, 0, 0);
+
 
 	}
 
@@ -172,11 +187,66 @@ public class AddOrEditMachineForm extends GridPane
 		siteBox.getItems().addAll(siteController.getSiteObjects());
 		siteBox.setPromptText("Selecteer een site");
 		siteBox.setPrefWidth(200);
+		
+		siteBox = new ComboBox<>();
+		siteBox.getItems().addAll(siteController.getSiteObjects());
+		siteBox.setPromptText("Selecteer een site");
+		siteBox.setPrefWidth(200);
+
+		// Customizing the ComboBox's display
+		siteBox.setCellFactory(param -> new ListCell<Site>() {
+		    @Override
+		    protected void updateItem(Site item, boolean empty) {
+		        super.updateItem(item, empty);
+		        if (empty || item == null) {
+		            setText(null);
+		        } else {
+		            setText(item.getSiteName()); // Customize display format
+		        }
+		    }
+		});
+
+		siteBox.setButtonCell(new ListCell<Site>() {
+		    @Override
+		    protected void updateItem(Site item, boolean empty) {
+		        super.updateItem(item, empty);
+		        if (empty || item == null) {
+		            setText(null);
+		        } else {
+		            setText(item.getSiteName()); // Customize button cell format
+		        }
+		    }
+		});	
+
 
 		technicianBox = new ComboBox<>();
 		technicianBox.getItems().addAll(userController.getAllTechniekers());
 		technicianBox.setPromptText("Selecteer een technieker");
 		technicianBox.setPrefWidth(200);
+		
+		technicianBox.setCellFactory(param -> new ListCell<User>() {
+			@Override
+			protected void updateItem(User technician, boolean empty) {
+				super.updateItem(technician, empty);
+				if(empty || technician == null) {
+					setText(null);
+				} else {
+					setText(technician.getFullName());
+				}
+			}
+		});
+		
+		technicianBox.setButtonCell(new ListCell<User>() {
+			@Override
+			protected void updateItem(User technician, boolean empty) {
+				super.updateItem(technician, empty);
+				if(empty || technician == null) {
+					setText(null);
+				} else {
+					setText(technician.getFullName());
+				}
+			}
+		});
 
 		int row = 1;
 		pane.add(new Label("Site:"), 0, row);
@@ -237,39 +307,39 @@ public class AddOrEditMachineForm extends GridPane
 		return buttonBox;
 	}
 
-	private void saveMachine()
-	{
-		resetErrorLabels();
+	private void saveMachine() {
+	    resetErrorLabels();
 
-		try
-		{
-			MachineBuilder machineBuilder = new MachineBuilder();
-			machineBuilder.createMachine();
-			machineBuilder.buildSite(siteBox.getValue());
-			machineBuilder.buildTechnician(technicianBox.getValue());
-			machineBuilder.buildCode(codeField.getText());
-			machineBuilder.buildStatusses(machineStatusBox.getValue(), productionStatusBox.getValue());
-			machineBuilder.buildLocation(locationField.getText());
-			machineBuilder.buildProductInfo(productInfoField.getText());
-			machineBuilder.buildMaintenance(futureMaintenance.getValue());
+	    try {
+	        MachineBuilder machineBuilder = new MachineBuilder();
+	        machineBuilder.createMachine();
+	        
+	        // If editing an existing machine, set the ID
+	        if (!isNewMachine) {
+	            machineBuilder.buildId(machineDTO.id());
+	        }
+	        
+	        machineBuilder.buildSite(siteBox.getValue());
+	        machineBuilder.buildTechnician(technicianBox.getValue());
+	        machineBuilder.buildCode(codeField.getText());
+	        machineBuilder.buildStatusses(machineStatusBox.getValue(), productionStatusBox.getValue());
+	        machineBuilder.buildLocation(locationField.getText());
+	        machineBuilder.buildProductInfo(productInfoField.getText());
+	        machineBuilder.buildMaintenance(futureMaintenance.getValue());
 
-			if (isNewMachine)
-			{
-				machineController.addNewMachine(machineBuilder.getMachine());
-			} else
-			{
-				machineController.updateMachine(machineBuilder.getMachine());
-			}
+	        if (isNewMachine) {
+	            machineController.addNewMachine(machineBuilder.getMachine());
+	        } else {
+	            machineController.updateMachine(machineBuilder.getMachine());
+	        }
 
-			mainLayout.showMachineScreen();
-		} catch (InformationRequiredExceptionMachine e)
-		{
-			handleInformationRequiredException(e);
-		} catch (Exception e)
-		{
-			showError("Er is een fout opgetreden: " + e.getMessage());
-			e.printStackTrace();
-		}
+	        mainLayout.showMachineScreen();
+	    } catch (InformationRequiredExceptionMachine e) {
+	        handleInformationRequiredException(e);
+	    } catch (Exception e) {
+	        showError("Er is een fout opgetreden: " + e.getMessage());
+	        e.printStackTrace();
+	    }
 	}
 
 	private void resetErrorLabels()

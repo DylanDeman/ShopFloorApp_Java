@@ -1,7 +1,9 @@
 package domain.machine;
 
 import java.io.Serializable;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import domain.site.Site;
 import domain.user.User;
@@ -37,6 +39,7 @@ public class Machine implements Serializable
 		setMachineStatus(machineStatus);
 		setProductionStatus(productionStatus);
 		setFutureMaintenance(futureMaintenance);
+		
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -58,11 +61,18 @@ public class Machine implements Serializable
 
 	private LocalDate lastMaintenance, futureMaintenance;
 	private int numberDaysSinceLastMaintenance;
-	private double upTimeInHours;
+	//private double upTimeInHours;
 
-//	public double getUpTimeInHours()
-//	{
-//		return (lastMaintenance != null) ? Duration.between(lastMaintenance, LocalDateTime.now()).toHours() : 0.0;
-//	}
-
+	public double getUpTimeInHours() {
+	    if (lastMaintenance == null) {
+	        System.out.println("Last maintenance is null for machine: " + code);
+	        return 0.0;
+	    }
+	    
+	    LocalDateTime maintenanceDateTime = lastMaintenance.atStartOfDay();
+	    double hours = Duration.between(maintenanceDateTime, LocalDateTime.now()).toHours();
+	    System.out.println("Machine " + code + " last maintenance: " + lastMaintenance + 
+	                       ", current uptime: " + hours + " hours");
+	    return hours;
+	}
 }

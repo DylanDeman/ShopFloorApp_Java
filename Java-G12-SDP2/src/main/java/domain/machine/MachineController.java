@@ -65,17 +65,18 @@ public class MachineController
 		machineRepo.commitTransaction();
 	}
 
-	public void updateMachine(Machine machine)
-	{
-		machineRepo.startTransaction();
-		machineRepo.update(machine);
-		machineRepo.commitTransaction();
+	public void updateMachine(Machine machine) {
+	    System.out.println("Updating machine with IDd: " + machine.getId());
+	    machineRepo.startTransaction();
+	    machineRepo.update(machine); // Assuming update is properly implemented
+	    machineRepo.commitTransaction();
+	    System.out.println("Machine update committed.");
 	}
 
 	public void addNewMachine(MachineDTO machineDTO)
 	{
 		Machine machine = convertDTOToMachine(machineDTO);
-		addNewMachine(machine); // <-- now it actually saves it
+		addNewMachine(machine); 
 	}
 
 	public Machine convertDTOToMachine(MachineDTO dto)
