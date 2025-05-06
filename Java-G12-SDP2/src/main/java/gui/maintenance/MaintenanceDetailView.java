@@ -18,6 +18,7 @@ import domain.maintenance.Maintenance;
 import domain.maintenance.MaintenanceController;
 import domain.maintenance.MaintenanceDTO;
 import gui.MainLayout;
+import gui.customComponents.CustomInformationBox;
 import gui.report.AddReportForm;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -42,7 +43,6 @@ import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import gui.customComponents.CustomInformationBox;
 
 public class MaintenanceDetailView extends BorderPane
 {
@@ -69,8 +69,8 @@ public class MaintenanceDetailView extends BorderPane
 	public MaintenanceDetailView(MainLayout mainLayout, MaintenanceDTO maintenance)
 	{
 		this.mainLayout = mainLayout;
-		this.maintenanceController = new MaintenanceController();
-		this.fileInfoController = new FileInfoController();
+		this.maintenanceController = mainLayout.getServices().getMaintenanceController();
+		this.fileInfoController = mainLayout.getServices().getFileInfoController();
 
 		// Load maintenance data
 		if (maintenance != null)
@@ -135,8 +135,7 @@ public class MaintenanceDetailView extends BorderPane
 		backIcon.setIconColor(Color.web("#333333"));
 		backButton.setGraphic(backIcon);
 		backButton.getStyleClass().add("back-button");
-		backButton.setOnAction(e ->
-		{
+		backButton.setOnAction(e -> {
 			mainLayout.showMaintenanceList();
 		});
 
@@ -172,8 +171,7 @@ public class MaintenanceDetailView extends BorderPane
 		reportIcon.setIconColor(Color.WHITE);
 		reportButton.setGraphic(reportIcon);
 		reportButton.getStyleClass().add("action-button");
-		reportButton.setOnAction(e ->
-		{
+		reportButton.setOnAction(e -> {
 			goToAddRapport(mainLayout, currentMaintenance);
 		});
 
@@ -227,9 +225,8 @@ public class MaintenanceDetailView extends BorderPane
 		table.getStyleClass().add("maintenance-table");
 
 		// Column headers
-		String[] headers =
-		{ "Onderhoudsnummer", "Uitvoeringsdatum", "Starttijd", "Eindtijd", "Technicus", "Reden", "Opmerkingen",
-				"Status" };
+		String[] headers = { "Onderhoudsnummer", "Uitvoeringsdatum", "Starttijd", "Eindtijd", "Technicus", "Reden",
+				"Opmerkingen", "Status" };
 
 		// Create header cells
 		for (int i = 0; i < headers.length; i++)

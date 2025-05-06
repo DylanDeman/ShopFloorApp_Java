@@ -44,7 +44,7 @@ public class MachinesListComponent extends GridPane
 		this.machineTable = new TableView<>();
 		this.machineController = mainLayout.getServices().getMachineController();
 		this.siteController = mainLayout.getServices().getSiteController();
-		this.userController = new UserController();
+		this.userController = mainLayout.getServices().getUserController();
 		initializeGUI();
 	}
 
@@ -222,15 +222,13 @@ public class MachinesListComponent extends GridPane
 
 	private void openAddMachineForm()
 	{
-		Parent addMachineForm = new AddOrEditMachineForm(mainLayout, machineController, null, siteController,
-				userController);
+		Parent addMachineForm = new AddOrEditMachineForm(mainLayout, null);
 		mainLayout.setContent(addMachineForm, true, false);
 	}
 
 	private void openEditMachineForm(MachineDTO machine)
 	{
-		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machineController, machine, siteController,
-				userController);
+		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machine);
 		mainLayout.setContent(editMachineForm, true, false);
 	}
 

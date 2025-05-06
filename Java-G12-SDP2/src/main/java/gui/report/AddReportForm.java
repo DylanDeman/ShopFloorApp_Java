@@ -54,10 +54,10 @@ public class AddReportForm extends GridPane
 
 	public AddReportForm(MainLayout mainLayout, MaintenanceDTO maintenanceDTO)
 	{
-		this.maintenanceController = new MaintenanceController();
-		this.siteController = new SiteController();
-		this.reportController = new ReportController();
-		this.userController = new UserController();
+		this.maintenanceController = mainLayout.getServices().getMaintenanceController();
+		this.siteController = mainLayout.getServices().getSiteController();
+		this.reportController = mainLayout.getServices().getReportController();
+		this.userController = mainLayout.getServices().getUserController();
 		this.mainLayout = mainLayout;
 		this.selectedMaintenanceDTO = maintenanceDTO;
 
@@ -357,8 +357,7 @@ public class AddReportForm extends GridPane
 
 	private void handleInformationRequiredException(InformationRequiredExceptionReport e)
 	{
-		e.getInformationRequired().forEach((field, requiredElement) ->
-		{
+		e.getInformationRequired().forEach((field, requiredElement) -> {
 			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
 			showFieldError(field, errorMessage);
 		});
