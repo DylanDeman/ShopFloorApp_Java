@@ -6,6 +6,7 @@ import gui.login.LoginPane;
 import gui.machine.MachinesListComponent;
 import gui.maintenance.MaintenanceDetailView;
 import gui.maintenance.MaintenanceListComponent;
+import gui.notification.NotificationListComponent;
 import gui.report.AddReportForm;
 import gui.sitesList.SitesListComponent;
 import javafx.geometry.Insets;
@@ -110,6 +111,11 @@ public class MainLayout
 	{
 		AddReportForm addReport = new AddReportForm(this, maintenance);
 		setContent(addReport, true, false);
+	}
+	
+	public void showNotificationList() {
+		NotificationListComponent notificationList = new NotificationListComponent(this);
+		setContent(notificationList, true, false);
 	}
 
 	public void setContent(Parent content, boolean showNavbar, boolean isHomeScreen)

@@ -3,6 +3,7 @@ package main;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -11,6 +12,7 @@ import domain.Address;
 import domain.machine.Machine;
 import domain.maintenance.Maintenance;
 import domain.maintenance.MaintenanceController;
+import domain.notifications.Notification;
 import domain.report.Report;
 import domain.site.Site;
 import domain.user.User;
@@ -71,6 +73,16 @@ public class StartUpGUI extends Application
 		User u10 = new User("Kim", "De Vries", "kim@email.com", "0412345678", "password", LocalDate.of(1991, 4, 20),
 				new Address("Straat 10", 100, 9999, "Stad"), Status.INACTIEF, Role.MANAGER);
 
+		
+
+		List<Notification> notifications = Arrays.asList(
+		    new Notification(0, false, "📢 Storing gemeld op machine M1-3096", LocalDateTime.now().minusHours(1)),
+		    new Notification(0, false, "🛠 Onderhoud ingepland op 2025-06-02", LocalDateTime.now().minusDays(1)),
+		    new Notification(0, true, "✅ Onderhoud succesvol afgerond", LocalDateTime.now().minusDays(2)),
+		    new Notification(0, false, "⚠️ Productiefout gemeld bij Line 4", LocalDateTime.now().minusMinutes(30)),
+		    new Notification(0, true, "ℹ️ Nieuwe update beschikbaar voor machinegegevens", LocalDateTime.now().minusDays(5))
+		);
+
 		List<Address> siteAddresses = IntStream.range(0, 14).mapToObj(
 				i -> new Address("SiteStraat " + (i + 1), (i + 1) * 10, 1000 + (i * 100), "SiteStad " + (i + 1)))
 				.collect(Collectors.toList());
@@ -130,6 +142,8 @@ public class StartUpGUI extends Application
 			entityManager.persist(u9);
 			entityManager.persist(u10);
 			sites.forEach(site -> entityManager.persist(site));
+			notifications.forEach(n -> entityManager.persist(n));
+
 
 			maintenances.forEach(maintenance -> entityManager.persist(maintenance));
 

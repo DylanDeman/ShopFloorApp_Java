@@ -5,8 +5,12 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import domain.user.User;
 import gui.MainLayout;
 import javafx.geometry.Pos;
+import javafx.geometry.Side;
 import javafx.scene.control.Button;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
@@ -40,12 +44,40 @@ public class Navbar extends HBox
 		VBox userInfo = new VBox(2, userName, userRole);
 		userInfo.getStyleClass().add("user-info");
 
+
+		
 		Button notificationBtn = new Button();
 		FontIcon bellIcon = new FontIcon("fas-bell");
 		bellIcon.setIconSize(20);
 		notificationBtn.setGraphic(bellIcon);
 		notificationBtn.getStyleClass().add("icon-btn");
-		notificationBtn.setOnAction(e -> System.out.println("notificatiepagina"));
+
+		// Create the dropdown (ContextMenu)
+		ContextMenu notificationMenu = new ContextMenu();
+		notificationMenu.setMinSize(500, 500);
+		
+
+		// Example dummy notifications
+		MenuItem n1 = new MenuItem("Nieuwe storing gemeld");
+		MenuItem n2 = new MenuItem("Machine onderhoud gepland");
+		MenuItem seeAll = new MenuItem("Zie alle notificaties");
+		notificationMenu.getStyleClass().add("context-menu");
+		n1.getStyleClass().add("menu-item");
+		n2.getStyleClass().add("menu-item");
+		seeAll.getStyleClass().add("menu-item");
+
+		seeAll.setOnAction(e -> mainLayout.showNotificationList());
+
+		seeAll.setStyle("-fx-font-weight: bold;");
+		notificationMenu.getItems().addAll(n1, n2, new SeparatorMenuItem(), seeAll);
+
+		notificationBtn.setOnAction(e -> {
+		    if (!notificationMenu.isShowing()) {
+		        notificationMenu.show(notificationBtn, Side.BOTTOM, 0, 0);
+		    } else {
+		        notificationMenu.hide();
+		    }
+		});
 
 		Button logoutBtn = new Button("Uitloggen");
 		logoutBtn.getStyleClass().add("logout-btn");

@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.NamedQueries;
+import jakarta.persistence.NamedQuery;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +19,16 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
+@NamedQueries({
+	@NamedQuery(name = "Notification.getAllRead", query ="""
+			SELECT n FROM Notification n
+			WHERE n.isRead = 1
+			"""),
+	@NamedQuery(name = "Notification.getAllUnread", query ="""
+	SELECT n FROM Notification n
+	WHERE n.isRead = 0
+	""")
+})
 public class Notification implements Serializable{
 
 
@@ -26,7 +38,7 @@ public class Notification implements Serializable{
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 	
-	private boolean read;
+	private boolean isRead;
 	private String message;
 	private LocalDateTime time;
 }

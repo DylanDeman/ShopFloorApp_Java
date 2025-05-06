@@ -77,3 +77,21 @@
     -fx-background-color: #e74c3c;
     -fx-text-fill: white;
 }
+
+.context-menu {
+    -fx-background-color: #ffffff;
+    -fx-border-color: #d1d1d1;
+    -fx-padding: 5;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0.2, 0, 1);
+}
+
+.menu-item {
+    -fx-padding: 8 15;
+    -fx-font-size: 14px;
+}
+
+.menu-item:hover {
+    -fx-background-color: #f0453c;
+    -fx-color: #ffffff;
+}
+

@@ -3,6 +3,7 @@ package gui;
 import domain.machine.MachineController;
 import domain.maintenance.FileInfoController;
 import domain.maintenance.MaintenanceController;
+import domain.notifications.NotificationController;
 import domain.report.ReportController;
 import domain.site.Site;
 import domain.site.SiteController;
@@ -25,6 +26,7 @@ public class AppServices
 	private final MaintenanceController maintenanceController;
 	private final FileInfoController fileInfoController;
 	private final ReportController reportController;
+	private final NotificationController notificationController;
 
 	public AppServices()
 	{
@@ -40,5 +42,6 @@ public class AppServices
 		this.fileInfoController = new FileInfoController();
 		this.reportController = new ReportController();
 		this.userController = new UserController();
+		this.notificationController = new NotificationController();
 	}
 }

@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import domain.Observer;
-import domain.Subject;
 import domain.site.Site;
 import domain.site.SiteDTO;
+import interfaces.Observer;
+import interfaces.Subject;
 
 public class MachineController implements Subject
 {
@@ -135,11 +135,10 @@ public class MachineController implements Subject
 		observers.remove(observer);
 	}
 
+
 	@Override
-	public void notifyObservers(String message) {
-		for (Observer observer : observers) {
-			observer.update(message);
-		}
+	public void notifyObservers() {
+		// TODO Auto-generated method stub
 		
 	}
 
