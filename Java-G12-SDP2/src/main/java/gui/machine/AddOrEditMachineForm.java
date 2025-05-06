@@ -11,7 +11,6 @@ import domain.user.User;
 import domain.user.UserController;
 import exceptions.InformationRequiredExceptionMachine;
 import gui.MainLayout;
-import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -56,14 +55,13 @@ public class AddOrEditMachineForm extends GridPane
 
 	private boolean isNewMachine;
 
-	public AddOrEditMachineForm(MainLayout mainLayout, MachineController machineController, MachineDTO machineDTO,
-			SiteController siteController, UserController userController)
+	public AddOrEditMachineForm(MainLayout mainLayout, MachineDTO machineDTO)
 	{
 		this.mainLayout = mainLayout;
-		this.machineController = machineController;
+		this.machineController = mainLayout.getServices().getMachineController();
 		this.machineDTO = machineDTO;
-		this.siteController = siteController;
-		this.userController = userController;
+		this.siteController = mainLayout.getServices().getSiteController();
+		this.userController = mainLayout.getServices().getUserController();
 		this.isNewMachine = machineDTO == null;
 
 		initializeFields();
@@ -99,7 +97,6 @@ public class AddOrEditMachineForm extends GridPane
 		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, scrollPane);
 
 		this.add(mainContainer, 0, 0);
-
 
 	}
 
@@ -187,62 +184,77 @@ public class AddOrEditMachineForm extends GridPane
 		siteBox.getItems().addAll(siteController.getSiteObjects());
 		siteBox.setPromptText("Selecteer een site");
 		siteBox.setPrefWidth(200);
-		
+
 		siteBox = new ComboBox<>();
 		siteBox.getItems().addAll(siteController.getSiteObjects());
 		siteBox.setPromptText("Selecteer een site");
 		siteBox.setPrefWidth(200);
 
 		// Customizing the ComboBox's display
-		siteBox.setCellFactory(param -> new ListCell<Site>() {
-		    @Override
-		    protected void updateItem(Site item, boolean empty) {
-		        super.updateItem(item, empty);
-		        if (empty || item == null) {
-		            setText(null);
-		        } else {
-		            setText(item.getSiteName()); // Customize display format
-		        }
-		    }
+		siteBox.setCellFactory(param -> new ListCell<Site>()
+		{
+			@Override
+			protected void updateItem(Site item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				if (empty || item == null)
+				{
+					setText(null);
+				} else
+				{
+					setText(item.getSiteName()); // Customize display format
+				}
+			}
 		});
 
-		siteBox.setButtonCell(new ListCell<Site>() {
-		    @Override
-		    protected void updateItem(Site item, boolean empty) {
-		        super.updateItem(item, empty);
-		        if (empty || item == null) {
-		            setText(null);
-		        } else {
-		            setText(item.getSiteName()); // Customize button cell format
-		        }
-		    }
-		});	
-
+		siteBox.setButtonCell(new ListCell<Site>()
+		{
+			@Override
+			protected void updateItem(Site item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				if (empty || item == null)
+				{
+					setText(null);
+				} else
+				{
+					setText(item.getSiteName()); // Customize button cell format
+				}
+			}
+		});
 
 		technicianBox = new ComboBox<>();
 		technicianBox.getItems().addAll(userController.getAllTechniekers());
 		technicianBox.setPromptText("Selecteer een technieker");
 		technicianBox.setPrefWidth(200);
-		
-		technicianBox.setCellFactory(param -> new ListCell<User>() {
+
+		technicianBox.setCellFactory(param -> new ListCell<User>()
+		{
 			@Override
-			protected void updateItem(User technician, boolean empty) {
+			protected void updateItem(User technician, boolean empty)
+			{
 				super.updateItem(technician, empty);
-				if(empty || technician == null) {
+				if (empty || technician == null)
+				{
 					setText(null);
-				} else {
+				} else
+				{
 					setText(technician.getFullName());
 				}
 			}
 		});
-		
-		technicianBox.setButtonCell(new ListCell<User>() {
+
+		technicianBox.setButtonCell(new ListCell<User>()
+		{
 			@Override
-			protected void updateItem(User technician, boolean empty) {
+			protected void updateItem(User technician, boolean empty)
+			{
 				super.updateItem(technician, empty);
-				if(empty || technician == null) {
+				if (empty || technician == null)
+				{
 					setText(null);
-				} else {
+				} else
+				{
 					setText(technician.getFullName());
 				}
 			}
@@ -307,39 +319,46 @@ public class AddOrEditMachineForm extends GridPane
 		return buttonBox;
 	}
 
-	private void saveMachine() {
-	    resetErrorLabels();
+	private void saveMachine()
+	{
+		resetErrorLabels();
 
-	    try {
-	        MachineBuilder machineBuilder = new MachineBuilder();
-	        machineBuilder.createMachine();
-	        
-	        // If editing an existing machine, set the ID
-	        if (!isNewMachine) {
-	            machineBuilder.buildId(machineDTO.id());
-	        }
-	        
-	        machineBuilder.buildSite(siteBox.getValue());
-	        machineBuilder.buildTechnician(technicianBox.getValue());
-	        machineBuilder.buildCode(codeField.getText());
-	        machineBuilder.buildStatusses(machineStatusBox.getValue(), productionStatusBox.getValue());
-	        machineBuilder.buildLocation(locationField.getText());
-	        machineBuilder.buildProductInfo(productInfoField.getText());
-	        machineBuilder.buildMaintenance(futureMaintenance.getValue());
+		try
+		{
+			MachineBuilder machineBuilder = new MachineBuilder();
+			machineBuilder.createMachine();
 
-	        if (isNewMachine) {
-	            machineController.addNewMachine(machineBuilder.getMachine());
-	        } else {
-	            machineController.updateMachine(machineBuilder.getMachine());
-	        }
+			// If editing an existing machine, set the ID
+			if (!isNewMachine)
+			{
+				machineBuilder.buildId(machineDTO.id());
+			}
 
-	        mainLayout.showMachineScreen();
-	    } catch (InformationRequiredExceptionMachine e) {
-	        handleInformationRequiredException(e);
-	    } catch (Exception e) {
-	        showError("Er is een fout opgetreden: " + e.getMessage());
-	        e.printStackTrace();
-	    }
+			machineBuilder.buildSite(siteBox.getValue());
+			machineBuilder.buildTechnician(technicianBox.getValue());
+			machineBuilder.buildCode(codeField.getText());
+			machineBuilder.buildStatusses(machineStatusBox.getValue(), productionStatusBox.getValue());
+			machineBuilder.buildLocation(locationField.getText());
+			machineBuilder.buildProductInfo(productInfoField.getText());
+			machineBuilder.buildMaintenance(futureMaintenance.getValue());
+
+			if (isNewMachine)
+			{
+				machineController.addNewMachine(machineBuilder.getMachine());
+			} else
+			{
+				machineController.updateMachine(machineBuilder.getMachine());
+			}
+
+			mainLayout.showMachineScreen();
+		} catch (InformationRequiredExceptionMachine e)
+		{
+			handleInformationRequiredException(e);
+		} catch (Exception e)
+		{
+			showError("Er is een fout opgetreden: " + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 
 	private void resetErrorLabels()

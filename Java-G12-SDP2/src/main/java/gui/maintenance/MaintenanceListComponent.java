@@ -46,14 +46,14 @@ public class MaintenanceListComponent extends VBox
 	public MaintenanceListComponent(MainLayout mainLayout)
 	{
 		this.mainLayout = mainLayout;
-		this.mc = new MaintenanceController();
+		this.mc = mainLayout.getServices().getMaintenanceController();
 		this.table = new TableView<>();
 		initializeGUI();
 	}
 
 	public MaintenanceListComponent(MainLayout mainLayout, MachineDTO machineDTO)
 	{
-		this.mc = new MaintenanceController();
+		this.mc = mainLayout.getServices().getMaintenanceController();
 		this.machineDTO = machineDTO;
 		this.mainLayout = mainLayout;
 		this.table = new TableView<>();
@@ -208,8 +208,7 @@ public class MaintenanceListComponent extends VBox
 		{
 			private final CustomButton btn = new CustomButton("Details");
 			{
-				btn.setOnAction(e ->
-				{
+				btn.setOnAction(e -> {
 					MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
 					goToDetails(mainLayout, selectedMaintenance);
 				});
@@ -230,8 +229,7 @@ public class MaintenanceListComponent extends VBox
 		updateTotalPages();
 		Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
 		pagination.setPageFactory(this::createPage);
-		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) ->
-		{
+		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
 			currentPage = newIndex.intValue();
 			updateTableItems();
 		});

@@ -1,10 +1,13 @@
 package gui;
 
 import domain.machine.MachineController;
+import domain.maintenance.FileInfoController;
 import domain.maintenance.MaintenanceController;
+import domain.report.ReportController;
 import domain.site.Site;
 import domain.site.SiteController;
 import domain.user.User;
+import domain.user.UserController;
 import lombok.Getter;
 import repository.GenericDao;
 import repository.GenericDaoJpa;
@@ -15,10 +18,13 @@ import repository.UserRepository;
 public class AppServices
 {
 	private final UserRepository userRepo;
+	private final UserController userController;
 	private final SiteRepository siteRepo;
 	private final SiteController siteController;
 	private final MachineController machineController;
 	private final MaintenanceController maintenanceController;
+	private final FileInfoController fileInfoController;
+	private final ReportController reportController;
 
 	public AppServices()
 	{
@@ -31,5 +37,8 @@ public class AppServices
 		this.siteController = new SiteController();
 		this.machineController = new MachineController();
 		this.maintenanceController = new MaintenanceController();
+		this.fileInfoController = new FileInfoController();
+		this.reportController = new ReportController();
+		this.userController = new UserController();
 	}
 }

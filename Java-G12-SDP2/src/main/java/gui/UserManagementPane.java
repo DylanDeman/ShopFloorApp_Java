@@ -195,12 +195,6 @@ public class UserManagementPane extends GridPane implements Observer
 		mainLayout.setContent(editUserForm, true, false);
 	}
 
-	public void returnToUserManagement()
-	{
-		mainLayout.setContent(this, true, false);
-		loadUsers();
-	}
-
 	private void deleteUser(User user)
 	{
 		try
