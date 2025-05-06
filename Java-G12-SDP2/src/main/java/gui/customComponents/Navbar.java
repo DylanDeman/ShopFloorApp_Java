@@ -52,17 +52,28 @@ public class Navbar extends HBox
 		logoutBtn.setOnAction(e -> mainLayout.showLoginScreen());
 
 		HBox navLinks = new HBox(20);
+		navLinks.getStyleClass().add("nav-links-container");
+		navLinks.setAlignment(Pos.CENTER);
+
 		if (!isHomeScreen)
 		{
 			Button sitesBtn = new Button("Sites");
 			sitesBtn.getStyleClass().add("nav-link");
 			sitesBtn.setOnAction(e -> mainLayout.showSiteList());
 
+			Button machinesBtn = new Button("Machines");
+			machinesBtn.getStyleClass().add("nav-link");
+			machinesBtn.setOnAction(e -> mainLayout.showMachineScreen());
+
+			Button userBtn = new Button("Gebruikers");
+			userBtn.getStyleClass().add("nav-link");
+			userBtn.setOnAction(e -> mainLayout.showUserManagementScreen());
+
 			Button maintenanceBtn = new Button("Onderhoud");
 			maintenanceBtn.getStyleClass().add("nav-link");
 			maintenanceBtn.setOnAction(e -> mainLayout.showMaintenanceList());
 
-			navLinks.getChildren().addAll(sitesBtn, maintenanceBtn);
+			navLinks.getChildren().addAll(sitesBtn, machinesBtn, userBtn, maintenanceBtn);
 		}
 
 		Region leftSpacer = new Region();
@@ -70,7 +81,10 @@ public class Navbar extends HBox
 		HBox.setHgrow(leftSpacer, Priority.ALWAYS);
 		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
 
-		this.getChildren().addAll(logoBtn, leftSpacer, navLinks, rightSpacer, userInfo, notificationBtn, logoutBtn);
+		HBox rightElements = new HBox(15, userInfo, notificationBtn, logoutBtn);
+		rightElements.setAlignment(Pos.CENTER_RIGHT);
+
+		this.getChildren().addAll(logoBtn, leftSpacer, navLinks, rightSpacer, rightElements);
 	}
 
 	private void fillUserData()
