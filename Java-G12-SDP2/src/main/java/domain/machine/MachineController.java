@@ -1,17 +1,22 @@
 package domain.machine;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import domain.Observer;
+import domain.Subject;
 import domain.site.Site;
 import domain.site.SiteDTO;
 
-public class MachineController
+public class MachineController implements Subject
 {
 
 	private MachineDao machineRepo;
 	private List<Machine> machineList;
+	
+	private List<Observer> observers = new ArrayList<>();
 
 	public MachineController()
 	{
@@ -63,14 +68,16 @@ public class MachineController
 		machineRepo.startTransaction();
 		machineRepo.insert(machine);
 		machineRepo.commitTransaction();
+		
+		notifyObservers("Nieuwe machine toegevoegd: " + machine.getCode());
 	}
 
 	public void updateMachine(Machine machine) {
-	    System.out.println("Updating machine with IDd: " + machine.getId());
 	    machineRepo.startTransaction();
-	    machineRepo.update(machine); // Assuming update is properly implemented
+	    machineRepo.update(machine); 
 	    machineRepo.commitTransaction();
-	    System.out.println("Machine update committed.");
+	    
+	    notifyObservers("Machine updated: " + machine.getCode());
 	}
 
 	public void addNewMachine(MachineDTO machineDTO)
@@ -116,6 +123,24 @@ public class MachineController
 		site.setStatus(dto.status());
 
 		return site;
+	}
+
+	@Override
+	public void addObserver(Observer observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void removeObserver(Observer observer) {
+		observers.remove(observer);
+	}
+
+	@Override
+	public void notifyObservers(String message) {
+		for (Observer observer : observers) {
+			observer.update(message);
+		}
+		
 	}
 
 }

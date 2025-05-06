@@ -22,8 +22,7 @@ import util.ProductionStatus;
 
 @Entity
 @ToString
-@NoArgsConstructor(access = AccessLevel.PROTECTED) // ? Final weggedaan van attributen om noargsConstructor op te
-													// lossen!
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
 public class Machine implements Serializable
@@ -61,7 +60,6 @@ public class Machine implements Serializable
 
 	private LocalDate lastMaintenance, futureMaintenance;
 	private int numberDaysSinceLastMaintenance;
-	//private double upTimeInHours;
 
 	public double getUpTimeInHours() {
 	    if (lastMaintenance == null) {
