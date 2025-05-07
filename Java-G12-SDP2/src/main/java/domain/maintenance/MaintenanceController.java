@@ -1,5 +1,6 @@
 package domain.maintenance;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -8,6 +9,7 @@ import domain.machine.Machine;
 import domain.machine.MachineDTO;
 import domain.site.Site;
 import domain.site.SiteDTO;
+import util.MaintenanceStatus;
 
 public class MaintenanceController
 {
@@ -64,6 +66,12 @@ public class MaintenanceController
 	private Set<MachineDTO> convertMachinesToMachineDTOs(Set<Machine> machines)
 	{
 		return machines.stream().map(this::convertToMachineDTO).collect(Collectors.toSet());
+	}
+	
+	public void createMaintenance(Maintenance maintenance) {
+		maintenanceRepo.startTransaction();
+	    maintenanceRepo.insert(maintenance);
+	    maintenanceRepo.commitTransaction();
 	}
 
 }

@@ -10,4 +10,5 @@ public class MachineDaoJpa extends GenericDaoJpa<Machine> implements MachineDao 
 	}
 	
 	
+	
 }
