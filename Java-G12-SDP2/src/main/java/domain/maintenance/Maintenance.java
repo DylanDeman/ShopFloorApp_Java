@@ -32,7 +32,6 @@ import util.MaintenanceStatus;
 @AllArgsConstructor
 public class Maintenance implements Serializable
 {
-
 	private static final long serialVersionUID = 1L;
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,24 +47,26 @@ public class Maintenance implements Serializable
 	@Getter
 	@Setter
 	private LocalDateTime endDate;
-	@ManyToOne(cascade = CascadeType.PERSIST)
+	
+	@ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinColumn(name = "technician_id")
 	@Getter
 	@Setter
 	private User technician;
+	
 	@Getter
 	@Setter
 	private String reason;
 	@Getter
 	@Setter
 	private String comments;
+	
 	@Enumerated(EnumType.STRING)
 	@Getter
 	@Setter
 	private MaintenanceStatus status;
 
-	
-	@ManyToOne(cascade = CascadeType.PERSIST)
+	@ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
 	@JoinColumn(name = "machine_id")
 	@Getter
 	@Setter
@@ -96,5 +97,4 @@ public class Maintenance implements Serializable
 		this.status = status;
 		this.machine = machine;
 	}
-
 }
