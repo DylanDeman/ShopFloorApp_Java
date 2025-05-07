@@ -71,10 +71,6 @@ public class SitesListComponent extends VBox implements Observer {
         updateTable(allSites);
     }
 
-    private List<SiteDTO> makeSiteDTOs(List<Site> sites) {
-        return siteRepo.makeSiteDTOs(sites);
-    }
-
     private void initializeGUI() {
         allSites = sc.getSites();
         filteredSites = allSites;
@@ -135,7 +131,13 @@ public class SitesListComponent extends VBox implements Observer {
                 editIcon.setIconSize(12);
                 editButton.setGraphic(editIcon);
                 editButton.setBackground(Background.EMPTY);
-                editButton.setOnAction(event -> openEditSiteForm(siteRepo.makeSiteObject(getTableRow().getItem())));
+                editButton.setOnAction(event -> {
+                    SiteDTO site = getTableRow().getItem();
+                    if (site != null) {
+                        // Using the controller to get the site object
+                        openEditSiteForm(sc.getSiteObject(site));
+                    }
+                });
             }
 
             @Override
@@ -294,19 +296,17 @@ public class SitesListComponent extends VBox implements Observer {
     private void updateFilterOptions() {
         List<String> statussen = new ArrayList<>();
         statussen.add(null);
-        statussen.addAll(
-                allSites.stream().map(s -> s.status().toString()).distinct().sorted().collect(Collectors.toList()));
+        statussen.addAll(sc.getAllStatusses());
         statusFilter.setItems(FXCollections.observableArrayList(statussen));
 
         List<String> siteNames = new ArrayList<>();
         siteNames.add(null);
-        siteNames.addAll(allSites.stream().map(SiteDTO::siteName).distinct().sorted().collect(Collectors.toList()));
+        siteNames.addAll(sc.getAllSiteNames());
         nameFilter.setItems(FXCollections.observableArrayList(siteNames));
 
         List<String> verantwoordelijken = new ArrayList<>();
         verantwoordelijken.add(null);
-        verantwoordelijken.addAll(allSites.stream().map(s -> s.verantwoordelijke().getFullName()).distinct().sorted()
-                .collect(Collectors.toList()));
+        verantwoordelijken.addAll(sc.getAllVerantwoordelijken());
         verantwoordelijkeFilter.setItems(FXCollections.observableArrayList(verantwoordelijken));
     }
 
@@ -318,16 +318,9 @@ public class SitesListComponent extends VBox implements Observer {
 
         int minMachines = parseIntSafely(minMachinesField.getText(), Integer.MIN_VALUE);
         int maxMachines = parseIntSafely(maxMachinesField.getText(), Integer.MAX_VALUE);
-
-        filteredSites = allSites.stream()
-                .filter(site -> selectedStatus == null || site.status().toString().equals(selectedStatus))
-                .filter(site -> site.siteName().toLowerCase().contains(searchQuery))
-                .filter(site -> selectedName == null || site.siteName().equals(selectedName))
-                .filter(site -> selectedVerantwoordelijke == null
-                        || site.verantwoordelijke().getFullName().equals(selectedVerantwoordelijke))
-                .filter(site -> site.machines().size() >= minMachines && site.machines().size() <= maxMachines)
-                .collect(Collectors.toList());
-
+        filteredSites = sc.getFilteredSites(searchQuery, selectedStatus, selectedName, 
+                selectedVerantwoordelijke, minMachines, maxMachines);
+        
         currentPage = 0;
         updatePagination();
         updateTableItems();
@@ -407,8 +400,7 @@ public class SitesListComponent extends VBox implements Observer {
     @Override
     public void update() {
         Platform.runLater(() -> {
-            List<Site> sites = siteRepo.getAllSites();
-            allSites = makeSiteDTOs(sites);
+            allSites = sc.getSites();
             filteredSites = new ArrayList<>(allSites);
             updateFilterOptions();
             updateTable(filteredSites);
