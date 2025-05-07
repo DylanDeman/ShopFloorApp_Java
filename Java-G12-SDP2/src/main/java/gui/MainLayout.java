@@ -1,11 +1,13 @@
 package gui;
 
 import domain.maintenance.MaintenanceDTO;
+import domain.notifications.NotificationDTO;
 import gui.customComponents.Navbar;
 import gui.login.LoginPane;
 import gui.machine.MachinesListComponent;
 import gui.maintenance.MaintenanceDetailView;
 import gui.maintenance.MaintenanceListComponent;
+import gui.notification.NotificationDetailComponent;
 import gui.notification.NotificationListComponent;
 import gui.report.AddReportForm;
 import gui.site.SiteDetailsComponent;
@@ -108,6 +110,12 @@ public class MainLayout
 		MaintenanceDetailView detailView = new MaintenanceDetailView(this, maintenance);
 		setContent(detailView, true, false);
 	}
+	
+	public void showNotificationDetails(NotificationDTO notification) {
+	    NotificationDetailComponent detail = new NotificationDetailComponent(this, notification);
+	    setContent(detail, true, false);
+	}
+
 
 	public void showAddReport(MaintenanceDTO maintenance)
 	{
@@ -132,6 +140,7 @@ public class MainLayout
 		SiteDetailsComponent siteDetailsComponent = new SiteDetailsComponent(this, siteId);
 		setContent(siteDetailsComponent, true, false);
 	}
+	
 
 	public void setContent(Parent content, boolean showNavbar, boolean isHomeScreen)
 	{
