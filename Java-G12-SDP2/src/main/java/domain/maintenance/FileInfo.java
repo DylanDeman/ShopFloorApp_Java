@@ -1,6 +1,7 @@
 package domain.maintenance;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,6 +38,14 @@ public class FileInfo implements Serializable
 	@Setter
 	private byte[] content;
 
+	@Getter
+	@Setter
+	private LocalDateTime uploadDate;
+
+	@Getter
+	@Setter
+	private long size;
+
 	@ManyToOne
 	@JoinColumn(name = "maintenance_id")
 	@Getter
@@ -45,6 +54,7 @@ public class FileInfo implements Serializable
 
 	public FileInfo()
 	{
+		this.uploadDate = LocalDateTime.now();
 	}
 
 	public FileInfo(String name, String type, byte[] content, Maintenance maintenance)
@@ -53,6 +63,8 @@ public class FileInfo implements Serializable
 		this.type = type;
 		this.content = content;
 		this.maintenance = maintenance;
+		this.uploadDate = LocalDateTime.now();
+		this.size = content != null ? content.length : 0;
 	}
 
 	@Override

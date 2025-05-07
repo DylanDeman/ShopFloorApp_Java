@@ -272,7 +272,7 @@ public class AddReportForm extends GridPane
 		Button backButton = new Button();
 		backButton.setGraphic(icon);
 		backButton.getStyleClass().add("back-button");
-		backButton.setOnAction(e -> mainLayout.showHomeScreen());
+		backButton.setOnAction(e -> mainLayout.showMaintenanceDetails(selectedMaintenanceDTO));
 		this.add(backButton, 0, 0, 2, 1);
 
 		Label title = new Label("Rapport aanmaken");
@@ -357,7 +357,8 @@ public class AddReportForm extends GridPane
 
 	private void handleInformationRequiredException(InformationRequiredExceptionReport e)
 	{
-		e.getInformationRequired().forEach((field, requiredElement) -> {
+		e.getInformationRequired().forEach((field, requiredElement) ->
+		{
 			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
 			showFieldError(field, errorMessage);
 		});

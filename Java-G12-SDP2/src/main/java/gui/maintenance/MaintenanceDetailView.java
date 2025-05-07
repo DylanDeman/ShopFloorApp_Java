@@ -1,15 +1,19 @@
 package gui.maintenance;
 
+import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.maintenance.FileInfo;
@@ -20,11 +24,14 @@ import domain.maintenance.MaintenanceDTO;
 import gui.MainLayout;
 import gui.customComponents.CustomInformationBox;
 import gui.report.AddReportForm;
+import javafx.application.Platform;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.ScrollPane;
@@ -39,6 +46,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaView;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -50,18 +60,18 @@ public class MaintenanceDetailView extends BorderPane
 	private FileInfoController fileInfoController;
 	private MaintenanceDTO currentMaintenance;
 	private Stage primaryStage;
-	private static final String FILE_STORAGE_PATH = "maintenance_files";
 
-	// UI Components
 	private Label titleLabel;
 	private Label machineInfoLabel;
 	private VBox filesSection;
 	private FlowPane filesContainer;
 	private List<FileInfo> currentFiles;
+	private ComboBox<String> fileTypeFilter;
+	private ComboBox<String> sortOrder;
+	private String currentFilter = "Alle";
+	private String currentSort = "Datum (Nieuwste)";
+	private Label messageLabel;
 
-	// File types
-	private final List<String> supportedFileTypes = Arrays.asList("*.pdf", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.mp4",
-			"*.mov", "*.avi");
 	private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 	private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
 	private final MainLayout mainLayout;
@@ -71,6 +81,7 @@ public class MaintenanceDetailView extends BorderPane
 		this.mainLayout = mainLayout;
 		this.maintenanceController = mainLayout.getServices().getMaintenanceController();
 		this.fileInfoController = mainLayout.getServices().getFileInfoController();
+		this.primaryStage = (Stage) mainLayout.getMainScene().getWindow();
 
 		// Load maintenance data
 		if (maintenance != null)
@@ -104,9 +115,6 @@ public class MaintenanceDetailView extends BorderPane
 		setStyle("-fx-background-color: #f5f5f5;");
 		setPadding(new Insets(10, 30, 10, 30));
 
-		// Create top navigation area
-		createTopNavigation();
-
 		// Create header with back button and title
 		createHeaderSection();
 
@@ -120,12 +128,6 @@ public class MaintenanceDetailView extends BorderPane
 		}
 	}
 
-	private void createTopNavigation()
-	{
-		// This would be implemented in a real application
-		// Left as a placeholder since it's outside the scope of this view
-	}
-
 	private void createHeaderSection()
 	{
 		// Back button and title
@@ -135,7 +137,8 @@ public class MaintenanceDetailView extends BorderPane
 		backIcon.setIconColor(Color.web("#333333"));
 		backButton.setGraphic(backIcon);
 		backButton.getStyleClass().add("back-button");
-		backButton.setOnAction(e -> {
+		backButton.setOnAction(e ->
+		{
 			mainLayout.showMaintenanceList();
 		});
 
@@ -171,7 +174,8 @@ public class MaintenanceDetailView extends BorderPane
 		reportIcon.setIconColor(Color.WHITE);
 		reportButton.setGraphic(reportIcon);
 		reportButton.getStyleClass().add("action-button");
-		reportButton.setOnAction(e -> {
+		reportButton.setOnAction(e ->
+		{
 			goToAddRapport(mainLayout, currentMaintenance);
 		});
 
@@ -207,13 +211,21 @@ public class MaintenanceDetailView extends BorderPane
 	{
 		// Info message
 		HBox infoBox = new CustomInformationBox("Hieronder vindt u de details van dit onderhoud");
-		VBox.setMargin(infoBox, new Insets(20, 0, 10, 0));
+		VBox.setMargin(infoBox, new Insets(20, 0, 5, 0));
+
+		// Create message label
+		messageLabel = new Label();
+		messageLabel.getStyleClass().add("message-label");
+		messageLabel.setWrapText(true);
+		messageLabel.setVisible(false);
+		messageLabel.setMaxWidth(Double.MAX_VALUE);
+		VBox.setMargin(messageLabel, new Insets(0, 0, 5, 0));
 
 		// Table for maintenance details
 		GridPane table = createMaintenanceTable();
 
-		VBox contentBox = new VBox(10);
-		contentBox.getChildren().addAll(infoBox, table);
+		VBox contentBox = new VBox(5);
+		contentBox.getChildren().addAll(infoBox, messageLabel, table);
 
 		// Always set the maintenance info in the center
 		setCenter(contentBox);
@@ -225,8 +237,9 @@ public class MaintenanceDetailView extends BorderPane
 		table.getStyleClass().add("maintenance-table");
 
 		// Column headers
-		String[] headers = { "Onderhoudsnummer", "Uitvoeringsdatum", "Starttijd", "Eindtijd", "Technicus", "Reden",
-				"Opmerkingen", "Status" };
+		String[] headers =
+		{ "Onderhoudsnummer", "Uitvoeringsdatum", "Starttijd", "Eindtijd", "Technieker", "Reden", "Opmerkingen",
+				"Status" };
 
 		// Create header cells
 		for (int i = 0; i < headers.length; i++)
@@ -240,7 +253,6 @@ public class MaintenanceDetailView extends BorderPane
 			GridPane.setHgrow(headerLabel, Priority.SOMETIMES);
 		}
 
-		// Add separator line
 		Region separator = new Region();
 		separator.setStyle("-fx-background-color: #e0e0e0; -fx-min-height: 1px; -fx-max-height: 1px;");
 		separator.setMaxWidth(Double.MAX_VALUE);
@@ -293,11 +305,6 @@ public class MaintenanceDetailView extends BorderPane
 		return table;
 	}
 
-	private void goToDetails(MainLayout mainLayout, MaintenanceDTO maintenance)
-	{
-		mainLayout.showMaintenanceDetails(maintenance);
-	}
-
 	private void createFilesSection()
 	{
 		filesSection = new VBox(10);
@@ -307,15 +314,16 @@ public class MaintenanceDetailView extends BorderPane
 		Label filesHeader = new Label("Bestanden");
 		filesHeader.getStyleClass().add("files-header");
 
+		// Create filter and sort controls
+		HBox controlsBox = createFilterControls();
+		controlsBox.getStyleClass().add("filter-controls");
+
 		// File container
 		filesContainer = new FlowPane();
 		filesContainer.getStyleClass().add("files-container");
 
 		// Add files to container
-		for (FileInfo file : currentFiles)
-		{
-			filesContainer.getChildren().add(createFileBox(file));
-		}
+		refreshFilesDisplay();
 
 		// Wrap FlowPane in a ScrollPane to enable scrolling
 		ScrollPane scrollPane = new ScrollPane(filesContainer);
@@ -331,7 +339,7 @@ public class MaintenanceDetailView extends BorderPane
 		scrollPane.setMinHeight(400); // Minimum height to ensure it's always visible
 
 		// Add components to files section
-		filesSection.getChildren().addAll(filesHeader, scrollPane);
+		filesSection.getChildren().addAll(filesHeader, controlsBox, scrollPane);
 
 		// Create a container for both maintenance info and files
 		VBox mainContent = new VBox(20);
@@ -341,40 +349,236 @@ public class MaintenanceDetailView extends BorderPane
 		setCenter(mainContent);
 	}
 
+	private HBox createFilterControls()
+	{
+		HBox controlsBox = new HBox(10);
+		controlsBox.setAlignment(Pos.CENTER_LEFT);
+
+		// File type filter
+		Label filterLabel = new Label("Filter op type:");
+		fileTypeFilter = new ComboBox<>();
+		fileTypeFilter.getItems().addAll("Alle", "PDF", "Foto", "Video");
+		fileTypeFilter.setValue(currentFilter);
+		fileTypeFilter.setOnAction(e ->
+		{
+			currentFilter = fileTypeFilter.getValue();
+			refreshFilesDisplay();
+		});
+
+		// Sort order
+		Label sortLabel = new Label("Sorteer op:");
+		sortOrder = new ComboBox<>();
+		sortOrder.getItems().addAll("Datum (Nieuwste)", "Datum (Oudste)", "Grootte (Grootste)", "Grootte (Kleinste)",
+				"Naam (A-Z)", "Naam (Z-A)");
+		sortOrder.setValue(currentSort);
+		sortOrder.setOnAction(e ->
+		{
+			currentSort = sortOrder.getValue();
+			refreshFilesDisplay();
+		});
+
+		controlsBox.getChildren().addAll(filterLabel, fileTypeFilter, sortLabel, sortOrder);
+		return controlsBox;
+	}
+
+	private void refreshFilesDisplay()
+	{
+		filesContainer.getChildren().clear();
+
+		// Filter files
+		List<FileInfo> filteredFiles = currentFiles.stream().filter(file ->
+		{
+			if (currentFilter.equals("Alle"))
+				return true;
+			String fileType = file.getType().toLowerCase();
+			switch (currentFilter)
+			{
+			case "PDF":
+				return fileType.equals("pdf");
+			case "Foto":
+				return fileType.equals("image");
+			case "Video":
+				return fileType.equals("video");
+			default:
+				return true;
+			}
+		}).collect(Collectors.toList());
+
+		// Sort files
+		filteredFiles.sort((f1, f2) ->
+		{
+			switch (currentSort)
+			{
+			case "Datum (Nieuwste)":
+				return f2.getUploadDate().compareTo(f1.getUploadDate());
+			case "Datum (Oudste)":
+				return f1.getUploadDate().compareTo(f2.getUploadDate());
+			case "Grootte (Grootste)":
+				return Long.compare(f2.getSize(), f1.getSize());
+			case "Grootte (Kleinste)":
+				return Long.compare(f1.getSize(), f2.getSize());
+			case "Naam (A-Z)":
+				return f1.getName().compareToIgnoreCase(f2.getName());
+			case "Naam (Z-A)":
+				return f2.getName().compareToIgnoreCase(f1.getName());
+			default:
+				return 0;
+			}
+		});
+
+		// Add sorted and filtered files to container
+		for (FileInfo file : filteredFiles)
+		{
+			filesContainer.getChildren().add(createFileBox(file));
+		}
+	}
+
+	private void refreshFilesSection()
+	{
+		refreshFilesDisplay();
+
+		// If no files left, remove the entire files section
+		if (currentFiles.isEmpty())
+		{
+			VBox mainContent = (VBox) getCenter();
+			mainContent.getChildren().remove(filesSection);
+			filesSection = null;
+		}
+	}
+
 	private VBox createFileBox(FileInfo fileInfo)
 	{
 		VBox fileBox = new VBox();
 		fileBox.getStyleClass().add("file-box");
-		// Fixed width is now applied in CSS
 
-		// Image/preview container with fixed dimensions
 		StackPane previewContainer = new StackPane();
 		previewContainer.getStyleClass().add("image-container");
 
-		// Determine preview based on file type
 		String fileType = fileInfo.getType();
 
 		if (fileType.equals("pdf"))
 		{
-			// PDF preview with icon
-			VBox pdfPreview = new VBox(10);
-			pdfPreview.setAlignment(Pos.CENTER);
+			try
+			{
+				byte[] pdfContent = fileInfoController.getFileContent(fileInfo);
+				if (pdfContent != null)
+				{
+					// Load the first page of the PDF
+					PDDocument document = Loader.loadPDF(pdfContent);
+					PDFRenderer pdfRenderer = new PDFRenderer(document);
+					
+					// Get the first page
+					BufferedImage image = pdfRenderer.renderImageWithDPI(0, 150); // Increased DPI for better quality
+					
+					// Convert to JavaFX Image
+					Image pdfImage = SwingFXUtils.toFXImage(image, null);
+					ImageView pdfImageView = new ImageView(pdfImage);
+					
+					// Create a container to center the image
+					StackPane imageContainer = new StackPane();
+					imageContainer.setStyle("-fx-background-color: white;");
+					imageContainer.setPrefSize(217, 160);
+					
+					// Set dimensions while preserving aspect ratio
+					pdfImageView.setFitWidth(200); // Slightly smaller than container to allow for padding
+					pdfImageView.setFitHeight(140);
+					pdfImageView.setPreserveRatio(true);
+					pdfImageView.setSmooth(true);
+					
+					// Center the image in the container
+					StackPane.setAlignment(pdfImageView, Pos.CENTER);
+					
+					// Add the image to the container
+					imageContainer.getChildren().add(pdfImageView);
+					
+					// Add the container to the preview
+					previewContainer.getChildren().add(imageContainer);
+					
+					// Clean up
+					document.close();
+				} else
+				{
+					throw new IOException("No PDF content available");
+				}
+			} catch (Exception e)
+			{
+				// Fallback to icon if preview fails
+				VBox pdfPreview = new VBox(10);
+				pdfPreview.setAlignment(Pos.CENTER);
 
-			FontIcon pdfIcon = new FontIcon("fas-file-pdf");
-			pdfIcon.setIconSize(60);
-			pdfIcon.setIconColor(Color.web("#333333"));
+				FontIcon pdfIcon = new FontIcon("fas-file-pdf");
+				pdfIcon.setIconSize(60);
+				pdfIcon.setIconColor(Color.web("#333333"));
 
-			Label pdfName = new Label(fileInfo.getName());
-			pdfName.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
-			pdfName.setMaxWidth(200);
-			pdfName.setWrapText(true);
+				Label pdfName = new Label(fileInfo.getName());
+				pdfName.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
+				pdfName.setMaxWidth(200);
+				pdfName.setWrapText(true);
 
-			pdfPreview.getChildren().addAll(pdfIcon, pdfName);
-			previewContainer.getChildren().add(pdfPreview);
+				pdfPreview.getChildren().addAll(pdfIcon, pdfName);
+				previewContainer.getChildren().add(pdfPreview);
+			}
+		} else if (fileType.equals("video"))
+		{
+			try
+			{
+				byte[] videoContent = fileInfoController.getFileContent(fileInfo);
+				if (videoContent != null)
+				{
+					// Create a temporary file to store the video
+					File tempFile = File.createTempFile("preview", ".mp4");
+					try (FileOutputStream fos = new FileOutputStream(tempFile))
+					{
+						fos.write(videoContent);
+					}
 
+					// Create media player
+					Media media = new Media(tempFile.toURI().toString());
+					MediaPlayer mediaPlayer = new MediaPlayer(media);
+					MediaView mediaView = new MediaView(mediaPlayer);
+
+					// Set dimensions
+					mediaView.setFitWidth(217);
+					mediaView.setFitHeight(160);
+					mediaView.setPreserveRatio(true);
+
+					// Add to container
+					previewContainer.getChildren().add(mediaView);
+
+					// Start playing
+					mediaPlayer.setAutoPlay(true);
+					mediaPlayer.setMute(true);
+					mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+
+					// Clean up temp file when done
+					mediaPlayer.setOnEndOfMedia(() ->
+					{
+						tempFile.delete();
+					});
+				} else
+				{
+					throw new IOException("No video content available");
+				}
+			} catch (Exception e)
+			{
+				// Fallback to icon if preview fails
+				VBox videoPreview = new VBox(10);
+				videoPreview.setAlignment(Pos.CENTER);
+
+				FontIcon videoIcon = new FontIcon("fas-video");
+				videoIcon.setIconSize(60);
+				videoIcon.setIconColor(Color.web("#333333"));
+
+				Label videoName = new Label(fileInfo.getName());
+				videoName.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
+				videoName.setMaxWidth(200);
+				videoName.setWrapText(true);
+
+				videoPreview.getChildren().addAll(videoIcon, videoName);
+				previewContainer.getChildren().add(videoPreview);
+			}
 		} else if (fileType.equals("image"))
 		{
-			// Image preview with proper aspect ratio
 			try
 			{
 				byte[] imageContent = fileInfoController.getFileContent(fileInfo);
@@ -415,23 +619,6 @@ public class MaintenanceDetailView extends BorderPane
 				imagePreview.getChildren().addAll(imageIcon, imageName);
 				previewContainer.getChildren().add(imagePreview);
 			}
-		} else if (fileType.equals("video"))
-		{
-			// Video preview with icon
-			VBox videoPreview = new VBox(10);
-			videoPreview.setAlignment(Pos.CENTER);
-
-			FontIcon videoIcon = new FontIcon("fas-video");
-			videoIcon.setIconSize(60);
-			videoIcon.setIconColor(Color.web("#333333"));
-
-			Label videoName = new Label(fileInfo.getName());
-			videoName.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
-			videoName.setMaxWidth(200);
-			videoName.setWrapText(true);
-
-			videoPreview.getChildren().addAll(videoIcon, videoName);
-			previewContainer.getChildren().add(videoPreview);
 		} else
 		{
 			// Generic file preview
@@ -458,12 +645,11 @@ public class MaintenanceDetailView extends BorderPane
 
 		Label fileName = new Label(fileInfo.getName());
 		fileName.getStyleClass().add("file-name");
-		fileName.setMaxWidth(140); // Reduced to make room for buttons
+		fileName.setMaxWidth(140);
 		fileName.setWrapText(true);
 		fileName.setTextOverrun(OverrunStyle.ELLIPSIS); // Add ellipsis for long names
 		HBox.setHgrow(fileName, Priority.ALWAYS);
 
-		// Download button
 		Button downloadBtn = new Button();
 		FontIcon downloadIcon = new FontIcon("fas-download");
 		downloadIcon.setIconSize(16);
@@ -472,7 +658,6 @@ public class MaintenanceDetailView extends BorderPane
 		downloadBtn.getStyleClass().add("action-button-small");
 		downloadBtn.setOnAction(e -> downloadFile(fileInfo));
 
-		// Delete button
 		Button deleteBtn = new Button();
 		FontIcon deleteIcon = new FontIcon("fas-trash");
 		deleteIcon.setIconSize(16);
@@ -481,21 +666,28 @@ public class MaintenanceDetailView extends BorderPane
 		deleteBtn.getStyleClass().add("action-button-small");
 		deleteBtn.setOnAction(e -> deleteFile(fileInfo));
 
-		// Add buttons to actions area
 		fileActions.getChildren().addAll(fileName, downloadBtn, deleteBtn);
 
-		// Add all components to file box
 		fileBox.getChildren().addAll(previewContainer, fileActions);
 
 		return fileBox;
+	}
+
+	private Stage getStage()
+	{
+		return (Stage) getScene().getWindow();
 	}
 
 	private void uploadFiles()
 	{
 		if (currentMaintenance == null)
 		{
-			showAlert(Alert.AlertType.WARNING, "Upload Error",
-					"Er is geen onderhoud geselecteerd om bestanden aan toe te voegen.");
+			Alert alert = new Alert(Alert.AlertType.WARNING);
+			alert.setTitle("Upload Error");
+			alert.setHeaderText("Er is geen onderhoud geselecteerd");
+			alert.setContentText("Er is geen onderhoud geselecteerd om bestanden aan toe te voegen.");
+			alert.initOwner(getStage());
+			alert.showAndWait();
 			return;
 		}
 
@@ -511,32 +703,28 @@ public class MaintenanceDetailView extends BorderPane
 
 		fileChooser.getExtensionFilters().addAll(pdfFilter, imageFilter, videoFilter);
 
-		List<File> selectedFiles = fileChooser.showOpenMultipleDialog(primaryStage);
+		List<File> selectedFiles = fileChooser.showOpenMultipleDialog(getStage());
 
 		if (selectedFiles != null && !selectedFiles.isEmpty())
 		{
-			// If files section doesn't exist yet, create it
-			if (filesSection == null)
-			{
-				// Initialize files list if needed
-				if (currentFiles == null)
-				{
-					currentFiles = new ArrayList<>();
-				}
-
-				// Create the files section
-				createFilesSection();
-			}
-
 			// Get maintenance entity for database relationship
 			Maintenance maintenance = maintenanceController.getMaintenance(currentMaintenance.id());
 			if (maintenance == null)
 			{
-				showAlert(Alert.AlertType.ERROR, "Upload Error", "Could not find maintenance in database.");
+				Alert alert = new Alert(Alert.AlertType.ERROR);
+				alert.setTitle("Upload Error");
+				alert.setHeaderText("Database Error");
+				alert.setContentText("Could not find maintenance in database.");
+				alert.initOwner(getStage());
+				alert.showAndWait();
 				return;
 			}
 
-			// Add each selected file
+			// Track failed uploads
+			List<String> failedUploads = new ArrayList<>();
+			List<FileInfo> successfulUploads = new ArrayList<>();
+
+			// Try to upload each file
 			for (File file : selectedFiles)
 			{
 				try
@@ -544,17 +732,71 @@ public class MaintenanceDetailView extends BorderPane
 					// Create FileInfo entity
 					FileInfo newFile = new FileInfo(file.getName(), getFileType(file.getName()), null, maintenance);
 
-					// Save file content to database
+					// Try to save file content to database
 					fileInfoController.saveFileContent(file, newFile);
 
-					// Add to UI and list
-					currentFiles.add(newFile);
-					filesContainer.getChildren().add(createFileBox(newFile));
+					// If successful, add to successful uploads
+					successfulUploads.add(newFile);
 
-				} catch (IOException e)
+				} catch (Exception e)
 				{
-					showAlert(Alert.AlertType.ERROR, "Upload Error", "Failed to upload file: " + e.getMessage());
+					String errorMessage = e.getMessage();
+					if (errorMessage.contains("Packet for query is too large"))
+					{
+						errorMessage = "Het bestand is te groot voor de database (max 65MB)";
+					}
+					failedUploads.add(String.format("- %s: %s", file.getName(), errorMessage));
 				}
+			}
+
+			// If we have successful uploads, create the files section and add the files
+			if (!successfulUploads.isEmpty())
+			{
+				// If files section doesn't exist yet, create it
+				if (filesSection == null)
+				{
+					// Initialize files list if needed
+					if (currentFiles == null)
+					{
+						currentFiles = new ArrayList<>();
+					}
+
+					// Create the files section
+					createFilesSection();
+				}
+
+				// Add successful uploads to UI and list
+				for (FileInfo file : successfulUploads)
+				{
+					currentFiles.add(file);
+					filesContainer.getChildren().add(createFileBox(file));
+				}
+			}
+
+			// Show summary of failed uploads if any
+			if (!failedUploads.isEmpty())
+			{
+				StringBuilder errorMessage = new StringBuilder(
+						"De volgende bestanden konden niet worden geüpload:\n\n");
+				errorMessage.append(String.join("\n", failedUploads));
+				errorMessage.append("\n\nControleer of de bestanden niet te groot zijn en probeer het opnieuw.");
+
+				// Show the alert on the JavaFX Application Thread
+				Platform.runLater(() ->
+				{
+					try
+					{
+						Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+						errorAlert.setTitle("Upload Fout");
+						errorAlert.setHeaderText("Upload mislukt");
+						errorAlert.setContentText(errorMessage.toString());
+						errorAlert.initOwner(getStage());
+						errorAlert.showAndWait();
+					} catch (Exception e)
+					{
+						System.err.println("Error showing alert: " + e.getMessage());
+					}
+				});
 			}
 		}
 	}
@@ -580,7 +822,7 @@ public class MaintenanceDetailView extends BorderPane
 		// Choose the download location
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 		directoryChooser.setTitle("Selecteer download locatie");
-		File selectedDirectory = directoryChooser.showDialog(primaryStage);
+		File selectedDirectory = directoryChooser.showDialog(getStage());
 
 		if (selectedDirectory != null)
 		{
@@ -590,7 +832,12 @@ public class MaintenanceDetailView extends BorderPane
 				byte[] content = fileInfoController.getFileContent(fileInfo);
 				if (content == null)
 				{
-					showAlert(Alert.AlertType.WARNING, "Download Error", "Bestand niet beschikbaar.");
+					Alert errorAlert = new Alert(Alert.AlertType.WARNING);
+					errorAlert.setTitle("Download Error");
+					errorAlert.setHeaderText("Bestand niet beschikbaar");
+					errorAlert.setContentText("Het bestand kon niet worden gedownload.");
+					errorAlert.initOwner(getStage());
+					errorAlert.showAndWait();
 					return;
 				}
 
@@ -603,12 +850,21 @@ public class MaintenanceDetailView extends BorderPane
 					fos.write(content);
 				}
 
-				showAlert(Alert.AlertType.INFORMATION, "Download Succesvol",
-						"Bestand is gedownload naar: " + targetFile.getAbsolutePath());
+				Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+				successAlert.setTitle("Download Succesvol");
+				successAlert.setHeaderText("Bestand gedownload");
+				successAlert.setContentText("Bestand is gedownload naar: " + targetFile.getAbsolutePath());
+				successAlert.initOwner(getStage());
+				successAlert.showAndWait();
 
 			} catch (IOException e)
 			{
-				showAlert(Alert.AlertType.ERROR, "Download Error", "Fout tijdens downloaden: " + e.getMessage());
+				Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+				errorAlert.setTitle("Download Error");
+				errorAlert.setHeaderText("Download mislukt");
+				errorAlert.setContentText("Fout tijdens downloaden: " + e.getMessage());
+				errorAlert.initOwner(getStage());
+				errorAlert.showAndWait();
 			}
 		}
 	}
@@ -620,6 +876,7 @@ public class MaintenanceDetailView extends BorderPane
 		confirmAlert.setTitle("Bevestig verwijderen");
 		confirmAlert.setHeaderText("Weet u zeker dat u dit bestand wilt verwijderen?");
 		confirmAlert.setContentText("Bestand: " + fileInfo.getName());
+		confirmAlert.initOwner(getStage());
 
 		Optional<ButtonType> result = confirmAlert.showAndWait();
 		if (result.isPresent() && result.get() == ButtonType.OK)
@@ -635,32 +892,13 @@ public class MaintenanceDetailView extends BorderPane
 
 			} catch (Exception e)
 			{
-				showAlert(Alert.AlertType.ERROR, "Delete Error", "Fout tijdens verwijderen: " + e.getMessage());
+				Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+				errorAlert.setTitle("Verwijderen Fout");
+				errorAlert.setHeaderText("Verwijderen mislukt");
+				errorAlert.setContentText("Fout tijdens verwijderen: " + e.getMessage());
+				errorAlert.initOwner(getStage());
+				errorAlert.showAndWait();
 			}
 		}
-	}
-
-	private void refreshFilesSection()
-	{
-		// Clear existing files UI
-		if (filesSection != null)
-		{
-			getChildren().remove(filesSection);
-		}
-
-		// Recreate files section if there are files
-		if (currentFiles != null && !currentFiles.isEmpty())
-		{
-			createFilesSection();
-		}
-	}
-
-	private void showAlert(Alert.AlertType alertType, String title, String content)
-	{
-		Alert alert = new Alert(alertType);
-		alert.setTitle(title);
-		alert.setHeaderText(null);
-		alert.setContentText(content);
-		alert.showAndWait();
 	}
 }

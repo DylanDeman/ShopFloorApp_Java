@@ -28,6 +28,7 @@ public class MainLayout
 {
 	private final BorderPane rootLayout;
 	private final Stage primaryStage;
+	@Getter
 	private final Scene mainScene;
 	@Getter
 	private final AppServices services;
@@ -113,20 +114,23 @@ public class MainLayout
 		AddReportForm addReport = new AddReportForm(this, maintenance);
 		setContent(addReport, true, false);
 	}
-	
-	public void showNotificationList() {
+
+	public void showNotificationList()
+	{
 		NotificationListComponent notificationList = new NotificationListComponent(this);
 		setContent(notificationList, true, false);
 	}
-	
-	public void showSitesList() {
-	    SitesListComponent sitesListComponent = new SitesListComponent(this);
-	    setContent(sitesListComponent, false, false);
+
+	public void showSitesList()
+	{
+		SitesListComponent sitesListComponent = new SitesListComponent(this);
+		setContent(sitesListComponent, false, false);
 	}
 
-	public void showSiteDetails(int siteId) {
-	    SiteDetailsComponent siteDetailsComponent = new SiteDetailsComponent(this, siteId);
-	    setContent(siteDetailsComponent, true, false);
+	public void showSiteDetails(int siteId)
+	{
+		SiteDetailsComponent siteDetailsComponent = new SiteDetailsComponent(this, siteId);
+		setContent(siteDetailsComponent, true, false);
 	}
 
 	public void setContent(Parent content, boolean showNavbar, boolean isHomeScreen)

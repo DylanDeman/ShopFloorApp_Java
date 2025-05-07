@@ -18,6 +18,10 @@ public class FileInfoController
 		this.fileInfoDao = new GenericDaoJpa<>(FileInfo.class);
 	}
 
+	protected GenericDao<FileInfo> getFileInfoDao() {
+		return fileInfoDao;
+	}
+
 	public List<FileInfo> getFilesForMaintenance(int maintenanceId)
 	{
 		return fileInfoDao.findAll().stream()
@@ -50,6 +54,8 @@ public class FileInfoController
 		{
 			byte[] content = fis.readAllBytes();
 			fileInfo.setContent(content);
+			fileInfo.setSize(content.length);
+			fileInfo.setUploadDate(java.time.LocalDateTime.now());
 			saveFile(fileInfo);
 		}
 	}
@@ -57,6 +63,8 @@ public class FileInfoController
 	public void saveFileContent(byte[] content, FileInfo fileInfo)
 	{
 		fileInfo.setContent(content);
+		fileInfo.setSize(content.length);
+		fileInfo.setUploadDate(java.time.LocalDateTime.now());
 		saveFile(fileInfo);
 	}
 }
