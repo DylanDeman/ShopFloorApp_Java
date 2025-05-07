@@ -1,7 +1,11 @@
 package gui.customComponents;
 
+import java.util.List;
+
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import domain.notifications.NotificationController;
+import domain.notifications.NotificationDTO;
 import domain.user.User;
 import gui.MainLayout;
 import javafx.geometry.Pos;
@@ -24,6 +28,8 @@ public class Navbar extends HBox
 
 	private Label userName;
 	private Label userRole;
+	private final NotificationController notificationController = new NotificationController();
+
 
 	public Navbar(MainLayout mainLayout, boolean isHomeScreen)
 	{
@@ -56,23 +62,42 @@ public class Navbar extends HBox
 		ContextMenu notificationMenu = new ContextMenu();
 		notificationMenu.setMinSize(500, 500);
 		
-
-		// Example dummy notifications
-		MenuItem n1 = new MenuItem("Nieuwe storing gemeld");
-		MenuItem n2 = new MenuItem("Machine onderhoud gepland");
-		MenuItem seeAll = new MenuItem("Zie alle notificaties");
-		notificationMenu.getStyleClass().add("context-menu");
-		n1.getStyleClass().add("menu-item");
-		n2.getStyleClass().add("menu-item");
-		seeAll.getStyleClass().add("menu-item");
-
-		seeAll.setOnAction(e -> mainLayout.showNotificationList());
-
-		seeAll.setStyle("-fx-font-weight: bold;");
-		notificationMenu.getItems().addAll(n1, n2, new SeparatorMenuItem(), seeAll);
-
 		notificationBtn.setOnAction(e -> {
 		    if (!notificationMenu.isShowing()) {
+		        // Clear old items
+		        notificationMenu.getItems().clear();
+
+		        // Fetch unread notifications
+		        List<NotificationDTO> unread = notificationController.getAllUnread();
+
+		        if (unread.isEmpty()) {
+		            MenuItem emptyItem = new MenuItem("Geen nieuwe notificaties");
+		            emptyItem.setDisable(true);
+		            notificationMenu.getItems().add(emptyItem);
+		        } else {
+		            for (NotificationDTO dto : unread) {
+		                MenuItem item = new MenuItem(dto.message());
+		                item.getStyleClass().add("menu-item");
+
+		                // Optionally mark as read on click
+		                item.setOnAction(ev -> {
+		                    notificationController.markAsRead(dto.id());
+		                    mainLayout.showNotificationDetails(dto); // Or another action
+		                    notificationMenu.hide();
+		                });
+
+		                notificationMenu.getItems().add(item);
+		            }
+		        }
+
+		        // Always add "See all" item at the end
+		        MenuItem seeAll = new MenuItem("Zie alle notificaties");
+		        seeAll.setStyle("-fx-font-weight: bold;");
+		        seeAll.setOnAction(ev -> mainLayout.showNotificationList());
+		        notificationMenu.getItems().add(new SeparatorMenuItem());
+		        notificationMenu.getItems().add(seeAll);
+
+		        // Show the menu
 		        notificationMenu.show(notificationBtn, Side.BOTTOM, 0, 0);
 		    } else {
 		        notificationMenu.hide();
