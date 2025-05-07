@@ -25,11 +25,9 @@ import util.ProductionStatus;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
-public class Machine implements Serializable
-{
+public class Machine implements Serializable {
 	public Machine(Site site, User tecnician, String code, String location, String productInfo,
-			MachineStatus machineStatus, ProductionStatus productionStatus, LocalDate futureMaintenance)
-	{
+			MachineStatus machineStatus, ProductionStatus productionStatus, LocalDate futureMaintenance) {
 		setSite(site);
 		setTechnician(tecnician);
 		setCode(code);
@@ -38,7 +36,7 @@ public class Machine implements Serializable
 		setMachineStatus(machineStatus);
 		setProductionStatus(productionStatus);
 		setFutureMaintenance(futureMaintenance);
-		
+
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -62,15 +60,15 @@ public class Machine implements Serializable
 	private int numberDaysSinceLastMaintenance;
 
 	public double getUpTimeInHours() {
-	    if (lastMaintenance == null) {
-	        System.out.println("Last maintenance is null for machine: " + code);
-	        return 0.0;
-	    }
-	    
-	    LocalDateTime maintenanceDateTime = lastMaintenance.atStartOfDay();
-	    double hours = Duration.between(maintenanceDateTime, LocalDateTime.now()).toHours();
-	    System.out.println("Machine " + code + " last maintenance: " + lastMaintenance + 
-	                       ", current uptime: " + hours + " hours");
-	    return hours;
+		if (lastMaintenance == null) {
+			System.out.println("Last maintenance is null for machine: " + code);
+			return 0.0;
+		}
+
+		LocalDateTime maintenanceDateTime = lastMaintenance.atStartOfDay();
+		double hours = Duration.between(maintenanceDateTime, LocalDateTime.now()).toHours();
+		System.out.println(
+				"Machine " + code + " last maintenance: " + lastMaintenance + ", current uptime: " + hours + " hours");
+		return hours;
 	}
 }

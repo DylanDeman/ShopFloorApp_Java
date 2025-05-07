@@ -8,6 +8,7 @@ import gui.maintenance.MaintenanceDetailView;
 import gui.maintenance.MaintenanceListComponent;
 import gui.notification.NotificationListComponent;
 import gui.report.AddReportForm;
+import gui.site.SiteDetailsComponent;
 import gui.site.SitesListComponent;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
@@ -116,6 +117,16 @@ public class MainLayout
 	public void showNotificationList() {
 		NotificationListComponent notificationList = new NotificationListComponent(this);
 		setContent(notificationList, true, false);
+	}
+	
+	public void showSitesList() {
+	    SitesListComponent sitesListComponent = new SitesListComponent(this);
+	    setContent(sitesListComponent, false, false);
+	}
+
+	public void showSiteDetails(int siteId) {
+	    SiteDetailsComponent siteDetailsComponent = new SiteDetailsComponent(this, siteId);
+	    setContent(siteDetailsComponent, true, false);
 	}
 
 	public void setContent(Parent content, boolean showNavbar, boolean isHomeScreen)

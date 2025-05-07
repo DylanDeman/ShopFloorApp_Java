@@ -139,7 +139,5 @@ public class MachineController implements Subject
 	@Override
 	public void notifyObservers() {
 		// TODO Auto-generated method stub
-		
 	}
-
 }

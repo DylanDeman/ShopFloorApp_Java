@@ -42,6 +42,8 @@ public class SitesListComponent extends VBox implements Observer {
 	private final MainLayout mainLayout;
 	private SiteController sc;
 	private SiteRepository siteRepo;
+
+	// Table with sites
 	private TableView<SiteDTO> table;
 	private TextField searchField;
 	private List<SiteDTO> allSites;
@@ -64,20 +66,17 @@ public class SitesListComponent extends VBox implements Observer {
 	}
 
 	private void loadSites() {
-		List<Site> sites = siteRepo.getAllSites();
-
-		allSites = makeSiteDTOs(sites);
+		allSites = sc.getSites();
 		filteredSites = allSites;
-
 		updateTable(allSites);
 	}
 
+	// Dit moet in controller!
 	private List<SiteDTO> makeSiteDTOs(List<Site> sites) {
 		return siteRepo.makeSiteDTOs(sites);
 	}
 
 	private void initializeGUI() {
-
 		allSites = sc.getSites();
 		filteredSites = allSites;
 
@@ -92,7 +91,8 @@ public class SitesListComponent extends VBox implements Observer {
 
 	private VBox createTitleSection() {
 		HBox windowHeader = createWindowHeader();
-		HBox informationBox = createInformationBox();
+		HBox informationBox = new CustomInformationBox(
+				"Hieronder vindt u een overzicht van alle sites. Klik op een site om de details van de site te bekijken!");
 		return new VBox(10, windowHeader, informationBox);
 	}
 
@@ -126,8 +126,7 @@ public class SitesListComponent extends VBox implements Observer {
 		HBox filterBox = createTableHeaders();
 
 		TableColumn<SiteDTO, Void> editColumn = new TableColumn<>("");
-		editColumn.setCellFactory(param -> new TableCell<SiteDTO, Void>()
-		{
+		editColumn.setCellFactory(param -> new TableCell<SiteDTO, Void>() {
 			private final Button editButton = new Button();
 			{
 				FontIcon editIcon = new FontIcon("fas-pen");
@@ -136,14 +135,14 @@ public class SitesListComponent extends VBox implements Observer {
 				editButton.setBackground(Background.EMPTY);
 				editButton.setOnAction(event -> openEditSiteForm(siteRepo.makeSiteObject(getTableRow().getItem())));
 			}
+
 			@Override
-			protected void updateItem(Void item, boolean empty)
-			{
+			protected void updateItem(Void item, boolean empty) {
 				super.updateItem(item, empty);
 				setGraphic(empty ? null : editButton);
 			}
 		});
-		
+
 		TableColumn<SiteDTO, Number> col1 = new TableColumn<>("Nr.");
 		col1.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().id()));
 
@@ -158,35 +157,29 @@ public class SitesListComponent extends VBox implements Observer {
 
 		TableColumn<SiteDTO, Number> col5 = new TableColumn<>("Aantal machines");
 		col5.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().machines().size()));
-		
+
 		TableColumn<SiteDTO, String> showColumn = new TableColumn<>("");
-		showColumn.setCellValueFactory(data -> new SimpleStringProperty("Bekijk"));
-		
-		
-		TableColumn<SiteDTO, Void> deleteColumn = new TableColumn<>("Verwijderen");
-		deleteColumn.setCellFactory(param -> new TableCell<SiteDTO, Void>() {
-			private final Button deleteButton = new Button();
-
-			{
-				FontIcon deleteIcon = new FontIcon("far-trash-alt");
-				deleteIcon.setIconSize(20);
-				deleteButton.setGraphic(deleteIcon);
-				deleteButton.setBackground(Background.EMPTY);
-				deleteButton.setOnAction(event -> deleteSite(getTableRow().getItem()));
-			}
-
-			@Override
-			protected void updateItem(Void item, boolean empty) {
-				super.updateItem(item, empty);
-				setGraphic(empty ? null : deleteButton);
-			}
-
+		showColumn.setCellFactory(param -> new TableCell<SiteDTO, String>() {
+		    private final Button viewButton = new Button("Bekijk");
+		    {
+		        viewButton.setOnAction(event -> {
+		            SiteDTO site = getTableRow().getItem();
+		            if (site != null) {
+		            	openSiteDetails(site.id());
+		            }
+		        });
+		    }
+		    
+		    @Override
+		    protected void updateItem(String item, boolean empty) {
+		        super.updateItem(item, empty);
+		        setGraphic(empty ? null : viewButton);
+		    }
 		});
 
 		table.getColumns().add(editColumn);
 		table.getColumns().addAll(col1, col2, col3, col4, col5);
 		table.getColumns().add(showColumn);
-		table.getColumns().add(deleteColumn);
 
 		table.setPrefHeight(300);
 
@@ -329,11 +322,6 @@ public class SitesListComponent extends VBox implements Observer {
 		updateTableItems();
 	}
 
-	private HBox createInformationBox() {
-		return new CustomInformationBox(
-				"Hieronder vindt u een overzicht van alle sites. Klik op een site om de details van de site te bekijken!");
-	}
-
 	private void openAddSiteForm() {
 		Parent addSiteForm = new AddOrEditSiteForm(mainLayout, siteRepo, null);
 		mainLayout.setContent(addSiteForm, true, false);
@@ -342,6 +330,11 @@ public class SitesListComponent extends VBox implements Observer {
 	private void openEditSiteForm(Site site) {
 		Parent editSiteForm = new AddOrEditSiteForm(mainLayout, siteRepo, site);
 		mainLayout.setContent(editSiteForm, true, false);
+	}
+	
+	private void openSiteDetails(int siteId) {
+		Parent siteDetails = new SiteDetailsComponent(mainLayout, siteId);
+		mainLayout.setContent(siteDetails, true, false);
 	}
 
 	@Override
