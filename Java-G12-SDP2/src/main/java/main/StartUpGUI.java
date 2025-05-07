@@ -29,11 +29,9 @@ import util.ProductionStatus;
 import util.Role;
 import util.Status;
 
-public class StartUpGUI extends Application
-{
+public class StartUpGUI extends Application {
 	@Override
-	public void start(Stage primaryStage)
-	{
+	public void start(Stage primaryStage) {
 		MainLayout mainLayout = new MainLayout(primaryStage);
 
 		primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/images/favicon-32x32.png")));
@@ -73,15 +71,13 @@ public class StartUpGUI extends Application
 		User u10 = new User("Kim", "De Vries", "kim@email.com", "0412345678", "password", LocalDate.of(1991, 4, 20),
 				new Address("Straat 10", 100, 9999, "Stad"), Status.INACTIEF, Role.MANAGER);
 
-		
-
 		List<Notification> notifications = Arrays.asList(
-		    new Notification(0, false, "📢 Storing gemeld op machine M1-3096", LocalDateTime.now().minusHours(1)),
-		    new Notification(0, false, "🛠 Onderhoud ingepland op 2025-06-02", LocalDateTime.now().minusDays(1)),
-		    new Notification(0, true, "✅ Onderhoud succesvol afgerond", LocalDateTime.now().minusDays(2)),
-		    new Notification(0, false, "⚠️ Productiefout gemeld bij Line 4", LocalDateTime.now().minusMinutes(30)),
-		    new Notification(0, true, "ℹ️ Nieuwe update beschikbaar voor machinegegevens", LocalDateTime.now().minusDays(5))
-		);
+				new Notification(0, false, "📢 Storing gemeld op machine M1-3096", LocalDateTime.now().minusHours(1)),
+				new Notification(0, false, "🛠 Onderhoud ingepland op 2025-06-02", LocalDateTime.now().minusDays(1)),
+				new Notification(0, true, "✅ Onderhoud succesvol afgerond", LocalDateTime.now().minusDays(2)),
+				new Notification(0, false, "⚠️ Productiefout gemeld bij Line 4", LocalDateTime.now().minusMinutes(30)),
+				new Notification(0, true, "ℹ️ Nieuwe update beschikbaar voor machinegegevens",
+						LocalDateTime.now().minusDays(5)));
 
 		List<Address> siteAddresses = IntStream.range(0, 14).mapToObj(
 				i -> new Address("SiteStraat " + (i + 1), (i + 1) * 10, 1000 + (i * 100), "SiteStad " + (i + 1)))
@@ -97,13 +93,12 @@ public class StartUpGUI extends Application
 
 		EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
 
-		try
-		{
+		try {
 
-			Machine m1 = new Machine(site1, u1, "M1-3096", "Line 1", "Product A", 
-				    MachineStatus.DRAAIT, ProductionStatus.GEZOND, LocalDate.of(2025, 6, 2));
-				m1.setLastMaintenance(LocalDate.of(2025, 5, 1));
-
+			Machine m1 = new Machine(site1, u1, "M1-3096", "Line 1", "Product A", MachineStatus.DRAAIT,
+					ProductionStatus.GEZOND, LocalDate.of(2025, 6, 2));
+			m1.setLastMaintenance(LocalDate.of(2025, 5, 1));
+			
 			Machine m2 = new Machine(site1, u4, "M2-2359", "Line 4", "Product B", MachineStatus.MANUEEL_GESTOPT,
 					ProductionStatus.FALEND, LocalDate.of(2025, 8, 15));
 
@@ -144,28 +139,22 @@ public class StartUpGUI extends Application
 			sites.forEach(site -> entityManager.persist(site));
 			notifications.forEach(n -> entityManager.persist(n));
 
-
 			maintenances.forEach(maintenance -> entityManager.persist(maintenance));
 
 			entityManager.getTransaction().commit();
-		} catch (Exception e)
-		{
+		} catch (Exception e) {
 			System.err.println("Error during transaction: " + e.getMessage());
-			if (entityManager.getTransaction().isActive())
-			{
+			if (entityManager.getTransaction().isActive()) {
 				entityManager.getTransaction().rollback();
 			}
-		} finally
-		{
-			if (entityManager != null && entityManager.isOpen())
-			{
+		} finally {
+			if (entityManager != null && entityManager.isOpen()) {
 				entityManager.close();
 			}
 		}
 	}
 
-	public static void main(String[] args)
-	{
+	public static void main(String[] args) {
 		launch(args);
 	}
 }

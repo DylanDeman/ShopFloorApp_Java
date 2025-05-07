@@ -17,6 +17,12 @@ public class CustomInformationBox extends HBox {
 		this.text = text;
 		buildGui();
 	}
+	
+	public CustomInformationBox(FontIcon icon, String text) {
+		this.icon = icon;
+		this.text = text;
+		buildGui();
+	}
 
 	private void buildGui() {
 		Text label = new Text(text);

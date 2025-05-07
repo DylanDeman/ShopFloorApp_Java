@@ -6,47 +6,47 @@
 /* Error messaging */
 .error-label {
     -fx-text-fill: red;
-    -fx-font-size: 12px;
-    -fx-padding: 2px 0px 0px 0px;
+    -fx-font-size: 12.0px;
+    -fx-padding: 2.0px 0.0px 0.0px 0.0px;
 }
 
 /* Header styling */
 .header-label {
     -fx-font-weight: bold;
-    -fx-font-size: 24px;
+    -fx-font-size: 24.0px;
     -fx-text-align: center;
-    -fx-padding: 15px 0px;
+    -fx-padding: 15.0px 0.0px;
     -fx-text-fill: #333;
 }
 
 /* Form container */
 .form-box {
-    -fx-background-color: rgba(255, 255, 255, 0.9);
-    -fx-background-radius: 10px;
+    -fx-background-color: rgba(255.0, 255.0, 255.0, 0.9);
+    -fx-background-radius: 10.0px;
     -fx-border-color: #cccccc;
-    -fx-border-radius: 10px;
-    -fx-border-width: 1px;
-    -fx-spacing: 15px;
-    -fx-padding: 25px;
+    -fx-border-radius: 10.0px;
+    -fx-border-width: 1.0px;
+    -fx-spacing: 15.0px;
+    -fx-padding: 25.0px;
 }
 
 /* Content container */
 .content-container {
-    -fx-spacing: 15px;
-    -fx-padding: 20px;
+    -fx-spacing: 15.0px;
+    -fx-padding: 20.0px;
 }
 
 /* Form labels */
 .form-label {
     -fx-font-weight: bold;
-    -fx-min-width: 120px;
+    -fx-min-width: 120.0px;
 }
 
 /* Section labels for better organization */
 .section-label {
     -fx-font-weight: bold;
-    -fx-font-size: 16px;
-    -fx-padding: 5px 0px 10px 0px;
+    -fx-font-size: 16.0px;
+    -fx-padding: 5.0px 0.0px 10.0px 0.0px;
     -fx-text-fill: #333333;
 }
 
@@ -57,14 +57,14 @@
 
 /* Container for label + field pairs */
 .form-field-container {
-    -fx-spacing: 10px;
+    -fx-spacing: 10.0px;
     -fx-alignment: center-left;
-    -fx-padding: 3px 0px;
+    -fx-padding: 3.0px 0.0px;
 }
 
 /* Date and time input containers */
 .date-time-box {
-    -fx-spacing: 15px;
+    -fx-spacing: 15.0px;
     -fx-alignment: center-left;
 }
 
@@ -72,8 +72,8 @@
 .create-report-button {
     -fx-background-color: #ba68f1;
     -fx-text-fill: white;
-    -fx-font-size: 14px;
-    -fx-padding: 10px 30px;
+    -fx-font-size: 14.0px;
+    -fx-padding: 10.0px 30.0px;
 }
 
 .create-report-button:hover {
@@ -82,10 +82,10 @@
 
 /* Input controls styling */
 .text-field, .text-area, .combo-box, .date-picker {
-    -fx-background-radius: 4px;
-    -fx-border-radius: 4px;
+    -fx-background-radius: 4.0px;
+    -fx-border-radius: 4.0px;
     -fx-border-color: #cccccc;
-    -fx-border-width: 1px;
+    -fx-border-width: 1.0px;
 }
 
 .text-field:focused, .text-area:focused, .combo-box:focused, .date-picker:focused {
@@ -105,10 +105,10 @@
 /* Responsive styling for different screen sizes */
 @media (max-width: 700px) {
     .form-box {
-        -fx-padding: 15px;
+        -fx-padding: 15.0px;
     }
 
     .form-label {
-        -fx-min-width: 100px;
+        -fx-min-width: 100.0px;
     }
 }

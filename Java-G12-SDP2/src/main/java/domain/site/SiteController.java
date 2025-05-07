@@ -10,31 +10,27 @@ import domain.machine.MachineDTO;
 import util.AuthenticationUtil;
 import util.Role;
 
-public class SiteController
-{
+public class SiteController {
 	// Misschien kan het aanmaken van de repo met een factory gedaan worden:
 	// TODO feedback vragen hierover
 	private SiteDao siteRepo;
 
-	public SiteController()
-	{
+	public SiteController() {
 		siteRepo = new SiteDaoJpa();
 	}
 
-	public Site getSite(int id)
-	{
-		return siteRepo.get(id);
+	public SiteDTO getSite(int id) {
+		Site site =  siteRepo.get(id);
+		return makeSiteDTO(site);
 	}
 
-	public List<SiteDTO> getSites()
-	{
+	public List<SiteDTO> getSites() {
 		// Kijken of ingelogde user de rol ADMIN bevat
 		boolean hasRole = AuthenticationUtil.hasRole(Role.ADMIN);
 
 		// Als hij deze rol bevat kan hij deze actie dus uitvoeren en krijgen we alle
 		// sites terug
-		if (hasRole)
-		{
+		if (hasRole) {
 			List<Site> sites = siteRepo.findAll();
 			return makeSiteDTOs(sites);
 		}
@@ -43,19 +39,15 @@ public class SiteController
 		return new ArrayList<>();
 	}
 
-	public List<Site> getSiteObjects()
-	{
+	public List<Site> getSiteObjects() {
 		return siteRepo.findAll();
 	}
 
-	public void setSiteNaam(int id, String name)
-	{
+	public void setSiteNaam(int id, String name) {
 		boolean hasRole = AuthenticationUtil.hasRole(Role.ADMIN);
-		if (hasRole)
-		{
+		if (hasRole) {
 			Site site = siteRepo.get(id);
-			if (site != null)
-			{
+			if (site != null) {
 				site.setSiteName(name);
 				siteRepo.update(site);
 			}
@@ -70,8 +62,7 @@ public class SiteController
 	 * site.getStatus())).collect(Collectors.toUnmodifiableList()); }
 	 */
 
-	public List<SiteDTO> makeSiteDTOs(List<Site> sites)
-	{
+	public List<SiteDTO> makeSiteDTOs(List<Site> sites) {
 		return sites.stream().map(site -> {
 			Set<MachineDTO> machineDTOs = toMachineDTOs(site.getMachines());
 
@@ -80,18 +71,31 @@ public class SiteController
 		}).collect(Collectors.toUnmodifiableList());
 	}
 
-	private Set<MachineDTO> toMachineDTOs(Set<Machine> machines)
-	{
-		return machines.stream().map(machine -> new MachineDTO(machine.getId(), null, // Or use a SiteDTO if available.
-																						// Avoid circular references!
-				machine.getTechnician(), // Later UserDTO
-				machine.getCode(), machine.getMachineStatus(), machine.getProductionStatus(), machine.getLocation(),
+	public SiteDTO makeSiteDTO(Site site) {
+		Set<MachineDTO> machineDTOs = toMachineDTOs(site.getMachines());
+
+		return new SiteDTO(site.getId(), site.getSiteName(), site.getVerantwoordelijke(), // later UserDTO
+				machineDTOs, site.getStatus(), site.getAddress());
+	}
+	
+	// TODO Hier null is niet goed!
+	public MachineDTO makeMachineDTO(Machine machine) {
+		return new MachineDTO(machine.getId(), null, machine.getTechnician(), machine.getCode(),
+				machine.getMachineStatus(), machine.getProductionStatus(), machine.getLocation(),
 				machine.getProductInfo(), machine.getLastMaintenance(), machine.getFutureMaintenance(),
-				machine.getNumberDaysSinceLastMaintenance(), machine.getUpTimeInHours())).collect(Collectors.toSet());
+				machine.getNumberDaysSinceLastMaintenance(), machine.getUpTimeInHours());
 	}
 
-	public Site getSiteObject(SiteDTO site)
-	{
+	private Set<MachineDTO> toMachineDTOs(Set<Machine> machines) {
+		return machines.stream()
+				.map(machine -> new MachineDTO(machine.getId(), null, machine.getTechnician(), machine.getCode(),
+						machine.getMachineStatus(), machine.getProductionStatus(), machine.getLocation(),
+						machine.getProductInfo(), machine.getLastMaintenance(), machine.getFutureMaintenance(),
+						machine.getNumberDaysSinceLastMaintenance(), machine.getUpTimeInHours()))
+				.collect(Collectors.toSet());
+	}
+
+	public Site getSiteObject(SiteDTO site) {
 		return siteRepo.get(site.id());
 	}
 

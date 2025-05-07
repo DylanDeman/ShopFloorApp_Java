@@ -37,13 +37,9 @@ import util.Status;
 @Table(name = "users")
 @NamedQueries({
 		@NamedQuery(name = "User.getAllWithAddress", query = "SELECT u FROM User u JOIN u.address a ORDER BY u.id"),
-		@NamedQuery(name = "User.getAllTechniekers", query = """
-				SELECT u FROM User u
-				WHERE u.role = util.Role.TECHNIEKER
-				"""),
+		@NamedQuery(name = "User.getAllTechniekers", query = "SELECT u FROM User u WHERE u.role = util.Role.TECHNIEKER"),
 		@NamedQuery(name = "User.getByEmail", query = "SELECT u FROM User u WHERE u.email = :email ORDER BY u.id") })
-public class User implements Serializable, Subject
-{
+public class User implements Serializable, Subject {
 	private static final long serialVersionUID = 1L;
 
 	private List<Observer> observers = new ArrayList<>();
@@ -70,8 +66,7 @@ public class User implements Serializable, Subject
 	private Role role;
 
 	public User(String firstName, String lastName, String email, String phoneNumber, String password,
-			LocalDate birthdate, Address address, Status status, Role role)
-	{
+			LocalDate birthdate, Address address, Status status, Role role) {
 		setFirstName(firstName);
 		setLastName(lastName);
 		setEmail(email);
@@ -83,14 +78,12 @@ public class User implements Serializable, Subject
 		setRole(role);
 	}
 
-	public int getAge()
-	{
+	public int getAge() {
 		return Period.between(birthdate, LocalDate.now()).getYears();
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return String.format("%s %s, %s, %s, %s, %s, %s, %s, %s", firstName != null ? firstName : "N/A",
 				lastName != null ? lastName : "N/A", email != null ? email : "N/A",
 				phoneNumber != null ? phoneNumber : "N/A", password != null ? password : "N/A",
@@ -98,28 +91,24 @@ public class User implements Serializable, Subject
 				status != null ? status.toString() : "N/A", role != null ? role.toString() : "N/A");
 	}
 
-	public String getFullName()
-	{
+	public String getFullName() {
 		return String.format("%s %s", firstName, lastName);
 	}
 
 	@Override
-	public void addObserver(Observer o)
-	{
+	public void addObserver(Observer o) {
 		observers.add(o);
 		notifyObservers();
 	}
 
 	@Override
-	public void removeObserver(Observer o)
-	{
+	public void removeObserver(Observer o) {
 		observers.remove(o);
 		notifyObservers();
 	}
 
 	@Override
-	public void notifyObservers()
-	{
+	public void notifyObservers() {
 		observers.forEach(o -> o.update());
 	}
 }
