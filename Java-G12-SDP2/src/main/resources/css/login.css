@@ -1,13 +1,5 @@
 /* TODO terug dit wegdoen RODE KLEUR VAN DELAWARE EF463C */
 
-/* Root container */
-.login-pane {
-    -fx-background-image: url("/images/background.png");
-    -fx-background-repeat: no-repeat;
-    -fx-background-position: center center;
-    -fx-background-size: cover;
-}
-
 /* Left login form */
 .login-form {
 	-fx-background-color: #D9D9D9;

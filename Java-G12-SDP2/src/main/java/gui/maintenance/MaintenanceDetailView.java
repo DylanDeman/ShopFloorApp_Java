@@ -466,34 +466,34 @@ public class MaintenanceDetailView extends BorderPane
 					// Load the first page of the PDF
 					PDDocument document = Loader.loadPDF(pdfContent);
 					PDFRenderer pdfRenderer = new PDFRenderer(document);
-					
+
 					// Get the first page
 					BufferedImage image = pdfRenderer.renderImageWithDPI(0, 150); // Increased DPI for better quality
-					
+
 					// Convert to JavaFX Image
 					Image pdfImage = SwingFXUtils.toFXImage(image, null);
 					ImageView pdfImageView = new ImageView(pdfImage);
-					
+
 					// Create a container to center the image
 					StackPane imageContainer = new StackPane();
 					imageContainer.setStyle("-fx-background-color: white;");
 					imageContainer.setPrefSize(217, 160);
-					
+
 					// Set dimensions while preserving aspect ratio
 					pdfImageView.setFitWidth(200); // Slightly smaller than container to allow for padding
 					pdfImageView.setFitHeight(140);
 					pdfImageView.setPreserveRatio(true);
 					pdfImageView.setSmooth(true);
-					
+
 					// Center the image in the container
 					StackPane.setAlignment(pdfImageView, Pos.CENTER);
-					
+
 					// Add the image to the container
 					imageContainer.getChildren().add(pdfImageView);
-					
+
 					// Add the container to the preview
 					previewContainer.getChildren().add(imageContainer);
-					
+
 					// Clean up
 					document.close();
 				} else
@@ -695,13 +695,16 @@ public class MaintenanceDetailView extends BorderPane
 		fileChooser.setTitle("Upload Files");
 
 		// Set supported file types
-		FileChooser.ExtensionFilter pdfFilter = new FileChooser.ExtensionFilter("PDF Files", "*.pdf");
-		FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter("Image Files", "*.jpg", "*.jpeg",
+		FileChooser.ExtensionFilter allSupportedFilter = new FileChooser.ExtensionFilter("Alle ondersteunde bestanden",
+				"*.pdf", "*.jpg", "*.jpeg", "*.png", "*.gif", "*.mp4", "*.mov", "*.avi");
+		FileChooser.ExtensionFilter pdfFilter = new FileChooser.ExtensionFilter("PDF Bestanden", "*.pdf");
+		FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter("Foto Bestanden", "*.jpg", "*.jpeg",
 				"*.png", "*.gif");
-		FileChooser.ExtensionFilter videoFilter = new FileChooser.ExtensionFilter("Video Files", "*.mp4", "*.mov",
+		FileChooser.ExtensionFilter videoFilter = new FileChooser.ExtensionFilter("Video Bestanden", "*.mp4", "*.mov",
 				"*.avi");
 
-		fileChooser.getExtensionFilters().addAll(pdfFilter, imageFilter, videoFilter);
+		fileChooser.getExtensionFilters().addAll(allSupportedFilter, pdfFilter, imageFilter, videoFilter);
+		fileChooser.setSelectedExtensionFilter(allSupportedFilter); // Set default filter
 
 		List<File> selectedFiles = fileChooser.showOpenMultipleDialog(getStage());
 
@@ -729,8 +732,18 @@ public class MaintenanceDetailView extends BorderPane
 			{
 				try
 				{
+					// Validate file type
+					String fileType = getFileType(file.getName());
+					if (!isValidFileType(fileType))
+					{
+						failedUploads.add(String.format(
+								"- %s: Bestandstype niet ondersteund. Alleen PDF, afbeelding, en video bestanden zijn toegestaan.",
+								file.getName()));
+						continue;
+					}
+
 					// Create FileInfo entity
-					FileInfo newFile = new FileInfo(file.getName(), getFileType(file.getName()), null, maintenance);
+					FileInfo newFile = new FileInfo(file.getName(), fileType, null, maintenance);
 
 					// Try to save file content to database
 					fileInfoController.saveFileContent(file, newFile);
@@ -779,7 +792,7 @@ public class MaintenanceDetailView extends BorderPane
 				StringBuilder errorMessage = new StringBuilder(
 						"De volgende bestanden konden niet worden geüpload:\n\n");
 				errorMessage.append(String.join("\n", failedUploads));
-				errorMessage.append("\n\nControleer of de bestanden niet te groot zijn en probeer het opnieuw.");
+				errorMessage.append("\n\nControleer of de bestanden het juiste type zijn en niet te groot zijn.");
 
 				// Show the alert on the JavaFX Application Thread
 				Platform.runLater(() ->
@@ -815,6 +828,11 @@ public class MaintenanceDetailView extends BorderPane
 			return "video";
 		}
 		return "other";
+	}
+
+	private boolean isValidFileType(String fileType)
+	{
+		return fileType.equals("pdf") || fileType.equals("image") || fileType.equals("video");
 	}
 
 	private void downloadFile(FileInfo fileInfo)

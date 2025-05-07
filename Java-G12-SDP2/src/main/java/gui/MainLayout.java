@@ -132,7 +132,7 @@ public class MainLayout
 	public void showSitesList()
 	{
 		SitesListComponent sitesListComponent = new SitesListComponent(this);
-		setContent(sitesListComponent, false, false);
+		setContent(sitesListComponent, true, false);
 	}
 
 	public void showSiteDetails(int siteId)
