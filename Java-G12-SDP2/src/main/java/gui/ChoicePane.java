@@ -34,9 +34,6 @@ public class ChoicePane extends GridPane
 		Button maintenanceListButton = createButton("Lijst onderhouden");
 		maintenanceListButton.setOnAction(e -> goToMaintenanceList());
 
-		Button addRapportButton = createButton("Rapport toevoegen");
-		addRapportButton.setOnAction(e -> goToAddRapport());
-
 		Button sitesButton = createButton("Overzicht sites");
 		sitesButton.setOnAction(e -> gotToSitesList());
 
@@ -49,10 +46,9 @@ public class ChoicePane extends GridPane
 		this.add(title, 0, 0, 2, 1);
 		this.add(userManagementButton, 0, 1);
 		this.add(maintenanceListButton, 1, 1);
-		this.add(addRapportButton, 2, 1);
-		this.add(sitesButton, 0, 2);
-		this.add(machinesButton, 1, 2);
-		this.add(logoutButton, 2, 2);
+		this.add(sitesButton, 2, 1);
+		this.add(machinesButton, 0, 2);
+		this.add(logoutButton, 1, 2);
 
 		for (javafx.scene.Node node : this.getChildren())
 		{
