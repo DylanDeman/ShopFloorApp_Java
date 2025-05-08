@@ -63,10 +63,11 @@ public class MaintenanceListComponent extends VBox
 
 	private void initializeGUI()
 	{
-
 		allMaintenances = machineDTO == null ? mc.getMaintenances()
 				: mc.getMaintenances().stream().filter((m) -> m.machine().equals(machineDTO)).toList();
 		filteredMaintenances = allMaintenances;
+		
+		table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
 
 		VBox titleSection = createTitleSection();
 		VBox tableSection = createTableSection();
@@ -128,7 +129,7 @@ public class MaintenanceListComponent extends VBox
 		TableColumn<MaintenanceDTO, String> col7 = createColumn("Status", m -> m.status().toString());
 		TableColumn<MaintenanceDTO, String> col8 = createColumn("Machine",
 				m -> String.format("Machine %d", m.machine().id()));
-		TableColumn<MaintenanceDTO, Void> col9 = createAddRapportButtonColumn();
+		TableColumn<MaintenanceDTO, Void> col9 = createDetailsButton();
 
 		List<TableColumn<MaintenanceDTO, ?>> columns;
 		if (machineDTO != null)
@@ -205,18 +206,20 @@ public class MaintenanceListComponent extends VBox
 		return col;
 	}
 
-	private TableColumn<MaintenanceDTO, Void> createAddRapportButtonColumn()
+	private TableColumn<MaintenanceDTO, Void> createDetailsButton()
 	{
 		TableColumn<MaintenanceDTO, Void> col = new TableColumn<>("Details");
 
 		col.setCellFactory(param -> new TableCell<>()
 		{
-			private final CustomButton btn = new CustomButton("Details");
+			private final CustomButton btn = new CustomButton("Details", Pos.CENTER);
 			{
 				btn.setOnAction(e -> {
 					MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
 					goToDetails(mainLayout, selectedMaintenance);
 				});
+				btn.setMaxWidth(Double.MAX_VALUE); 
+				btn.setAlignment(Pos.CENTER);
 			}
 
 			@Override
@@ -224,6 +227,7 @@ public class MaintenanceListComponent extends VBox
 			{
 				super.updateItem(item, empty);
 				setGraphic(empty ? null : btn);
+				setAlignment(Pos.CENTER);
 			}
 		});
 		return col;
