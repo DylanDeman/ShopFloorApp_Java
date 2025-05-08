@@ -8,6 +8,7 @@ import gui.login.LoginPane;
 import gui.machine.MachinesListComponent;
 import gui.maintenance.MaintenanceDetailView;
 import gui.maintenance.MaintenanceListComponent;
+import gui.maintenance.MaintenancePlanningForm;
 import gui.notification.NotificationDetailComponent;
 import gui.notification.NotificationListComponent;
 import gui.report.AddReportForm;
