@@ -55,7 +55,8 @@ public class MachinesListComponent extends GridPane
 		this.getChildren().add(createTitleSection());
 
 		machineTable = new TableView<>();
-
+		machineTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+		
 		buildColumns();
 
 		addButton = new Button("Machine toevoegen +");

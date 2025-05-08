@@ -74,6 +74,8 @@ public class SitesListComponent extends VBox implements Observer {
     private void initializeGUI() {
         allSites = sc.getSites();
         filteredSites = allSites;
+        
+		table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
 
         VBox titleSection = createTitleSection();
         VBox tableSection = createTableSection();

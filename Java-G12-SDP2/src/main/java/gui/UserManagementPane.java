@@ -54,6 +54,7 @@ public class UserManagementPane extends GridPane implements Observer
 		this.getChildren().add(createTitleSection());
 
 		userTable = new TableView<>();
+		userTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
 		buildColumns();
 
 		addButton = new Button("Gebruiker toevoegen +");
