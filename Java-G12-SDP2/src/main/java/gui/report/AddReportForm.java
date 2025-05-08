@@ -21,6 +21,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -80,9 +81,17 @@ public class AddReportForm extends GridPane
 		this.setVgap(15);
 		this.setPadding(new Insets(20));
 
+		ScrollPane scrollPane = new javafx.scene.control.ScrollPane();
+		scrollPane.setContent(createFormContent());
+		scrollPane.setFitToWidth(true);
+		scrollPane.setPrefViewportHeight(800);
+		scrollPane.getStyleClass().add("scroll-pane");
+		scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+
 		VBox mainContainer = new VBox();
 		mainContainer.setAlignment(Pos.CENTER);
-		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, createFormContent());
+		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, scrollPane);
 
 		this.add(mainContainer, 0, 0);
 	}
@@ -357,8 +366,7 @@ public class AddReportForm extends GridPane
 
 	private void handleInformationRequiredException(InformationRequiredExceptionReport e)
 	{
-		e.getInformationRequired().forEach((field, requiredElement) ->
-		{
+		e.getInformationRequired().forEach((field, requiredElement) -> {
 			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
 			showFieldError(field, errorMessage);
 		});

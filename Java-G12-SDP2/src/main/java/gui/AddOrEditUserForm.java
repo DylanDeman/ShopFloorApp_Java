@@ -12,6 +12,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -66,9 +67,18 @@ public class AddOrEditUserForm extends GridPane
 		this.setVgap(15);
 		this.setPadding(new Insets(20));
 
-		VBox mainContainer = new VBox();
-		mainContainer.setAlignment(Pos.CENTER);
-		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, createFormContent());
+		ScrollPane scrollPane = new ScrollPane();
+		scrollPane.setContent(createFormContent());
+		scrollPane.setFitToWidth(true);
+		scrollPane.setPrefViewportHeight(800);
+		scrollPane.getStyleClass().add("scroll-pane");
+		scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+
+		VBox mainContainer = new VBox(10);
+		mainContainer.setAlignment(Pos.TOP_CENTER);
+		mainContainer.setPadding(new Insets(10));
+		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, scrollPane);
 
 		this.add(mainContainer, 0, 0);
 	}
