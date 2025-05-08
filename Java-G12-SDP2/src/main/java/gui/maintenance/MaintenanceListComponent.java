@@ -1,5 +1,6 @@
 package gui.maintenance;
 
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -117,22 +118,22 @@ public class MaintenanceListComponent extends VBox
 
 		TableColumn<MaintenanceDTO, String> col1 = createColumn("Datum uitgevoerd", m -> m.executionDate().toString());
 		TableColumn<MaintenanceDTO, String> col2 = createColumn("Starttijdstip",
-				m -> m.startDate().toLocalTime().toString());
+				m -> m.startDate().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")).toString());
 		TableColumn<MaintenanceDTO, String> col3 = createColumn("Eindtijdstip",
-				m -> m.endDate().toLocalTime().toString());
+				m -> m.endDate().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")).toString());
 		TableColumn<MaintenanceDTO, String> col4 = createColumn("Naam technieker",
 				m -> m.technician() != null ? m.technician().getFullName() : "Onbekend");
 		TableColumn<MaintenanceDTO, String> col5 = createColumn("Reden", MaintenanceDTO::reason);
 		TableColumn<MaintenanceDTO, String> col6 = createColumn("Opmerkingen", MaintenanceDTO::comments);
 		TableColumn<MaintenanceDTO, String> col7 = createColumn("Status", m -> m.status().toString());
-		TableColumn<MaintenanceDTO, Void> col8 = createAddRapportButtonColumn();
-		TableColumn<MaintenanceDTO, String> col9 = createColumn("Machine",
+		TableColumn<MaintenanceDTO, String> col8 = createColumn("Machine",
 				m -> String.format("Machine %d", m.machine().id()));
+		TableColumn<MaintenanceDTO, Void> col9 = createAddRapportButtonColumn();
 
 		List<TableColumn<MaintenanceDTO, ?>> columns;
 		if (machineDTO != null)
 		{
-			columns = List.of(col1, col2, col3, col4, col5, col6, col7, col8);
+			columns = List.of(col1, col2, col3, col4, col5, col6, col7, col9);
 		} else
 		{
 			columns = List.of(col1, col2, col3, col4, col5, col6, col7, col8, col9);

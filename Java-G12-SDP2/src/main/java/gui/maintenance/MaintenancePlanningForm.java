@@ -5,9 +5,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.machine.Machine;
 import domain.machine.MachineController;
@@ -20,10 +21,10 @@ import exceptions.InformationRequiredExceptionMaintenance;
 import gui.MainLayout;
 import gui.customComponents.CustomButton;
 import javafx.geometry.Pos;
+import javafx.scene.Cursor;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import util.MaintenanceStatus;
-import util.RequiredElementMaintenance;
 
 public class MaintenancePlanningForm extends VBox {
 
@@ -34,8 +35,8 @@ public class MaintenancePlanningForm extends VBox {
     private final UserController uc;
 
     private Label errorLabel;
-    private Label startDateErrorLabel, startTimeErrorLabel, endDateErrorLabel, endTimeErrorLabel, 
-    machineErrorLabel, statusErrorLabel;
+    private Label startDateErrorLabel, endDateErrorLabel,
+            machineErrorLabel, statusErrorLabel, reasonErrorLabel, technicianErrorLabel, executionDateErrorLabel;
 
     public MaintenancePlanningForm(MainLayout mainLayout, MachineDTO machineDTO) {
         this.mainLayout = mainLayout;
@@ -74,20 +75,43 @@ public class MaintenancePlanningForm extends VBox {
 
         this.setSpacing(20);
         this.getStyleClass().add("content-container");
+        
+		FontIcon icon = new FontIcon("fas-arrow-left");
+		icon.setIconSize(20);
+		Button backButton = new Button();
+		backButton.setGraphic(icon);
+		backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+		backButton.setOnAction(e -> goToMaintenanceList(machineDTO));
+		backButton.setCursor(Cursor.HAND);
 
         Label headerLabel = new Label("Onderhoud inplannen");
         headerLabel.getStyleClass().add("header-label");
+		headerLabel.setStyle("-fx-font: 40 arial;");
+        headerLabel.setAlignment(Pos.CENTER);
+        
+        HBox title = new HBox(10, backButton, headerLabel);
+        title.setAlignment(Pos.CENTER_LEFT);
+        
+        CustomButton saveButton = new CustomButton("Opslaan");
+        
+        VBox footer = new VBox();
+        footer.setAlignment(Pos.CENTER);
+        footer.getChildren().add(saveButton);
+        
 
         VBox leftColumn = new VBox(15);
         VBox rightColumn = new VBox(15);
-        HBox formRowBox = new HBox(40, leftColumn, rightColumn);
+        
+        HBox formRowBox = new HBox(20, leftColumn, rightColumn);
+        this.setAlignment(Pos.CENTER);
         formRowBox.setAlignment(Pos.TOP_CENTER);
+        
+        VBox form = new VBox(15, formRowBox, footer);
+        form.getStyleClass().add("form-box");
 
         DatePicker executionDatePicker = new DatePicker();
-        DatePicker startDatePicker = new DatePicker();
         ComboBox<LocalTime> startTimeField = new ComboBox<>();
         populateTimePicker(startTimeField);
-        DatePicker endDatePicker = new DatePicker();
         ComboBox<LocalTime> endTimeField = new ComboBox<>();
         populateTimePicker(endTimeField);
 
@@ -95,11 +119,12 @@ public class MaintenancePlanningForm extends VBox {
         endTimeField.setPromptText("Eindtijd");
 
         startDateErrorLabel = createErrorLabel();
-        startTimeErrorLabel = createErrorLabel();
         endDateErrorLabel = createErrorLabel();
-        endTimeErrorLabel = createErrorLabel();
         machineErrorLabel = createErrorLabel();
         statusErrorLabel = createErrorLabel();
+        technicianErrorLabel = createErrorLabel();
+        reasonErrorLabel = createErrorLabel();
+        executionDateErrorLabel = createErrorLabel();
         errorLabel = createErrorLabel();
 
         ComboBox<User> technicianComboBox = new ComboBox<>();
@@ -142,68 +167,56 @@ public class MaintenancePlanningForm extends VBox {
         machineComboBox.setButtonCell(machineComboBox.getCellFactory().call(null));
 
         leftColumn.getChildren().addAll(
-            createFormField("Datum Uitgevoerd:", executionDatePicker),
-            createFormField("Start datum", startDatePicker),
-            startDateErrorLabel,
-            createFormField("Starttijdstip", startTimeField),
-            startTimeErrorLabel,
-            createFormField("Naam Technieker:", technicianComboBox),
-            createFormField("Reden:", reasonField)
+                createFormField("Datum uitgevoerd:", executionDatePicker),
+                executionDateErrorLabel,
+                createFormField("Starttijdstip", startTimeField),
+                startDateErrorLabel,
+                createFormField("Eindtijdstip", endTimeField),
+                endDateErrorLabel,
+                createFormField("Naam technieker:", technicianComboBox),
+                technicianErrorLabel,
+                createFormField("Reden:", reasonField),
+                reasonErrorLabel
         );
 
         rightColumn.getChildren().addAll(
-            createFormField("Einddatum", endDatePicker),
-            endDateErrorLabel,
-            createFormField("Eindtijdstip", endTimeField),
-            endTimeErrorLabel,
-            createFormField("Opmerkingen:", commentsField),
-            createFormField("Status:", statusComboBox),
-            statusErrorLabel,
-            createFormField("Machine:", machineComboBox),
-            machineErrorLabel
+                createFormField("Opmerkingen:", commentsField),
+                createFormField("Status:", statusComboBox),
+                statusErrorLabel,
+                createFormField("Machine:", machineComboBox),
+                machineErrorLabel
         );
-
-        CustomButton saveButton = new CustomButton("Opslaan");
+        
         saveButton.getStyleClass().add("create-report-button");
         saveButton.setOnAction(e -> {
             try {
                 resetErrorLabels();
 
-                // --- PRE-VALIDATION: collect missing fields before combining date+time ---
                 LocalDate execDate = executionDatePicker.getValue();
-                LocalDate sDate   = startDatePicker.getValue();
-                LocalTime sTime   = startTimeField.getValue();
-                LocalDate eDate   = endDatePicker.getValue();
-                LocalTime eTime   = endTimeField.getValue();
+                LocalTime sTime = startTimeField.getValue();
+                LocalTime eTime = endTimeField.getValue();
 
-                Map<String, RequiredElementMaintenance> missing = new HashMap<>();
-                if (sDate == null) missing.put("startDate", RequiredElementMaintenance.START_DATE_REQUIRED);
-                if (sTime == null) missing.put("startTime", RequiredElementMaintenance.START_TIME_REQUIRED);
-                if (eDate == null) missing.put("endDate",   RequiredElementMaintenance.END_DATE_REQUIRED);
-                if (eTime == null) missing.put("endTime",   RequiredElementMaintenance.END_TIME_REQUIRED);
-                if (machineComboBox.getValue() == null) missing.put("machine", RequiredElementMaintenance.MACHINE_REQUIRED);
-                if (!(Arrays.stream(MaintenanceStatus.values()).map((s) -> s.toString()).toList().contains(statusComboBox.getValue()))) missing.put("status", RequiredElementMaintenance.MAINTENANCESTATUS_REQUIRED);
-                if (!missing.isEmpty()) {
-                    throw new InformationRequiredExceptionMaintenance(missing);
-                }
+                LocalDateTime startDateTime = (execDate != null && sTime != null) ? LocalDateTime.of(execDate, sTime) : null;
+                LocalDateTime endDateTime = (execDate != null && eTime != null) ? LocalDateTime.of(execDate, eTime) : null;
 
-                MachineDTO selectedMachineDTO = machineComboBox.getValue();
-                Machine machine = mc.convertDTOToMachine(selectedMachineDTO);
+                Machine machine = (machineComboBox.getValue() != null)
+                        ? mc.convertDTOToMachine(machineComboBox.getValue())
+                        : null;
 
-                MaintenanceBuilder maintenanceBuilder = new MaintenanceBuilder();
-                maintenanceBuilder.createMaintenance();
+                MaintenanceBuilder builder = new MaintenanceBuilder();
+                builder.createMaintenance();
+                builder.buildExecutionDate(execDate);
+                builder.buildStartDate(startDateTime);
+                builder.buildEndDate(endDateTime);
+                builder.buildTechnician(technicianComboBox.getValue());
+                builder.buildReason(reasonField.getText());
+                builder.buildComments(commentsField.getText());
+                if (statusComboBox.getValue() != null)
+                    builder.buildStatus(MaintenanceStatus.valueOf(statusComboBox.getValue()));
+                builder.buildMachine(machine);
 
-                maintenanceBuilder.buildExecutionDate(execDate);
-                maintenanceBuilder.buildStartDate(LocalDateTime.of(sDate, sTime));
-                maintenanceBuilder.buildEndDate(  LocalDateTime.of(eDate,   eTime));
-                maintenanceBuilder.buildTechnician(technicianComboBox.getValue());
-                maintenanceBuilder.buildReason(reasonField.getText().trim());
-                maintenanceBuilder.buildComments(commentsField.getText().trim());
-                maintenanceBuilder.buildStatus(MaintenanceStatus.valueOf(statusComboBox.getValue()));
-                maintenanceBuilder.buildMachine(machine);
-
-                mntcc.createMaintenance(maintenanceBuilder.getMaintenance());
-                mainLayout.showMaintenanceList();
+                mntcc.createMaintenance(builder.getMaintenance());
+                goToMaintenanceList(machineDTO);
 
             } catch (InformationRequiredExceptionMaintenance ex) {
                 handleInformationRequiredException(ex);
@@ -213,14 +226,7 @@ public class MaintenancePlanningForm extends VBox {
             }
         });
 
-        CustomButton backButton = new CustomButton("Annuleren");
-        backButton.getStyleClass().add("back-button");
-        backButton.setOnAction(e -> mainLayout.showMaintenanceList());
-
-        HBox buttonBox = new HBox(10, backButton, saveButton);
-        buttonBox.setAlignment(Pos.CENTER_RIGHT);
-
-        this.getChildren().addAll(headerLabel, errorLabel, formRowBox, buttonBox);
+        this.getChildren().addAll(title, errorLabel, form);
     }
 
     private HBox createFormField(String labelText, Control inputControl) {
@@ -231,23 +237,26 @@ public class MaintenancePlanningForm extends VBox {
 
     private void handleInformationRequiredException(InformationRequiredExceptionMaintenance e) {
         Map<String, Label> fieldToLabelMap = Map.of(
-            "startDate", startDateErrorLabel,
-            "startTime", startTimeErrorLabel,
-            "endDate",   endDateErrorLabel,
-            "endTime",   endTimeErrorLabel,
-            "machine", machineErrorLabel,
-            "status", statusErrorLabel
+        		"executionDate", executionDateErrorLabel,
+                "startDate", startDateErrorLabel,
+                "endDate", endDateErrorLabel,
+                "machine", machineErrorLabel,
+                "status", statusErrorLabel,
+                "reason", reasonErrorLabel,
+                "technician", technicianErrorLabel
         );
 
         e.getInformationRequired().forEach((field, requiredElement) -> {
             String message = switch (requiredElement) {
-                case START_DATE_REQUIRED-> "Startdatum is verplicht";
-                case START_TIME_REQUIRED-> "Starttijd is verplicht";
-                case END_DATE_REQUIRED	-> "Einddatum is verplicht";
-                case END_TIME_REQUIRED	-> "Eindtijd is verplicht";
-                case MACHINE_REQUIRED	-> "Machine is verplicht";
+                case EXECUTION_DATE_REQUIRED -> "Uitvoeringsdatum is verplicht";
+                case START_DATE_REQUIRED -> "Starttijdstip is verplicht";
+                case END_DATE_REQUIRED -> "Eindtijdstip is verplicht";
+                case MACHINE_REQUIRED -> "Machine is verplicht";
                 case MAINTENANCESTATUS_REQUIRED -> "Status is verplicht";
-                default					-> "Verplicht veld";
+                case REASON_REQUIRED -> "Reden is verplicht";
+                case TECHNICIAN_REQUIRED -> "Technieker is verplicht";
+                case END_DATE_BEFORE_START -> "Eindtijd mag niet voor starttijd liggen";
+                default -> "Verplicht veld";
             };
 
             Label label = fieldToLabelMap.get(field);
@@ -259,12 +268,19 @@ public class MaintenancePlanningForm extends VBox {
         });
     }
 
+    private void goToMaintenanceList(MachineDTO machineDTO) {
+        mainLayout.showMaintenanceList(machineDTO);
+    }
+
     private void resetErrorLabels() {
         errorLabel.setText("");
         startDateErrorLabel.setText("");
-        startTimeErrorLabel.setText("");
         endDateErrorLabel.setText("");
-        endTimeErrorLabel.setText("");
+        technicianErrorLabel.setText("");
+        reasonErrorLabel.setText("");
+        machineErrorLabel.setText("");
+        statusErrorLabel.setText("");
+        executionDateErrorLabel.setText("");
     }
 
     private Label createErrorLabel() {

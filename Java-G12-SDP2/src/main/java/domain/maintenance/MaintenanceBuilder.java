@@ -64,21 +64,22 @@ public class MaintenanceBuilder
 		// Verplichte velden controleren
 		if (maintenance.getExecutionDate() == null)
 		{
-			requiredElements.put("executionDate", RequiredElementMaintenance.EXECUTION_DATE);
+			requiredElements.put("executionDate", RequiredElementMaintenance.EXECUTION_DATE_REQUIRED);
 		}
 		if (maintenance.getStartDate() == null)
 		{
-			requiredElements.put("startDate", RequiredElementMaintenance.STARTDATE_REQUIRED);
+			requiredElements.put("startDate", RequiredElementMaintenance.START_DATE_REQUIRED);
 		}
 		if (maintenance.getEndDate() == null)
 		{
-			requiredElements.put("endDate", RequiredElementMaintenance.ENDDATE_REQUIRED);
+			System.out.println(maintenance.getEndDate());
+			requiredElements.put("endDate", RequiredElementMaintenance.END_DATE_REQUIRED);
 		}
 		if (maintenance.getTechnician() == null)
 		{
 			requiredElements.put("technician", RequiredElementMaintenance.TECHNICIAN_REQUIRED);
 		}
-		if (maintenance.getReason() == null)
+		if (maintenance.getReason() == null || maintenance.getReason().isBlank())
 		{
 			requiredElements.put("reason", RequiredElementMaintenance.REASON_REQUIRED);
 		}
