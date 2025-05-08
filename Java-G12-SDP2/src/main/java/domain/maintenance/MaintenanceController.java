@@ -23,7 +23,7 @@ public class MaintenanceController
 	protected MaintenanceDao getMaintenanceDao() {
 		return maintenanceRepo;
 	}
-
+	
 	public List<MaintenanceDTO> getMaintenances()
 	{
 		List<Maintenance> sites = maintenanceRepo.findAll();

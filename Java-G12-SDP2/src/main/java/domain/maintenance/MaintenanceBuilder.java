@@ -18,7 +18,7 @@ public class MaintenanceBuilder
 	{
 		maintenance = new Maintenance();
 		requiredElements = new HashMap<>();
-	}
+	}	
 
 	public void buildExecutionDate(LocalDate executionDate)
 	{
