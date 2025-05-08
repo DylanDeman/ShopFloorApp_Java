@@ -1,11 +1,16 @@
 package gui;
 
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.stream.Collectors;
+
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.Address;
 import domain.site.Site;
 import domain.site.SiteBuilder;
 import domain.user.User;
+import domain.user.UserController;
 import exceptions.InformationRequiredExceptionSite;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -29,10 +34,11 @@ public class AddOrEditSiteForm extends GridPane
 	private Site site;
 	private final SiteRepository siteRepo;
 	private final MainLayout mainLayout;
+	private UserController uc;
 
 	private TextField siteNameField;
 	private TextField streetField, houseNumberField, postalCodeField, cityField;
-	private ComboBox<User> employeeBox;
+	private ComboBox<String> employeeBox;
 	private ComboBox<Status> statusBox;
 
 	private Label errorLabel, siteNameError, employeeError;
@@ -47,6 +53,7 @@ public class AddOrEditSiteForm extends GridPane
 		this.mainLayout = mainLayout;
 		this.site = site;
 		this.isNewSite = site == null;
+		uc = new UserController();
 
 		initializeFields();
 		buildGUI();
@@ -148,12 +155,14 @@ public class AddOrEditSiteForm extends GridPane
 		pane.add(sectionLabel, 0, 0, 2, 1);
 
 		employeeBox = new ComboBox<>();
-		employeeBox.getItems().addAll(siteRepo.getAllEmployees());
-		employeeBox.setPromptText("Selecteer een verantwoordelijke");
-		employeeBox.setPrefWidth(200);
+		employeeBox.setPromptText("Kies een verantwoordelijke");
+		Set<String> uniqueEmployees = siteRepo.getAllEmployees().stream()
+			    .map(User::getFullName)
+			    .collect(Collectors.toCollection(TreeSet::new)); // TreeSet also sorts; use HashSet if sorting is not needed
 
-		int row = 1;
-		pane.add(new Label("Verantwoordelijke:"), 0, row);
+			employeeBox.getItems().addAll(uniqueEmployees);
+
+		int row = 1; 
 		pane.add(employeeBox, 1, row++);
 		pane.add(employeeError, 1, row++);
 
@@ -186,7 +195,7 @@ public class AddOrEditSiteForm extends GridPane
 			siteBuilder.buildNumber(Integer.parseInt(houseNumberField.getText()));
 			siteBuilder.buildPostalcode(Integer.parseInt(postalCodeField.getText()));
 			siteBuilder.buildCity(cityField.getText());
-			siteBuilder.buildEmployee(employeeBox.getValue());
+			siteBuilder.buildEmployee(uc.getAllTechniekers().stream().filter(user -> user.getFullName().equals(employeeBox.getValue())).findFirst().orElse(null));
 
 			if (isNewSite)
 			{
@@ -390,7 +399,7 @@ public class AddOrEditSiteForm extends GridPane
 			cityField.setText(address.getCity());
 		}
 
-		employeeBox.setValue(site.getVerantwoordelijke());
+		employeeBox.setValue(site.getVerantwoordelijke().getFullName());
 		statusBox.setValue(site.getStatus());
 	}
 

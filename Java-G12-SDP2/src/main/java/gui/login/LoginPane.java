@@ -37,7 +37,7 @@ public class LoginPane extends VBox
 	public LoginPane(MainLayout mainLayout)
 	{
 		// TODO Tijdelijk terug wegdoen later
-		emailField.setText("jan@email.com");
+		emailField.setText("piet@email.com");
 		passwordField.setText("password");
 
 		this.mainLayout = mainLayout;
