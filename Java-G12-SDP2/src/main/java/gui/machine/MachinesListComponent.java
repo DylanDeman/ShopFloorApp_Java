@@ -165,7 +165,7 @@ public class MachinesListComponent extends GridPane
 				onderhoudButton.setOnAction(event -> {
 					MachineDTO selectedMachine = getTableView().getItems().get(getIndex());
 					System.out.println("Onderhoud for machine: " + selectedMachine.code());
-					mainLayout.showMaintenanceList();
+					mainLayout.showMaintenanceList(selectedMachine);
 				});
 				onderhoudButton.setStyle("-fx-background-color: transparent;");
 			}

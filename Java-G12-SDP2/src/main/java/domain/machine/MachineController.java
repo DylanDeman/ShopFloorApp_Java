@@ -88,8 +88,13 @@ public class MachineController implements Subject
 
 	public Machine convertDTOToMachine(MachineDTO dto)
 	{
-		Machine machine = new Machine();
-
+		Machine machine = machineRepo.get(dto.id());
+		
+		if(machine != null) {
+			return machine;
+		}
+		
+		machine = new Machine();
 		// Convert SiteDTO to Site before setting it
 		machine.setId(dto.id()); // Make sure to set the ID
 		Site site = convertDTOToSite(dto.site());

@@ -99,11 +99,15 @@ public class MaintenanceListComponent extends VBox
 
 		Label title = new Label("Onderhoudslijst");
 		title.setStyle("-fx-font: 40 arial;");
+		
+		CustomButton maintenancePlanBtn = new CustomButton("Onderhoud inplannen");
+		
+		maintenancePlanBtn.setOnAction((e) -> goToMaintenancePlanning(mainLayout));
 
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-		hbox.getChildren().addAll(backButton, title, spacer);
+		hbox.getChildren().addAll(backButton, title, maintenancePlanBtn, spacer);
 		return hbox;
 	}
 
@@ -284,6 +288,10 @@ public class MaintenanceListComponent extends VBox
 	 * form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").
 	 * toExternalForm()); }
 	 */
+	
+	private void goToMaintenancePlanning(MainLayout mainlayout) {
+		mainLayout.showMaintenancePlanning(machineDTO);
+	}
 
 	private void goToDetails(MainLayout mainLayout, MaintenanceDTO maintenance)
 	{

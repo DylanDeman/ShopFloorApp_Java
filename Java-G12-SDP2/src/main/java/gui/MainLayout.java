@@ -1,5 +1,6 @@
 package gui;
 
+import domain.machine.MachineDTO;
 import domain.maintenance.MaintenanceDTO;
 import domain.notifications.NotificationDTO;
 import gui.customComponents.Navbar;
@@ -104,6 +105,11 @@ public class MainLayout
 		MaintenanceListComponent maintenanceList = new MaintenanceListComponent(this);
 		setContent(maintenanceList, true, false);
 	}
+	
+	public void showMaintenanceList(MachineDTO machine) {
+		MaintenanceListComponent maintenanceList = new MaintenanceListComponent(this, machine);
+		setContent(maintenanceList, true, false);
+	}
 
 	public void showMaintenanceDetails(MaintenanceDTO maintenance)
 	{
@@ -127,6 +133,11 @@ public class MainLayout
 	{
 		NotificationListComponent notificationList = new NotificationListComponent(this);
 		setContent(notificationList, true, false);
+	}
+	
+	public void showMaintenancePlanning(MachineDTO machineDTO) {
+		MaintenancePlanningForm maintenancePlanningForm = new MaintenancePlanningForm(this, machineDTO);
+		setContent(maintenancePlanningForm, true, false);
 	}
 
 	public void showSitesList()
