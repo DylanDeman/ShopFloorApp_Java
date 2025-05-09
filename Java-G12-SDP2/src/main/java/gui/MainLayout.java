@@ -27,6 +27,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.Getter;
+import util.CurrentPage;
 
 public class MainLayout
 {
@@ -74,94 +75,95 @@ public class MainLayout
 	public void showLoginScreen()
 	{
 		LoginPane loginPane = new LoginPane(this);
-		setContent(loginPane, false, false);
+		setContent(loginPane, false, false, CurrentPage.NONE);
 	}
 
 	public void showHomeScreen()
 	{
 		ChoicePane choicePane = new ChoicePane(this);
-		setContent(choicePane, true, true);
+		setContent(choicePane, true, true, CurrentPage.HOME);
 	}
 
 	public void showUserManagementScreen()
 	{
 		UserManagementPane userManagement = new UserManagementPane(this);
-		setContent(userManagement, true, false);
+		setContent(userManagement, true, false, CurrentPage.USERS);
 	}
 
 	public void showSiteList()
 	{
 		SitesListComponent siteList = new SitesListComponent(this);
-		setContent(siteList, true, false);
+		setContent(siteList, true, false, CurrentPage.SITES);
 	}
 
 	public void showMachineScreen()
 	{
 		MachinesListComponent machineList = new MachinesListComponent(this);
-		setContent(machineList, true, false);
+		setContent(machineList, true, false, CurrentPage.MACHINES);
 	}
 
 	public void showMaintenanceList()
 	{
 		MaintenanceListComponent maintenanceList = new MaintenanceListComponent(this);
-		setContent(maintenanceList, true, false);
+		setContent(maintenanceList, true, false, CurrentPage.MAINTENANCE);
 	}
-	
-	public void showMaintenanceList(MachineDTO machine) {
+
+	public void showMaintenanceList(MachineDTO machine)
+	{
 		MaintenanceListComponent maintenanceList = new MaintenanceListComponent(this, machine);
-		setContent(maintenanceList, true, false);
+		setContent(maintenanceList, true, false, CurrentPage.MAINTENANCE);
 	}
 
 	public void showMaintenanceDetails(MaintenanceDTO maintenance)
 	{
 		MaintenanceDetailView detailView = new MaintenanceDetailView(this, maintenance);
-		setContent(detailView, true, false);
-	}
-	
-	public void showNotificationDetails(NotificationDTO notification) {
-	    NotificationDetailComponent detail = new NotificationDetailComponent(this, notification);
-	    setContent(detail, true, false);
+		setContent(detailView, true, false, CurrentPage.NONE);
 	}
 
+	public void showNotificationDetails(NotificationDTO notification)
+	{
+		NotificationDetailComponent detail = new NotificationDetailComponent(this, notification);
+		setContent(detail, true, false, CurrentPage.NONE);
+	}
 
 	public void showAddReport(MaintenanceDTO maintenance)
 	{
 		AddReportForm addReport = new AddReportForm(this, maintenance);
-		setContent(addReport, true, false);
+		setContent(addReport, true, false, CurrentPage.NONE);
 	}
 
 	public void showNotificationList()
 	{
 		NotificationListComponent notificationList = new NotificationListComponent(this);
-		setContent(notificationList, true, false);
+		setContent(notificationList, true, false, CurrentPage.NONE);
 	}
-	
-	public void showMaintenancePlanning(MachineDTO machineDTO) {
+
+	public void showMaintenancePlanning(MachineDTO machineDTO)
+	{
 		MaintenancePlanningForm maintenancePlanningForm = new MaintenancePlanningForm(this, machineDTO);
-		setContent(maintenancePlanningForm, true, false);
+		setContent(maintenancePlanningForm, true, false, CurrentPage.NONE);
 	}
 
 	public void showSitesList()
 	{
 		SitesListComponent sitesListComponent = new SitesListComponent(this);
-		setContent(sitesListComponent, true, false);
+		setContent(sitesListComponent, true, false, CurrentPage.SITES);
 	}
 
 	public void showSiteDetails(int siteId)
 	{
 		SiteDetailsComponent siteDetailsComponent = new SiteDetailsComponent(this, siteId);
-		setContent(siteDetailsComponent, true, false);
+		setContent(siteDetailsComponent, true, false, CurrentPage.NONE);
 	}
-	
 
-	public void setContent(Parent content, boolean showNavbar, boolean isHomeScreen)
+	public void setContent(Parent content, boolean showNavbar, boolean isHomeScreen, CurrentPage activePage)
 	{
 		VBox contentContainer = new VBox(CONTENT_SPACING);
 		contentContainer.setPadding(CONTENT_PADDING);
 		contentContainer.getChildren().add(content);
 
 		rootLayout.setCenter(contentContainer);
-		rootLayout.setTop(showNavbar ? new Navbar(this, isHomeScreen) : null);
+		rootLayout.setTop(showNavbar ? new Navbar(this, isHomeScreen, activePage) : null);
 	}
 
 }

@@ -26,6 +26,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import util.CurrentPage;
 
 public class MachinesListComponent extends GridPane
 {
@@ -56,7 +57,7 @@ public class MachinesListComponent extends GridPane
 
 		machineTable = new TableView<>();
 		machineTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
-		
+
 		buildColumns();
 
 		addButton = new Button("Machine toevoegen +");
@@ -224,13 +225,13 @@ public class MachinesListComponent extends GridPane
 	private void openAddMachineForm()
 	{
 		Parent addMachineForm = new AddOrEditMachineForm(mainLayout, null);
-		mainLayout.setContent(addMachineForm, true, false);
+		mainLayout.setContent(addMachineForm, true, false, CurrentPage.NONE);
 	}
 
 	private void openEditMachineForm(MachineDTO machine)
 	{
 		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machine);
-		mainLayout.setContent(editMachineForm, true, false);
+		mainLayout.setContent(editMachineForm, true, false, CurrentPage.NONE);
 	}
 
 }

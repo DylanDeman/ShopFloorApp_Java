@@ -8,6 +8,8 @@ import domain.notifications.NotificationController;
 import domain.notifications.NotificationDTO;
 import domain.user.User;
 import gui.MainLayout;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.geometry.Side;
 import javafx.scene.control.Button;
@@ -22,17 +24,21 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import util.AuthenticationUtil;
+import util.CurrentPage;
 
 public class Navbar extends HBox
 {
 
 	private Label userName;
 	private Label userRole;
-	private final NotificationController notificationController = new NotificationController();
+	private final NotificationController notificationController;
+	private final MainLayout mainLayout;
 
-
-	public Navbar(MainLayout mainLayout, boolean isHomeScreen)
+	public Navbar(MainLayout mainLayout, boolean isHomeScreen, CurrentPage activePage)
 	{
+		this.mainLayout = mainLayout;
+		this.notificationController = mainLayout.getServices().getNotificationController();
+
 		this.getStyleClass().add("navbar");
 		this.setAlignment(Pos.CENTER);
 
@@ -50,8 +56,6 @@ public class Navbar extends HBox
 		VBox userInfo = new VBox(2, userName, userRole);
 		userInfo.getStyleClass().add("user-info");
 
-
-		
 		Button notificationBtn = new Button();
 		FontIcon bellIcon = new FontIcon("fas-bell");
 		bellIcon.setIconSize(20);
@@ -61,47 +65,52 @@ public class Navbar extends HBox
 		// Create the dropdown (ContextMenu)
 		ContextMenu notificationMenu = new ContextMenu();
 		notificationMenu.setMinSize(500, 500);
-		
+
 		notificationBtn.setOnAction(e -> {
-		    if (!notificationMenu.isShowing()) {
-		        // Clear old items
-		        notificationMenu.getItems().clear();
+			if (!notificationMenu.isShowing())
+			{
+				// Clear old items
+				notificationMenu.getItems().clear();
 
-		        // Fetch unread notifications
-		        List<NotificationDTO> unread = notificationController.getAllUnread();
+				// Fetch unread notifications
+				List<NotificationDTO> unread = notificationController.getAllUnread();
 
-		        if (unread.isEmpty()) {
-		            MenuItem emptyItem = new MenuItem("Geen nieuwe notificaties");
-		            emptyItem.setDisable(true);
-		            notificationMenu.getItems().add(emptyItem);
-		        } else {
-		            for (NotificationDTO dto : unread) {
-		                MenuItem item = new MenuItem(dto.message());
-		                item.getStyleClass().add("menu-item");
+				if (unread.isEmpty())
+				{
+					MenuItem emptyItem = new MenuItem("Geen nieuwe notificaties");
+					emptyItem.setDisable(true);
+					notificationMenu.getItems().add(emptyItem);
+				} else
+				{
+					for (NotificationDTO dto : unread)
+					{
+						MenuItem item = new MenuItem(dto.message());
+						item.getStyleClass().add("menu-item");
 
-		                // Optionally mark as read on click
-		                item.setOnAction(ev -> {
-		                    notificationController.markAsRead(dto.id());
-		                    mainLayout.showNotificationDetails(dto); // Or another action
-		                    notificationMenu.hide();
-		                });
+						// Optionally mark as read on click
+						item.setOnAction(ev -> {
+							notificationController.markAsRead(dto.id());
+							mainLayout.showNotificationDetails(dto); // Or another action
+							notificationMenu.hide();
+						});
 
-		                notificationMenu.getItems().add(item);
-		            }
-		        }
+						notificationMenu.getItems().add(item);
+					}
+				}
 
-		        // Always add "See all" item at the end
-		        MenuItem seeAll = new MenuItem("Zie alle notificaties");
-		        seeAll.setStyle("-fx-font-weight: bold;");
-		        seeAll.setOnAction(ev -> mainLayout.showNotificationList());
-		        notificationMenu.getItems().add(new SeparatorMenuItem());
-		        notificationMenu.getItems().add(seeAll);
+				// Always add "See all" item at the end
+				MenuItem seeAll = new MenuItem("Zie alle notificaties");
+				seeAll.setStyle("-fx-font-weight: bold;");
+				seeAll.setOnAction(ev -> mainLayout.showNotificationList());
+				notificationMenu.getItems().add(new SeparatorMenuItem());
+				notificationMenu.getItems().add(seeAll);
 
-		        // Show the menu
-		        notificationMenu.show(notificationBtn, Side.BOTTOM, 0, 0);
-		    } else {
-		        notificationMenu.hide();
-		    }
+				// Show the menu
+				notificationMenu.show(notificationBtn, Side.BOTTOM, 0, 0);
+			} else
+			{
+				notificationMenu.hide();
+			}
 		});
 
 		Button logoutBtn = new Button("Uitloggen");
@@ -114,21 +123,13 @@ public class Navbar extends HBox
 
 		if (!isHomeScreen)
 		{
-			Button sitesBtn = new Button("Sites");
-			sitesBtn.getStyleClass().add("nav-link");
-			sitesBtn.setOnAction(e -> mainLayout.showSiteList());
-
-			Button machinesBtn = new Button("Machines");
-			machinesBtn.getStyleClass().add("nav-link");
-			machinesBtn.setOnAction(e -> mainLayout.showMachineScreen());
-
-			Button userBtn = new Button("Gebruikers");
-			userBtn.getStyleClass().add("nav-link");
-			userBtn.setOnAction(e -> mainLayout.showUserManagementScreen());
-
-			Button maintenanceBtn = new Button("Onderhoud");
-			maintenanceBtn.getStyleClass().add("nav-link");
-			maintenanceBtn.setOnAction(e -> mainLayout.showMaintenanceList());
+			Button sitesBtn = createNavButton("Sites", CurrentPage.SITES, activePage, e -> mainLayout.showSiteList());
+			Button machinesBtn = createNavButton("Machines", CurrentPage.MACHINES, activePage,
+					e -> mainLayout.showMachineScreen());
+			Button userBtn = createNavButton("Gebruikers", CurrentPage.USERS, activePage,
+					e -> mainLayout.showUserManagementScreen());
+			Button maintenanceBtn = createNavButton("Onderhoud", CurrentPage.MAINTENANCE, activePage,
+					e -> mainLayout.showMaintenanceList());
 
 			navLinks.getChildren().addAll(sitesBtn, machinesBtn, userBtn, maintenanceBtn);
 		}
@@ -142,6 +143,19 @@ public class Navbar extends HBox
 		rightElements.setAlignment(Pos.CENTER_RIGHT);
 
 		this.getChildren().addAll(logoBtn, leftSpacer, navLinks, rightSpacer, rightElements);
+	}
+
+	private Button createNavButton(String text, CurrentPage page, CurrentPage activePage,
+			EventHandler<ActionEvent> handler)
+	{
+		Button button = new Button(text);
+		button.getStyleClass().add("nav-link");
+		if (page == activePage)
+		{
+			button.getStyleClass().add("active");
+		}
+		button.setOnAction(handler);
+		return button;
 	}
 
 	private void fillUserData()

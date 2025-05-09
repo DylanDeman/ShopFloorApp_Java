@@ -28,6 +28,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import repository.UserRepository;
+import util.CurrentPage;
 
 public class UserManagementPane extends GridPane implements Observer
 {
@@ -187,13 +188,13 @@ public class UserManagementPane extends GridPane implements Observer
 	private void openAddUserForm()
 	{
 		Parent addUserForm = new AddOrEditUserForm(mainLayout, userRepo, null);
-		mainLayout.setContent(addUserForm, true, false);
+		mainLayout.setContent(addUserForm, true, false, CurrentPage.NONE);
 	}
 
 	private void openEditUserForm(User user)
 	{
 		Parent editUserForm = new AddOrEditUserForm(mainLayout, userRepo, user);
-		mainLayout.setContent(editUserForm, true, false);
+		mainLayout.setContent(editUserForm, true, false, CurrentPage.NONE);
 	}
 
 	private void deleteUser(User user)

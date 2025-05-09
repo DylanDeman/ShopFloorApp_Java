@@ -32,6 +32,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import repository.SiteRepository;
+import util.CurrentPage;
 
 public class SitesListComponent extends VBox implements Observer
 {
@@ -421,19 +422,19 @@ public class SitesListComponent extends VBox implements Observer
 	private void openAddSiteForm()
 	{
 		Parent addSiteForm = new AddOrEditSiteForm(mainLayout, siteRepo, null);
-		mainLayout.setContent(addSiteForm, true, false);
+		mainLayout.setContent(addSiteForm, true, false, CurrentPage.NONE);
 	}
 
 	private void openEditSiteForm(Site site)
 	{
 		Parent editSiteForm = new AddOrEditSiteForm(mainLayout, siteRepo, site);
-		mainLayout.setContent(editSiteForm, true, false);
+		mainLayout.setContent(editSiteForm, true, false, CurrentPage.NONE);
 	}
 
 	private void openSiteDetails(int siteId)
 	{
 		Parent siteDetails = new SiteDetailsComponent(mainLayout, siteId);
-		mainLayout.setContent(siteDetails, true, false);
+		mainLayout.setContent(siteDetails, true, false, CurrentPage.NONE);
 	}
 
 	@Override

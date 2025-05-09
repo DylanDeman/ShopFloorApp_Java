@@ -39,10 +39,6 @@
     -fx-font-size: 12px;
 }
 
-.logout-btn:hover {
-    -fx-background-color: #eeeeee;
-}
-
 .nav-link {
     -fx-background-color: transparent;
     -fx-text-fill: #333333;
@@ -51,17 +47,29 @@
     -fx-padding: 8px 15px;
     -fx-border-radius: 4px;
     -fx-alignment: center;
+    -fx-cursor: hand;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4px;
+    -fx-transition: -fx-background-color 0.3s, -fx-text-fill 0.3s;
+}
+
+.nav-link:hover {
+    -fx-background-color: #f5f5f5;
+}
+
+.nav-link.active {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+}
+
+.nav-link.active:hover {
+    -fx-background-color: #D62C1A;
 }
 
 .nav-links-container {
     -fx-alignment: center;
 }
-
-.nav-link:hover {
-    -fx-background-color: #f5f5f5; 
-    -fx-cursor: hand;
-}
-
 
 .logo-btn:hover {
     -fx-cursor: hand;
