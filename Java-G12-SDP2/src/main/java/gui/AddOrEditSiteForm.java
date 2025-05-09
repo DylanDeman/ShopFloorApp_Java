@@ -18,7 +18,6 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -73,32 +72,45 @@ public class AddOrEditSiteForm extends GridPane
 		this.setVgap(15);
 		this.setPadding(new Insets(20));
 
-		ScrollPane scrollPane = new ScrollPane();
-		scrollPane.setContent(createFormContent());
-		scrollPane.setFitToWidth(true);
-		scrollPane.setPrefViewportHeight(800);
-		scrollPane.getStyleClass().add("scroll-pane");
-		scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-		scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+		VBox mainContainer = new VBox(10);
+		mainContainer.setAlignment(Pos.TOP_CENTER);
+		mainContainer.setPadding(new Insets(10));
+		mainContainer.setMaxWidth(850);
 
-		VBox mainContainer = new VBox();
-		mainContainer.setAlignment(Pos.CENTER);
-		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, scrollPane);
+		VBox formAndSaveButton = new VBox(10);
+		formAndSaveButton.getChildren().addAll(createFormContent(), createSaveButton());
+
+		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, formAndSaveButton);
 
 		this.add(mainContainer, 0, 0);
 	}
 
-	private VBox createFormContent()
+	private HBox createFormContent()
 	{
-		VBox formContent = new VBox(30);
+		HBox formContent = new HBox(30);
 		formContent.setAlignment(Pos.TOP_CENTER);
 		formContent.getStyleClass().add("form-box");
+		formContent.setMaxWidth(800);
 
 		VBox siteNameBox = new VBox(15, createSiteNameField());
 		VBox addressBox = new VBox(15, createAddressFieldsSection());
-		VBox employeeBox = new VBox(15, createComboBoxSection());
+		VBox comboBoxBox = new VBox(15, createComboBoxSection());
 
-		formContent.getChildren().addAll(siteNameBox, addressBox, employeeBox, createSaveButton());
+		VBox leftBox = new VBox(20);
+		leftBox.setAlignment(Pos.TOP_LEFT);
+		leftBox.setMinWidth(400);
+		leftBox.setMaxWidth(400);
+
+		leftBox.getChildren().addAll(siteNameBox, comboBoxBox);
+
+		VBox rightBox = new VBox(20);
+		rightBox.setAlignment(Pos.TOP_LEFT);
+		rightBox.setMinWidth(400);
+		rightBox.setMaxWidth(400);
+
+		rightBox.getChildren().addAll(addressBox);
+
+		formContent.getChildren().addAll(leftBox, rightBox);
 
 		return formContent;
 	}
@@ -109,10 +121,15 @@ public class AddOrEditSiteForm extends GridPane
 		saveButton.getStyleClass().add("save-button");
 		saveButton.setOnAction(e -> saveSite());
 
+		saveButton.setPrefSize(300, 40);
+		saveButton.setMaxWidth(Double.MAX_VALUE);
+
 		HBox buttonBox = new HBox(saveButton);
 		buttonBox.setAlignment(Pos.CENTER);
 		buttonBox.setPadding(new Insets(20, 0, 0, 0));
-		buttonBox.setMaxWidth(400);
+
+		buttonBox.setMinWidth(800);
+		buttonBox.setMaxWidth(800);
 
 		return buttonBox;
 	}
@@ -156,13 +173,14 @@ public class AddOrEditSiteForm extends GridPane
 
 		employeeBox = new ComboBox<>();
 		employeeBox.setPromptText("Kies een verantwoordelijke");
-		Set<String> uniqueEmployees = siteRepo.getAllEmployees().stream()
-			    .map(User::getFullName)
-			    .collect(Collectors.toCollection(TreeSet::new)); // TreeSet also sorts; use HashSet if sorting is not needed
+		employeeBox.setPrefWidth(200);
+		Set<String> uniqueEmployees = siteRepo.getAllEmployees().stream().map(User::getFullName)
+				.collect(Collectors.toCollection(TreeSet::new));
 
-			employeeBox.getItems().addAll(uniqueEmployees);
+		employeeBox.getItems().addAll(uniqueEmployees);
 
-		int row = 1; 
+		int row = 1;
+		pane.add(new Label("Verantwoordelijke:"), 0, row);
 		pane.add(employeeBox, 1, row++);
 		pane.add(employeeError, 1, row++);
 
@@ -195,7 +213,8 @@ public class AddOrEditSiteForm extends GridPane
 			siteBuilder.buildNumber(Integer.parseInt(houseNumberField.getText()));
 			siteBuilder.buildPostalcode(Integer.parseInt(postalCodeField.getText()));
 			siteBuilder.buildCity(cityField.getText());
-			siteBuilder.buildEmployee(uc.getAllTechniekers().stream().filter(user -> user.getFullName().equals(employeeBox.getValue())).findFirst().orElse(null));
+			siteBuilder.buildEmployee(uc.getAllUsers().stream()
+					.filter(user -> user.getFullName().equals(employeeBox.getValue())).findFirst().orElse(null));
 
 			if (isNewSite)
 			{

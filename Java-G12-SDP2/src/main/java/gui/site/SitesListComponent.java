@@ -2,14 +2,14 @@ package gui.site;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
+
 import org.kordamp.ikonli.javafx.FontIcon;
+
 import domain.site.Site;
 import domain.site.SiteController;
 import domain.site.SiteDTO;
 import gui.AddOrEditSiteForm;
 import gui.MainLayout;
-import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;
 import javafx.application.Platform;
@@ -32,380 +32,409 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import repository.SiteRepository;
+import util.CurrentPage;
 
-public class SitesListComponent extends VBox implements Observer {
-    private final MainLayout mainLayout;
-    private SiteController sc;
-    private SiteRepository siteRepo;
+public class SitesListComponent extends VBox implements Observer
+{
+	private final MainLayout mainLayout;
+	private SiteController sc;
+	private SiteRepository siteRepo;
 
-    private TableView<SiteDTO> table;
-    private TextField searchField;
+	private TableView<SiteDTO> table;
+	private TextField searchField;
 
-    private ComboBox<String> statusFilter;
-    private ComboBox<String> nameFilter;
-    private ComboBox<String> verantwoordelijkeFilter;
-    private TextField minMachinesField;
-    private TextField maxMachinesField;
-    private List<SiteDTO> allSites;
-    private List<SiteDTO> filteredSites;
+	private ComboBox<String> statusFilter;
+	private ComboBox<String> nameFilter;
+	private ComboBox<String> verantwoordelijkeFilter;
+	private TextField minMachinesField;
+	private TextField maxMachinesField;
+	private List<SiteDTO> allSites;
+	private List<SiteDTO> filteredSites;
 
-    private int itemsPerPage = 10;
-    private int currentPage = 0;
-    private int totalPages = 0;
-    private Pagination pagination;
+	private int itemsPerPage = 10;
+	private int currentPage = 0;
+	private int totalPages = 0;
+	private Pagination pagination;
 
-    public SitesListComponent(MainLayout mainLayout) {
-        this.mainLayout = mainLayout;
-        this.sc = mainLayout.getServices().getSiteController();
-        this.siteRepo = mainLayout.getServices().getSiteRepo();
-        this.siteRepo.addObserver(this);
-        this.table = new TableView<>();
-        initializeGUI();
-        loadSites();
-    }
+	public SitesListComponent(MainLayout mainLayout)
+	{
+		this.mainLayout = mainLayout;
+		this.sc = mainLayout.getServices().getSiteController();
+		this.siteRepo = mainLayout.getServices().getSiteRepo();
+		this.siteRepo.addObserver(this);
+		this.table = new TableView<>();
+		initializeGUI();
+		loadSites();
+	}
 
-    private void loadSites() {
-        allSites = sc.getSites();
-        filteredSites = allSites;
-        updateFilterOptions();
-        updateTable(allSites);
-    }
+	private void loadSites()
+	{
+		allSites = sc.getSites();
+		filteredSites = allSites;
+		updateFilterOptions();
+		updateTable(allSites);
+	}
 
-    private void initializeGUI() {
-        allSites = sc.getSites();
-        filteredSites = allSites;
-        
+	private void initializeGUI()
+	{
+		this.getStylesheets().add(getClass().getResource("/css/tablePane.css").toExternalForm());
+
+		allSites = sc.getSites();
+		filteredSites = allSites;
+
 		table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
 
-        VBox titleSection = createTitleSection();
-        VBox tableSection = createTableSection();
+		VBox titleSection = createTitleSection();
+		VBox tableSection = createTableSection();
 
-        this.setSpacing(20);
-        this.getChildren().addAll(titleSection, tableSection);
+		this.setSpacing(20);
+		this.getChildren().addAll(titleSection, tableSection);
 
-        updateFilterOptions();
-        updateTable(filteredSites);
-    }
+		updateFilterOptions();
+		updateTable(filteredSites);
+	}
 
-    private VBox createTitleSection() {
-        HBox windowHeader = createWindowHeader();
-        HBox informationBox = new CustomInformationBox(
-                "Hieronder vindt u een overzicht van alle sites. Klik op een site om de details van de site te bekijken!");
-        return new VBox(10, windowHeader, informationBox);
-    }
+	private VBox createTitleSection()
+	{
+		HBox windowHeader = createWindowHeader();
+		HBox informationBox = new CustomInformationBox(
+				"Hieronder vindt u een overzicht van alle sites. Klik op een site om de details van de site te bekijken!");
+		return new VBox(10, windowHeader, informationBox);
+	}
 
-    private HBox createWindowHeader() {
-        HBox hbox = new HBox();
-        hbox.setAlignment(Pos.CENTER_LEFT);
-        hbox.setSpacing(10);
+	private HBox createWindowHeader()
+	{
+		HBox hbox = new HBox();
+		hbox.setAlignment(Pos.CENTER_LEFT);
+		hbox.setSpacing(10);
 
-        Button backButton = new Button();
-        FontIcon icon = new FontIcon("fas-arrow-left");
-        icon.setIconSize(20);
-        backButton.setGraphic(icon);
-        backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
-        backButton.setOnAction(e -> mainLayout.showHomeScreen());
+		Button backButton = new Button();
+		FontIcon icon = new FontIcon("fas-arrow-left");
+		icon.setIconSize(20);
+		backButton.setGraphic(icon);
+		backButton.getStyleClass().add("back-button");
+		backButton.setOnAction(e -> mainLayout.showHomeScreen());
 
-        Label title = new Label("Sites");
-        title.setStyle("-fx-font: 40 arial;");
+		Label title = new Label("Sites");
+		title.getStyleClass().add("title-label");
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button addButton = new CustomButton(new FontIcon("fas-plus"), "Site toevoegen");
-        addButton.setOnAction(e -> openAddSiteForm());
+		Button addButton = new Button("+ Site toevoegen");
+		addButton.setOnAction(e -> openAddSiteForm());
+		addButton.getStyleClass().add("add-button");
 
-        hbox.getChildren().addAll(backButton, title, spacer, addButton);
-        return hbox;
-    }
+		hbox.getChildren().addAll(backButton, title, spacer, addButton);
+		return hbox;
+	}
 
-    private VBox createTableSection() {
-        HBox filterBox = createTableHeaders();
+	private VBox createTableSection()
+	{
+		HBox filterBox = createTableHeaders();
 
-        // Edit Column
-        TableColumn<SiteDTO, Void> editColumn = new TableColumn<>("");
-        editColumn.setMaxWidth(50);
-        editColumn.setMinWidth(50);
-        editColumn.setCellFactory(param -> new TableCell<SiteDTO, Void>() {
-            private final Button editButton = new Button();
-            {
-                FontIcon editIcon = new FontIcon("fas-pen");
-                editIcon.setIconSize(12);
-                editButton.setGraphic(editIcon);
-                editButton.setBackground(Background.EMPTY);
-                editButton.setOnAction(event -> {
-                    SiteDTO site = getTableRow().getItem();
-                    if (site != null) {
-                        // Using the controller to get the site object
-                        openEditSiteForm(sc.getSiteObject(site));
-                    }
-                });
-            }
+		TableColumn<SiteDTO, Void> editColumn = new TableColumn<>("Bewerken");
+		editColumn.setCellFactory(param -> new TableCell<SiteDTO, Void>()
+		{
+			private final Button editButton = new Button();
+			{
+				FontIcon editIcon = new FontIcon("fas-pen");
+				editIcon.setIconSize(12);
+				editButton.setGraphic(editIcon);
+				editButton.setBackground(Background.EMPTY);
+				editButton.setOnAction(event -> {
+					SiteDTO site = getTableRow().getItem();
+					if (site != null)
+					{
+						openEditSiteForm(sc.getSiteObject(site));
+					}
+				});
+			}
 
-            @Override
-            protected void updateItem(Void item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : editButton);
-            }
-        });
+			@Override
+			protected void updateItem(Void item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				setGraphic(empty ? null : editButton);
+			}
+		});
 
-        // ID Column
-        TableColumn<SiteDTO, Number> col1 = new TableColumn<>("Nr.");
-        col1.setMaxWidth(70);
-        col1.setMinWidth(70);
-        col1.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().id()));
+		TableColumn<SiteDTO, Number> col1 = new TableColumn<>("Nr.");
+		col1.setMaxWidth(70);
+		col1.setMinWidth(70);
+		col1.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().id()));
 
-        // Name Column
-        TableColumn<SiteDTO, String> col2 = new TableColumn<>("Naam");
-        col2.setPrefWidth(200);
-        col2.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().siteName()));
+		TableColumn<SiteDTO, String> col2 = new TableColumn<>("Naam");
+		col2.setPrefWidth(200);
+		col2.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().siteName()));
 
-        // Verantwoordelijke Column
-        TableColumn<SiteDTO, String> col3 = new TableColumn<>("Verantwoordelijke");
-        col3.setPrefWidth(200);
-        col3.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().verantwoordelijke().getFullName()));
+		TableColumn<SiteDTO, String> col3 = new TableColumn<>("Verantwoordelijke");
+		col3.setPrefWidth(200);
+		col3.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().verantwoordelijke().getFullName()));
 
-        // Status Column
-        TableColumn<SiteDTO, String> col4 = new TableColumn<>("Status");
-        col4.setPrefWidth(100);
-        col4.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().status().toString()));
+		TableColumn<SiteDTO, String> col4 = new TableColumn<>("Status");
+		col4.setPrefWidth(100);
+		col4.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().status().toString()));
 
-        // Machines Count Column
-        TableColumn<SiteDTO, Number> col5 = new TableColumn<>("Aantal machines");
-        col5.setPrefWidth(150);
-        col5.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().machines().size()));
+		TableColumn<SiteDTO, Number> col5 = new TableColumn<>("Aantal machines");
+		col5.setPrefWidth(150);
+		col5.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().machines().size()));
 
-        // Details Column
-        TableColumn<SiteDTO, String> showColumn = new TableColumn<>("");
-        showColumn.setMaxWidth(100);
-        showColumn.setMinWidth(100);
-        showColumn.setCellFactory(param -> new TableCell<SiteDTO, String>() {
-            private final Button viewButton = new Button("Details");
-            {
-                viewButton.setOnAction(event -> {
-                    SiteDTO site = getTableRow().getItem();
-                    if (site != null) {
-                        openSiteDetails(site.id());
-                    }
-                });
-            }
+		TableColumn<SiteDTO, String> showColumn = new TableColumn<>("Details");
+		showColumn.setMaxWidth(100);
+		showColumn.setMinWidth(100);
+		showColumn.setCellFactory(param -> new TableCell<SiteDTO, String>()
+		{
+			private final Button viewButton = new Button("Details");
+			{
+				viewButton.setOnAction(event -> {
+					SiteDTO site = getTableRow().getItem();
+					if (site != null)
+					{
+						openSiteDetails(site.id());
+					}
+				});
+			}
 
-            @Override
-            protected void updateItem(String item, boolean empty) {
-                super.updateItem(item, empty);
-                setGraphic(empty ? null : viewButton);
-            }
-        });
+			@Override
+			protected void updateItem(String item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				setGraphic(empty ? null : viewButton);
+			}
+		});
 
-        table.getColumns().add(editColumn);
-        table.getColumns().addAll(col1, col2, col3, col4, col5);
-        table.getColumns().add(showColumn);
+		table.getColumns().addAll(col1, col2, col3, col4, col5);
+		table.getColumns().add(editColumn);
+		table.getColumns().add(showColumn);
 
-        table.setPrefHeight(300);
+		table.setPrefHeight(300);
 
-        // Create pagination control and page selector
-        HBox paginationControls = new HBox(20);
-        pagination = createPagination();
-        
-        paginationControls.getChildren().addAll(pagination);
-        paginationControls.setAlignment(Pos.CENTER);
+		// Create pagination control and page selector
+		HBox paginationControls = new HBox(20);
+		pagination = createPagination();
 
-        VBox tableWithPagination = new VBox(10, table, paginationControls);
-        VBox.setVgrow(table, Priority.ALWAYS);
+		paginationControls.getChildren().addAll(pagination);
+		paginationControls.setAlignment(Pos.CENTER);
 
-        return new VBox(10, filterBox, tableWithPagination);
-    }
+		VBox tableWithPagination = new VBox(10, table, paginationControls);
+		VBox.setVgrow(table, Priority.ALWAYS);
 
-    private HBox createTableHeaders() {
-        searchField = new TextField();
-        searchField.setPromptText("Zoeken...");
-        searchField.setPrefWidth(300);
-        searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		return new VBox(10, filterBox, tableWithPagination);
+	}
 
-        // Filtering for statussen
-        statusFilter = new ComboBox<>();
-        statusFilter.setPromptText("Statussen");
-        statusFilter.setPrefWidth(150);
-        statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+	private HBox createTableHeaders()
+	{
+		searchField = new TextField();
+		searchField.setPromptText("Zoeken...");
+		searchField.setPrefWidth(300);
+		searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-        // Filtering for naam
-        nameFilter = new ComboBox<>();
-        nameFilter.setPromptText("Site naam");
-        nameFilter.setPrefWidth(150);
-        nameFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		// Filtering for statussen
+		statusFilter = new ComboBox<>();
+		statusFilter.setPromptText("Statussen");
+		statusFilter.setPrefWidth(150);
+		statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-        // filtering for verantwoordelijke
-        verantwoordelijkeFilter = new ComboBox<>();
-        verantwoordelijkeFilter.setPromptText("Verantwoordelijke");
-        verantwoordelijkeFilter.setPrefWidth(200);
-        verantwoordelijkeFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		// Filtering for naam
+		nameFilter = new ComboBox<>();
+		nameFilter.setPromptText("Site naam");
+		nameFilter.setPrefWidth(150);
+		nameFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-        // filtering for min max machine
-        minMachinesField = new TextField();
-        minMachinesField.setPromptText("Min Machines");
-        minMachinesField.setMaxWidth(100);
-        minMachinesField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.matches("\\d*")) {
-                minMachinesField.setText(newVal.replaceAll("[^\\d]", ""));
-            }
-            filterTable();
-        });
+		// filtering for verantwoordelijke
+		verantwoordelijkeFilter = new ComboBox<>();
+		verantwoordelijkeFilter.setPromptText("Verantwoordelijke");
+		verantwoordelijkeFilter.setPrefWidth(200);
+		verantwoordelijkeFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-        maxMachinesField = new TextField();
-        maxMachinesField.setPromptText("Max Machines");
-        maxMachinesField.setMaxWidth(100);
-        maxMachinesField.textProperty().addListener((obs, oldVal, newVal) -> {
-            if (!newVal.matches("\\d*")) {
-                maxMachinesField.setText(newVal.replaceAll("[^\\d]", ""));
-            }
-            filterTable();
-        });
+		// filtering for min max machine
+		minMachinesField = new TextField();
+		minMachinesField.setPromptText("Min Machines");
+		minMachinesField.setMaxWidth(100);
+		minMachinesField.textProperty().addListener((obs, oldVal, newVal) -> {
+			if (!newVal.matches("\\d*"))
+			{
+				minMachinesField.setText(newVal.replaceAll("[^\\d]", ""));
+			}
+			filterTable();
+		});
 
-        Region spacer = new Region();
-        HBox.setHgrow(spacer, Priority.ALWAYS);
-        
-        HBox pageSelector = createPageSelector();
-        
-        
-        HBox filterBox = new HBox(10, searchField, statusFilter, nameFilter, verantwoordelijkeFilter, minMachinesField,
-                maxMachinesField, spacer, pageSelector);
-        filterBox.setAlignment(Pos.CENTER_LEFT);
-        return filterBox;
-    }
+		maxMachinesField = new TextField();
+		maxMachinesField.setPromptText("Max Machines");
+		maxMachinesField.setMaxWidth(100);
+		maxMachinesField.textProperty().addListener((obs, oldVal, newVal) -> {
+			if (!newVal.matches("\\d*"))
+			{
+				maxMachinesField.setText(newVal.replaceAll("[^\\d]", ""));
+			}
+			filterTable();
+		});
 
-    private HBox createPageSelector() {
-        Label lblItemsPerPage = new Label("Aantal per pagina:");
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        ComboBox<Integer> comboItemsPerPage = new ComboBox<>(FXCollections.observableArrayList(10, 20, 50, 100));
-        comboItemsPerPage.setValue(itemsPerPage);
-        comboItemsPerPage.setOnAction(e -> {
-            int selectedValue = comboItemsPerPage.getValue();
-            updateItemsPerPage(selectedValue);
-        });
+		HBox pageSelector = createPageSelector();
 
-        HBox pageSelector = new HBox(10, lblItemsPerPage, comboItemsPerPage);
-        pageSelector.setAlignment(Pos.CENTER_RIGHT);
-        return pageSelector;
-    }
+		HBox filterBox = new HBox(10, searchField, statusFilter, nameFilter, verantwoordelijkeFilter, minMachinesField,
+				maxMachinesField, spacer, pageSelector);
+		filterBox.setAlignment(Pos.CENTER_LEFT);
+		return filterBox;
+	}
 
-    private void updateItemsPerPage(int itemsPerPage) {
-        this.itemsPerPage = itemsPerPage;
-        this.currentPage = 0;
-        updatePagination();
-        updateTableItems();
-    }
+	private HBox createPageSelector()
+	{
+		Label lblItemsPerPage = new Label("Aantal per pagina:");
 
-    private void updateFilterOptions() {
-        List<String> statussen = new ArrayList<>();
-        statussen.add(null);
-        statussen.addAll(sc.getAllStatusses());
-        statusFilter.setItems(FXCollections.observableArrayList(statussen));
+		ComboBox<Integer> comboItemsPerPage = new ComboBox<>(FXCollections.observableArrayList(10, 20, 50, 100));
+		comboItemsPerPage.setValue(itemsPerPage);
+		comboItemsPerPage.setOnAction(e -> {
+			int selectedValue = comboItemsPerPage.getValue();
+			updateItemsPerPage(selectedValue);
+		});
 
-        List<String> siteNames = new ArrayList<>();
-        siteNames.add(null);
-        siteNames.addAll(sc.getAllSiteNames());
-        nameFilter.setItems(FXCollections.observableArrayList(siteNames));
+		HBox pageSelector = new HBox(10, lblItemsPerPage, comboItemsPerPage);
+		pageSelector.setAlignment(Pos.CENTER_RIGHT);
+		return pageSelector;
+	}
 
-        List<String> verantwoordelijken = new ArrayList<>();
-        verantwoordelijken.add(null);
-        verantwoordelijken.addAll(sc.getAllVerantwoordelijken());
-        verantwoordelijkeFilter.setItems(FXCollections.observableArrayList(verantwoordelijken));
-    }
+	private void updateItemsPerPage(int itemsPerPage)
+	{
+		this.itemsPerPage = itemsPerPage;
+		this.currentPage = 0;
+		updatePagination();
+		updateTableItems();
+	}
 
-    private void filterTable() {
-        String searchQuery = searchField.getText().toLowerCase();
-        String selectedStatus = statusFilter.getValue();
-        String selectedName = nameFilter.getValue();
-        String selectedVerantwoordelijke = verantwoordelijkeFilter.getValue();
+	private void updateFilterOptions()
+	{
+		List<String> statussen = new ArrayList<>();
+		statussen.add(null);
+		statussen.addAll(sc.getAllStatusses());
+		statusFilter.setItems(FXCollections.observableArrayList(statussen));
 
-        int minMachines = parseIntSafely(minMachinesField.getText(), Integer.MIN_VALUE);
-        int maxMachines = parseIntSafely(maxMachinesField.getText(), Integer.MAX_VALUE);
-        filteredSites = sc.getFilteredSites(searchQuery, selectedStatus, selectedName, 
-                selectedVerantwoordelijke, minMachines, maxMachines);
-        
-        currentPage = 0;
-        updatePagination();
-        updateTableItems();
-    }
+		List<String> siteNames = new ArrayList<>();
+		siteNames.add(null);
+		siteNames.addAll(sc.getAllSiteNames());
+		nameFilter.setItems(FXCollections.observableArrayList(siteNames));
 
-    private int parseIntSafely(String value, int defaultValue) {
-        if (value == null || value.trim().isEmpty()) {
-            return defaultValue;
-        }
-        try {
-            return Integer.parseInt(value.trim());
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
-    }
+		List<String> verantwoordelijken = new ArrayList<>();
+		verantwoordelijken.add(null);
+		verantwoordelijken.addAll(sc.getAllVerantwoordelijken());
+		verantwoordelijkeFilter.setItems(FXCollections.observableArrayList(verantwoordelijken));
+	}
 
-    private Pagination createPagination() {
-        updateTotalPages();
-        Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
-        pagination.setPageFactory(this::createPage);
-        pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
-            currentPage = newIndex.intValue();
-            updateTableItems();
-        });
-        return pagination;
-    }
+	private void filterTable()
+	{
+		String searchQuery = searchField.getText().toLowerCase();
+		String selectedStatus = statusFilter.getValue();
+		String selectedName = nameFilter.getValue();
+		String selectedVerantwoordelijke = verantwoordelijkeFilter.getValue();
 
-    private HBox createPage(int pageIndex) {
-        return new HBox();
-    }
+		int minMachines = parseIntSafely(minMachinesField.getText(), Integer.MIN_VALUE);
+		int maxMachines = parseIntSafely(maxMachinesField.getText(), Integer.MAX_VALUE);
+		filteredSites = sc.getFilteredSites(searchQuery, selectedStatus, selectedName, selectedVerantwoordelijke,
+				minMachines, maxMachines);
 
-    private void updatePagination() {
-        updateTotalPages();
-        pagination.setPageCount(Math.max(1, totalPages));
-        pagination.setCurrentPageIndex(Math.min(currentPage, Math.max(0, totalPages - 1)));
-    }
+		currentPage = 0;
+		updatePagination();
+		updateTableItems();
+	}
 
-    private void updateTotalPages() {
-        totalPages = (int) Math.ceil((double) filteredSites.size() / itemsPerPage);
-    }
+	private int parseIntSafely(String value, int defaultValue)
+	{
+		if (value == null || value.trim().isEmpty())
+		{
+			return defaultValue;
+		}
+		try
+		{
+			return Integer.parseInt(value.trim());
+		} catch (NumberFormatException e)
+		{
+			return defaultValue;
+		}
+	}
 
-    private void updateTableItems() {
-        int fromIndex = currentPage * itemsPerPage;
-        int toIndex = Math.min(fromIndex + itemsPerPage, filteredSites.size());
+	private Pagination createPagination()
+	{
+		updateTotalPages();
+		Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
+		pagination.setPageFactory(this::createPage);
+		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+			currentPage = newIndex.intValue();
+			updateTableItems();
+		});
+		return pagination;
+	}
 
-        if (filteredSites.isEmpty()) {
-            table.getItems().clear();
-        } else {
-            List<SiteDTO> currentPageItems = fromIndex < toIndex ? filteredSites.subList(fromIndex, toIndex)
-                    : List.of();
-            table.getItems().setAll(currentPageItems);
-        }
-    }
+	private HBox createPage(int pageIndex)
+	{
+		return new HBox();
+	}
 
-    private void updateTable(List<SiteDTO> sites) {
-        filteredSites = sites;
-        currentPage = 0;
-        updatePagination();
-        updateTableItems();
-    }
+	private void updatePagination()
+	{
+		updateTotalPages();
+		pagination.setPageCount(Math.max(1, totalPages));
+		pagination.setCurrentPageIndex(Math.min(currentPage, Math.max(0, totalPages - 1)));
+	}
 
-    private void openAddSiteForm() {
-        Parent addSiteForm = new AddOrEditSiteForm(mainLayout, siteRepo, null);
-        mainLayout.setContent(addSiteForm, true, false);
-    }
+	private void updateTotalPages()
+	{
+		totalPages = (int) Math.ceil((double) filteredSites.size() / itemsPerPage);
+	}
 
-    private void openEditSiteForm(Site site) {
-        Parent editSiteForm = new AddOrEditSiteForm(mainLayout, siteRepo, site);
-        mainLayout.setContent(editSiteForm, true, false);
-    }
+	private void updateTableItems()
+	{
+		int fromIndex = currentPage * itemsPerPage;
+		int toIndex = Math.min(fromIndex + itemsPerPage, filteredSites.size());
 
-    private void openSiteDetails(int siteId) {
-        Parent siteDetails = new SiteDetailsComponent(mainLayout, siteId);
-        mainLayout.setContent(siteDetails, true, false);
-    }
+		if (filteredSites.isEmpty())
+		{
+			table.getItems().clear();
+		} else
+		{
+			List<SiteDTO> currentPageItems = fromIndex < toIndex ? filteredSites.subList(fromIndex, toIndex)
+					: List.of();
+			table.getItems().setAll(currentPageItems);
+		}
+	}
 
-    @Override
-    public void update() {
-        Platform.runLater(() -> {
-            allSites = sc.getSites();
-            filteredSites = new ArrayList<>(allSites);
-            updateFilterOptions();
-            updateTable(filteredSites);
-        });
-    }
+	private void updateTable(List<SiteDTO> sites)
+	{
+		filteredSites = sites;
+		currentPage = 0;
+		updatePagination();
+		updateTableItems();
+	}
+
+	private void openAddSiteForm()
+	{
+		Parent addSiteForm = new AddOrEditSiteForm(mainLayout, siteRepo, null);
+		mainLayout.setContent(addSiteForm, true, false, CurrentPage.NONE);
+	}
+
+	private void openEditSiteForm(Site site)
+	{
+		Parent editSiteForm = new AddOrEditSiteForm(mainLayout, siteRepo, site);
+		mainLayout.setContent(editSiteForm, true, false, CurrentPage.NONE);
+	}
+
+	private void openSiteDetails(int siteId)
+	{
+		Parent siteDetails = new SiteDetailsComponent(mainLayout, siteId);
+		mainLayout.setContent(siteDetails, true, false, CurrentPage.NONE);
+	}
+
+	@Override
+	public void update()
+	{
+		Platform.runLater(() -> {
+			allSites = sc.getSites();
+			filteredSites = new ArrayList<>(allSites);
+			updateFilterOptions();
+			updateTable(filteredSites);
+		});
+	}
 }

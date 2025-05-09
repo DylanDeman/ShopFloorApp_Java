@@ -14,3 +14,11 @@
 	-fx-padding: 8 15 8 15;
 	-fx-background-radius: 5;
 }
+
+.back-button:hover {
+	-fx-cursor: hand
+}
+
+.add-button:hover {
+	-fx-cursor: hand
+}

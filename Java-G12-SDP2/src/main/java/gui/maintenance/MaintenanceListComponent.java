@@ -63,10 +63,12 @@ public class MaintenanceListComponent extends VBox
 
 	private void initializeGUI()
 	{
+		this.getStylesheets().add(getClass().getResource("/css/tablePane.css").toExternalForm());
+
 		allMaintenances = machineDTO == null ? mc.getMaintenances()
 				: mc.getMaintenances().stream().filter((m) -> m.machine().equals(machineDTO)).toList();
 		filteredMaintenances = allMaintenances;
-		
+
 		table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
 
 		VBox titleSection = createTitleSection();
@@ -91,25 +93,26 @@ public class MaintenanceListComponent extends VBox
 	{
 		HBox hbox = new HBox(10);
 		hbox.setAlignment(Pos.CENTER_LEFT);
+		hbox.setSpacing(10);
 
 		FontIcon icon = new FontIcon("fas-arrow-left");
 		icon.setIconSize(20);
 		Button backButton = new Button();
 		backButton.setGraphic(icon);
-		backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+		backButton.getStyleClass().add("back-button");
 		backButton.setOnAction(e -> mainLayout.showHomeScreen());
 
 		Label title = new Label("Onderhoudslijst");
-		title.setStyle("-fx-font: 40 arial;");
-		
-		CustomButton maintenancePlanBtn = new CustomButton("Onderhoud inplannen");
-		
-		maintenancePlanBtn.setOnAction((e) -> goToMaintenancePlanning(mainLayout));
+		title.getStyleClass().add("title-label");
 
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-		hbox.getChildren().addAll(backButton, title, maintenancePlanBtn, spacer);
+		CustomButton maintenancePlanBtn = new CustomButton("Onderhoud inplannen");
+		maintenancePlanBtn.setOnAction((e) -> goToMaintenancePlanning(mainLayout));
+		maintenancePlanBtn.getStyleClass().add("add-button");
+
+		hbox.getChildren().addAll(backButton, title, spacer, maintenancePlanBtn);
 		return hbox;
 	}
 
@@ -218,7 +221,7 @@ public class MaintenanceListComponent extends VBox
 					MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
 					goToDetails(mainLayout, selectedMaintenance);
 				});
-				btn.setMaxWidth(Double.MAX_VALUE); 
+				btn.setMaxWidth(Double.MAX_VALUE);
 				btn.setAlignment(Pos.CENTER);
 			}
 
@@ -293,8 +296,9 @@ public class MaintenanceListComponent extends VBox
 	 * form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").
 	 * toExternalForm()); }
 	 */
-	
-	private void goToMaintenancePlanning(MainLayout mainlayout) {
+
+	private void goToMaintenancePlanning(MainLayout mainlayout)
+	{
 		mainLayout.showMaintenancePlanning(machineDTO);
 	}
 

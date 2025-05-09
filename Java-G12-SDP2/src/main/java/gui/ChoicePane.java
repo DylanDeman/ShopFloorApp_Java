@@ -1,9 +1,5 @@
 package gui;
 
-import gui.machine.MachinesListComponent;
-import gui.maintenance.MaintenanceListComponent;
-import gui.report.AddReportForm;
-import gui.site.SitesListComponent;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.layout.GridPane;
@@ -13,12 +9,10 @@ public class ChoicePane extends GridPane
 {
 
 	private final MainLayout mainLayout;
-	private final AppServices services;
 
 	public ChoicePane(MainLayout mainLayout)
 	{
 		this.mainLayout = mainLayout;
-		this.services = mainLayout.getServices();
 		setupLayout();
 	}
 
@@ -29,26 +23,22 @@ public class ChoicePane extends GridPane
 		title.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
 
 		Button userManagementButton = createButton("Overzicht gebruikers");
-		userManagementButton.setOnAction(e -> goToUserManagement());
+		userManagementButton.setOnAction(e -> mainLayout.showUserManagementScreen());
 
 		Button maintenanceListButton = createButton("Lijst onderhouden");
-		maintenanceListButton.setOnAction(e -> goToMaintenanceList());
+		maintenanceListButton.setOnAction(e -> mainLayout.showMaintenanceList());
 
 		Button sitesButton = createButton("Overzicht sites");
-		sitesButton.setOnAction(e -> gotToSitesList());
+		sitesButton.setOnAction(e -> mainLayout.showSitesList());
 
 		Button machinesButton = createButton("Machine overzicht");
-		machinesButton.setOnAction(e -> goToMachinesList());
-
-		Button logoutButton = createButton("Uitloggen");
-		logoutButton.setOnAction(e -> mainLayout.showLoginScreen());
+		machinesButton.setOnAction(e -> mainLayout.showMachineScreen());
 
 		this.add(title, 0, 0, 2, 1);
 		this.add(userManagementButton, 0, 1);
 		this.add(maintenanceListButton, 1, 1);
 		this.add(sitesButton, 2, 1);
-		this.add(machinesButton, 0, 2);
-		this.add(logoutButton, 1, 2);
+		this.add(machinesButton, 3, 1);
 
 		for (javafx.scene.Node node : this.getChildren())
 		{
@@ -68,34 +58,4 @@ public class ChoicePane extends GridPane
 		return button;
 	}
 
-	private void goToUserManagement()
-	{
-		UserManagementPane userManagementPane = new UserManagementPane(mainLayout);
-		mainLayout.setContent(userManagementPane, true, false);
-	}
-
-	private void goToMaintenanceList()
-	{
-		MaintenanceListComponent maintenanceList = new MaintenanceListComponent(mainLayout);
-		mainLayout.setContent(maintenanceList, true, false);
-	}
-
-	private void gotToSitesList()
-	{
-		SitesListComponent sitesList = new SitesListComponent(mainLayout);
-		mainLayout.setContent(sitesList, true, false);
-	}
-
-	private void goToAddRapport()
-	{
-		AddReportForm addReportForm = new AddReportForm(mainLayout,
-				services.getMaintenanceController().getMaintenances().getFirst());
-		mainLayout.setContent(addReportForm, true, false);
-	}
-
-	private void goToMachinesList()
-	{
-		MachinesListComponent machinesList = new MachinesListComponent(mainLayout);
-		mainLayout.setContent(machinesList, true, false);
-	}
 }

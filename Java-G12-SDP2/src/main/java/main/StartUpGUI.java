@@ -29,9 +29,11 @@ import util.ProductionStatus;
 import util.Role;
 import util.Status;
 
-public class StartUpGUI extends Application {
+public class StartUpGUI extends Application
+{
 	@Override
-	public void start(Stage primaryStage) {
+	public void start(Stage primaryStage)
+	{
 		MainLayout mainLayout = new MainLayout(primaryStage);
 
 		primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/images/favicon-32x32.png")));
@@ -93,19 +95,20 @@ public class StartUpGUI extends Application {
 
 		EntityManager entityManager = JPAUtil.getEntityManagerFactory().createEntityManager();
 
-		try {
+		try
+		{
 
 			Machine m1 = new Machine(site1, u1, "M1-3096", "Line 1", "Product A", MachineStatus.DRAAIT,
 					ProductionStatus.GEZOND, LocalDate.of(2025, 6, 2));
 			m1.setLastMaintenance(LocalDate.of(2025, 5, 1));
-			
+
 			Machine m2 = new Machine(site1, u4, "M2-2359", "Line 4", "Product B", MachineStatus.MANUEEL_GESTOPT,
 					ProductionStatus.FALEND, LocalDate.of(2025, 8, 15));
 
 			List<Maintenance> maintenances = IntStream.range(0, 14)
 					.mapToObj(i -> new Maintenance(LocalDate.now().plusDays(i), LocalDateTime.now().plusDays(i),
 							LocalDateTime.now().plusDays(i).plusHours(i), u7, "reason", String.format("reason %d", i),
-							MaintenanceStatus.IN_PROGRESS, m1))
+							MaintenanceStatus.IN_UITVOERING, m1))
 					.collect(Collectors.toList());
 
 			Report r1 = new Report(mc.getMaintenance(maintenances.getFirst().getId()), u7, LocalDate.now(),
@@ -120,7 +123,7 @@ public class StartUpGUI extends Application {
 			maintenances = IntStream.range(0, 14)
 					.mapToObj(i -> new Maintenance(LocalDate.now().plusDays(i), LocalDateTime.now().plusDays(i),
 							LocalDateTime.now().plusDays(i).plusHours(i), u7, "reason", String.format("reason %d", i),
-							MaintenanceStatus.IN_PROGRESS, i % 2 == 0 ? m1 : m2))
+							MaintenanceStatus.IN_UITVOERING, i % 2 == 0 ? m1 : m2))
 					.collect(Collectors.toList());
 
 			entityManager.persist(m1);
@@ -142,19 +145,24 @@ public class StartUpGUI extends Application {
 			maintenances.forEach(maintenance -> entityManager.persist(maintenance));
 
 			entityManager.getTransaction().commit();
-		} catch (Exception e) {
+		} catch (Exception e)
+		{
 			System.err.println("Error during transaction: " + e.getMessage());
-			if (entityManager.getTransaction().isActive()) {
+			if (entityManager.getTransaction().isActive())
+			{
 				entityManager.getTransaction().rollback();
 			}
-		} finally {
-			if (entityManager != null && entityManager.isOpen()) {
+		} finally
+		{
+			if (entityManager != null && entityManager.isOpen())
+			{
 				entityManager.close();
 			}
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args)
+	{
 		launch(args);
 	}
 }

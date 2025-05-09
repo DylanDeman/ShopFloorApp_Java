@@ -24,34 +24,21 @@
     -fx-background-repeat: no-repeat;
 }
 
-.back-button {
-    -fx-background-color: transparent;
-    -fx-padding: 0;
-}
-
-.back-button:hover {
-    -fx-background-color: #f0f0f0;
-    -fx-border-color: #d0d0d0;
-}
-
-.back-button:pressed {
-    -fx-background-color: #e0e0e0;
-}
-
-.title-label {
-    -fx-font: 40 arial;
-}
-
 .machine-info-label {
     -fx-font-size: 16px;
     -fx-text-fill: #666666;
 }
 
 .action-button {
-    -fx-background-color: #f44336;
-    -fx-text-fill: white;
-    -fx-background-radius: 4px;
-    -fx-padding: 8px 16px;
+	-fx-background-color: #f0453c; 
+	-fx-text-fill: white; 
+	-fx-font-weight: bold;
+	-fx-padding: 8 15 8 15;
+	-fx-background-radius: 5;
+}
+
+.action-button:hover {
+	-fx-cursor: hand
 }
 
 .maintenance-table {

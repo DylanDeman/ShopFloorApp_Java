@@ -19,7 +19,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -84,34 +83,39 @@ public class AddOrEditMachineForm extends GridPane
 		VBox mainContainer = new VBox(10);
 		mainContainer.setAlignment(Pos.TOP_CENTER);
 		mainContainer.setPadding(new Insets(10));
+		mainContainer.setMaxWidth(850);
 
-		// Create a scrollable container for the form content only
-		ScrollPane scrollPane = new ScrollPane();
-		scrollPane.setContent(createFormContent());
-		scrollPane.setFitToWidth(true);
-		scrollPane.setPrefViewportHeight(800); // or any height that works for your design
-		scrollPane.getStyleClass().add("scroll-pane");
-		scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-		scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+		VBox formAndSaveButton = new VBox(10);
+		formAndSaveButton.getChildren().addAll(createFormContent(), createSaveButton());
 
-		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, scrollPane);
+		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, formAndSaveButton);
 
 		this.add(mainContainer, 0, 0);
 
 	}
 
-	private VBox createFormContent()
+	private HBox createFormContent()
 	{
-		VBox formContent = new VBox(30);
+		HBox formContent = new HBox(30);
 		formContent.setAlignment(Pos.TOP_CENTER);
 		formContent.getStyleClass().add("form-box");
+		formContent.setMaxWidth(800);
 
-		VBox textFieldBox = new VBox(15, createTextFields());
-		VBox datePickerBox = new VBox(15, createDatePicker());
-		VBox infoBox = new VBox(15, createInfoBox());
-		VBox statusBox = new VBox(15, createComboBoxSection());
+		VBox leftBox = new VBox(20);
+		leftBox.setAlignment(Pos.TOP_LEFT);
+		leftBox.setMinWidth(400);
+		leftBox.setMaxWidth(400);
 
-		formContent.getChildren().addAll(textFieldBox, datePickerBox, infoBox, statusBox, createSaveButton());
+		leftBox.getChildren().addAll(createTextFields(), createDatePicker());
+
+		VBox rightBox = new VBox(20);
+		rightBox.setAlignment(Pos.TOP_LEFT);
+		rightBox.setMinWidth(400);
+		rightBox.setMaxWidth(400);
+
+		rightBox.getChildren().addAll(createInfoBox(), createComboBoxSection());
+
+		formContent.getChildren().addAll(leftBox, rightBox);
 
 		return formContent;
 	}
@@ -190,7 +194,6 @@ public class AddOrEditMachineForm extends GridPane
 		siteBox.setPromptText("Selecteer een site");
 		siteBox.setPrefWidth(200);
 
-		// Customizing the ComboBox's display
 		siteBox.setCellFactory(param -> new ListCell<Site>()
 		{
 			@Override
@@ -202,7 +205,7 @@ public class AddOrEditMachineForm extends GridPane
 					setText(null);
 				} else
 				{
-					setText(item.getSiteName()); // Customize display format
+					setText(item.getSiteName());
 				}
 			}
 		});
@@ -218,7 +221,7 @@ public class AddOrEditMachineForm extends GridPane
 					setText(null);
 				} else
 				{
-					setText(item.getSiteName()); // Customize button cell format
+					setText(item.getSiteName());
 				}
 			}
 		});
@@ -311,10 +314,15 @@ public class AddOrEditMachineForm extends GridPane
 		saveButton.getStyleClass().add("save-button");
 		saveButton.setOnAction(e -> saveMachine());
 
+		saveButton.setPrefSize(300, 40);
+		saveButton.setMaxWidth(Double.MAX_VALUE);
+
 		HBox buttonBox = new HBox(saveButton);
 		buttonBox.setAlignment(Pos.CENTER);
 		buttonBox.setPadding(new Insets(20, 0, 0, 0));
-		buttonBox.setMaxWidth(400);
+
+		buttonBox.setMinWidth(800);
+		buttonBox.setMaxWidth(800);
 
 		return buttonBox;
 	}
@@ -328,7 +336,6 @@ public class AddOrEditMachineForm extends GridPane
 			MachineBuilder machineBuilder = new MachineBuilder();
 			machineBuilder.createMachine();
 
-			// If editing an existing machine, set the ID
 			if (!isNewMachine)
 			{
 				machineBuilder.buildId(machineDTO.id());
