@@ -186,10 +186,10 @@ public class MachinesListComponent extends GridPane
 			}
 		});
 
-		machineTable.getColumns().addAll(editCol, onderhoudCol);
-
 		machineTable.getColumns().addAll(idCol, codeCol, locationCol, statusCol, prodStatusCol, maintenanceCol, siteCol,
 				technicianCol, productInfoCol, lastMaintenanceCol, daysSinceMaintenanceCol, uptimeCol);
+
+		machineTable.getColumns().addAll(editCol, onderhoudCol);
 
 		List<MachineDTO> dtos = machineController.getMachineList();
 		machineTable.getItems().setAll(dtos);

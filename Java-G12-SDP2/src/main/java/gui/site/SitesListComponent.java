@@ -133,10 +133,7 @@ public class SitesListComponent extends VBox implements Observer
 	{
 		HBox filterBox = createTableHeaders();
 
-		// Edit Column
-		TableColumn<SiteDTO, Void> editColumn = new TableColumn<>("");
-		editColumn.setMaxWidth(50);
-		editColumn.setMinWidth(50);
+		TableColumn<SiteDTO, Void> editColumn = new TableColumn<>("Bewerken");
 		editColumn.setCellFactory(param -> new TableCell<SiteDTO, Void>()
 		{
 			private final Button editButton = new Button();
@@ -149,7 +146,6 @@ public class SitesListComponent extends VBox implements Observer
 					SiteDTO site = getTableRow().getItem();
 					if (site != null)
 					{
-						// Using the controller to get the site object
 						openEditSiteForm(sc.getSiteObject(site));
 					}
 				});
@@ -163,34 +159,28 @@ public class SitesListComponent extends VBox implements Observer
 			}
 		});
 
-		// ID Column
 		TableColumn<SiteDTO, Number> col1 = new TableColumn<>("Nr.");
 		col1.setMaxWidth(70);
 		col1.setMinWidth(70);
 		col1.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().id()));
 
-		// Name Column
 		TableColumn<SiteDTO, String> col2 = new TableColumn<>("Naam");
 		col2.setPrefWidth(200);
 		col2.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().siteName()));
 
-		// Verantwoordelijke Column
 		TableColumn<SiteDTO, String> col3 = new TableColumn<>("Verantwoordelijke");
 		col3.setPrefWidth(200);
 		col3.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().verantwoordelijke().getFullName()));
 
-		// Status Column
 		TableColumn<SiteDTO, String> col4 = new TableColumn<>("Status");
 		col4.setPrefWidth(100);
 		col4.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().status().toString()));
 
-		// Machines Count Column
 		TableColumn<SiteDTO, Number> col5 = new TableColumn<>("Aantal machines");
 		col5.setPrefWidth(150);
 		col5.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().machines().size()));
 
-		// Details Column
-		TableColumn<SiteDTO, String> showColumn = new TableColumn<>("");
+		TableColumn<SiteDTO, String> showColumn = new TableColumn<>("Details");
 		showColumn.setMaxWidth(100);
 		showColumn.setMinWidth(100);
 		showColumn.setCellFactory(param -> new TableCell<SiteDTO, String>()
@@ -214,8 +204,8 @@ public class SitesListComponent extends VBox implements Observer
 			}
 		});
 
-		table.getColumns().add(editColumn);
 		table.getColumns().addAll(col1, col2, col3, col4, col5);
+		table.getColumns().add(editColumn);
 		table.getColumns().add(showColumn);
 
 		table.setPrefHeight(300);

@@ -166,8 +166,6 @@ public class UserManagementPane extends GridPane implements Observer
 
 		userTable.setPlaceholder(new Label("Geen gebruikers gevonden"));
 
-		userTable.getColumns().add(editColumn);
-
 		userTable.getColumns().add(idColumn);
 		userTable.getColumns().add(firstnameColumn);
 		userTable.getColumns().add(lastnameColumn);
@@ -175,6 +173,7 @@ public class UserManagementPane extends GridPane implements Observer
 		userTable.getColumns().add(roleColumn);
 		userTable.getColumns().add(statusColumn);
 
+		userTable.getColumns().add(editColumn);
 		userTable.getColumns().add(deleteColumn);
 
 	}
