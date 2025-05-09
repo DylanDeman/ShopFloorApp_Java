@@ -21,7 +21,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -81,24 +80,20 @@ public class AddReportForm extends GridPane
 		this.setVgap(15);
 		this.setPadding(new Insets(20));
 
-		ScrollPane scrollPane = new javafx.scene.control.ScrollPane();
-		scrollPane.setContent(createFormContent());
-		scrollPane.setFitToWidth(true);
-		scrollPane.setPrefViewportHeight(800);
-		scrollPane.getStyleClass().add("scroll-pane");
-		scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-		scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+		VBox formAndSaveButton = new VBox(10);
+		formAndSaveButton.getChildren().addAll(createFormContent(), createSaveButton());
 
 		VBox mainContainer = new VBox();
 		mainContainer.setAlignment(Pos.CENTER);
-		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, scrollPane);
+		mainContainer.setPadding(new Insets(10));
+		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, formAndSaveButton);
 
 		this.add(mainContainer, 0, 0);
 	}
 
-	private VBox createFormContent()
+	private HBox createFormContent()
 	{
-		VBox formContent = new VBox(30);
+		HBox formContent = new HBox(30);
 		formContent.setAlignment(Pos.TOP_CENTER);
 		formContent.getStyleClass().add("form-box");
 
@@ -107,7 +102,21 @@ public class AddReportForm extends GridPane
 		VBox datesBox = new VBox(15, createDatesBox());
 		VBox lowBox = new VBox(15, createLowBox());
 
-		formContent.getChildren().addAll(informationBox, technicianBox, datesBox, lowBox, createSaveButton());
+		VBox leftBox = new VBox(20);
+		leftBox.setAlignment(Pos.TOP_LEFT);
+		leftBox.setMinWidth(400);
+		leftBox.setMaxWidth(600);
+
+		leftBox.getChildren().addAll(informationBox, technicianBox);
+
+		VBox rightBox = new VBox(20);
+		rightBox.setAlignment(Pos.TOP_LEFT);
+		rightBox.setMinWidth(400);
+		rightBox.setMaxWidth(600);
+
+		rightBox.getChildren().addAll(datesBox, lowBox);
+
+		formContent.getChildren().addAll(leftBox, rightBox);
 
 		return formContent;
 	}
@@ -218,10 +227,15 @@ public class AddReportForm extends GridPane
 		saveButton.getStyleClass().add("save-button");
 		saveButton.setOnAction(e -> createReport());
 
+		saveButton.setPrefSize(300, 40);
+		saveButton.setMaxWidth(Double.MAX_VALUE);
+
 		HBox buttonBox = new HBox(saveButton);
 		buttonBox.setAlignment(Pos.CENTER);
 		buttonBox.setPadding(new Insets(20, 0, 0, 0));
-		buttonBox.setMaxWidth(400);
+
+		buttonBox.setMinWidth(800);
+		buttonBox.setMaxWidth(800);
 
 		return buttonBox;
 	}

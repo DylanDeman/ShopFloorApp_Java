@@ -29,4 +29,9 @@ public class UserController
 		return userRepo.getAllTechniekers();
 	}
 
+	public List<User> getAllUsers()
+	{
+		return userRepo.findAll();
+	}
+
 }

@@ -19,21 +19,22 @@ import domain.user.User;
 import domain.user.UserController;
 import exceptions.InformationRequiredExceptionMaintenance;
 import gui.MainLayout;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Cursor;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Control;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import util.MaintenanceStatus;
 
-public class MaintenancePlanningForm extends VBox
+public class MaintenancePlanningForm extends GridPane
 {
 
 	private final MainLayout mainLayout;
@@ -46,6 +47,17 @@ public class MaintenancePlanningForm extends VBox
 	private Label startDateErrorLabel, endDateErrorLabel, machineErrorLabel, statusErrorLabel, reasonErrorLabel,
 			technicianErrorLabel, executionDateErrorLabel;
 
+	private TextField reasonField;
+
+	private TextArea commentsField;
+
+	private ComboBox<User> technicianComboBox;
+	private ComboBox<LocalTime> startTimeField, endTimeField;
+	private ComboBox<String> statusComboBox;
+	private ComboBox<MachineDTO> machineComboBox;
+
+	private DatePicker executionDatePicker;
+
 	public MaintenancePlanningForm(MainLayout mainLayout, MachineDTO machineDTO)
 	{
 		this.mainLayout = mainLayout;
@@ -53,15 +65,34 @@ public class MaintenancePlanningForm extends VBox
 		this.mc = mainLayout.getServices().getMachineController();
 		this.mntcc = mainLayout.getServices().getMaintenanceController();
 		this.uc = mainLayout.getServices().getUserController();
-		initializeForm();
+
+		initializeFields();
+		buildGUI();
 	}
 
-	private void initializeForm()
+	private void buildGUI()
 	{
 		this.getStylesheets().add(getClass().getResource("/css/form.css").toExternalForm());
+		this.setAlignment(Pos.CENTER);
+		this.setHgap(10);
+		this.setVgap(15);
+		this.setPadding(new Insets(20));
 
-		this.setSpacing(20);
-		this.getStyleClass().add("content-container");
+		VBox formAndSaveButton = new VBox(10);
+		formAndSaveButton.getChildren().addAll(createFormContent(), createSaveButton());
+
+		VBox mainContainer = new VBox(10);
+		mainContainer.setAlignment(Pos.TOP_CENTER);
+		mainContainer.setPadding(new Insets(10));
+		mainContainer.getChildren().addAll(createTitleSection(), errorLabel, formAndSaveButton);
+
+		this.add(mainContainer, 0, 0);
+	}
+
+	private VBox createTitleSection()
+	{
+		HBox hbox = new HBox(10);
+		hbox.setAlignment(Pos.CENTER_LEFT);
 
 		FontIcon icon = new FontIcon("fas-arrow-left");
 		icon.setIconSize(20);
@@ -69,41 +100,112 @@ public class MaintenancePlanningForm extends VBox
 		backButton.setGraphic(icon);
 		backButton.getStyleClass().add("back-button");
 		backButton.setOnAction(e -> mainLayout.showMaintenanceList(machineDTO));
-		backButton.setCursor(Cursor.HAND);
+		this.add(backButton, 0, 0, 2, 1);
 
-		Label headerLabel = new Label("Onderhoud inplannen");
-		headerLabel.getStyleClass().add("title-label");
-		headerLabel.setAlignment(Pos.CENTER);
+		Label title = new Label("Onderhoud inplannen");
+		title.getStyleClass().add("title-label");
 
-		HBox title = new HBox(10, backButton, headerLabel);
-		title.setAlignment(Pos.CENTER_LEFT);
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
 
+		hbox.getChildren().addAll(backButton, title, spacer);
+
+		return new VBox(10, hbox);
+	}
+
+	private HBox createSaveButton()
+	{
 		Button saveButton = new Button("Opslaan");
 		saveButton.getStyleClass().add("save-button");
+		saveButton.setOnAction(e -> savePlanning());
 
-		VBox footer = new VBox();
-		footer.setAlignment(Pos.CENTER);
-		footer.getChildren().add(saveButton);
+		saveButton.setPrefSize(300, 40);
+		saveButton.setMaxWidth(Double.MAX_VALUE);
 
-		VBox leftColumn = new VBox(15);
-		VBox rightColumn = new VBox(15);
+		HBox buttonBox = new HBox(saveButton);
+		buttonBox.setAlignment(Pos.CENTER);
+		buttonBox.setPadding(new Insets(20, 0, 0, 0));
 
-		HBox formRowBox = new HBox(20, leftColumn, rightColumn);
-		this.setAlignment(Pos.CENTER);
-		formRowBox.setAlignment(Pos.TOP_CENTER);
+		buttonBox.setMinWidth(800);
+		buttonBox.setMaxWidth(800);
 
-		VBox form = new VBox(15, formRowBox, footer);
-		form.getStyleClass().add("form-box");
+		return buttonBox;
+	}
 
-		DatePicker executionDatePicker = new DatePicker();
-		ComboBox<LocalTime> startTimeField = new ComboBox<>();
-		populateTimePicker(startTimeField);
-		ComboBox<LocalTime> endTimeField = new ComboBox<>();
-		populateTimePicker(endTimeField);
+	private void savePlanning()
+	{
+		try
+		{
+			resetErrorLabels();
 
-		startTimeField.setPromptText("Starttijd");
-		endTimeField.setPromptText("Eindtijd");
+			LocalDate execDate = executionDatePicker.getValue();
+			LocalTime sTime = startTimeField.getValue();
+			LocalTime eTime = endTimeField.getValue();
 
+			LocalDateTime startDateTime = (execDate != null && sTime != null) ? LocalDateTime.of(execDate, sTime)
+					: null;
+			LocalDateTime endDateTime = (execDate != null && eTime != null) ? LocalDateTime.of(execDate, eTime) : null;
+
+			Machine machine = (machineComboBox.getValue() != null) ? mc.convertDTOToMachine(machineComboBox.getValue())
+					: null;
+
+			MaintenanceBuilder builder = new MaintenanceBuilder();
+			builder.createMaintenance();
+			builder.buildExecutionDate(execDate);
+			builder.buildStartDate(startDateTime);
+			builder.buildEndDate(endDateTime);
+			builder.buildTechnician(technicianComboBox.getValue());
+			builder.buildReason(reasonField.getText());
+			builder.buildComments(commentsField.getText());
+			if (statusComboBox.getValue() != null)
+				builder.buildStatus(MaintenanceStatus.valueOf(statusComboBox.getValue()));
+			builder.buildMachine(machine);
+
+			mntcc.createMaintenance(builder.getMaintenance());
+			mainLayout.showMaintenanceList(machineDTO);
+
+		} catch (InformationRequiredExceptionMaintenance ex)
+		{
+			handleInformationRequiredException(ex);
+		} catch (Exception ex)
+		{
+			errorLabel.setText("Er is een fout opgetreden: " + ex.getMessage());
+			ex.printStackTrace();
+		}
+	}
+
+	private HBox createFormContent()
+	{
+		HBox formContent = new HBox(30);
+		formContent.setAlignment(Pos.TOP_CENTER);
+		formContent.getStyleClass().add("form-box");
+		HBox.setHgrow(formContent, Priority.ALWAYS); // Laat de box groeien
+
+		VBox dataBox = new VBox(15, createDateSection());
+		VBox technicianReasonBox = new VBox(15, createTechnicianReasonSection());
+		VBox otherBox = new VBox(15, createOtherSection());
+
+		VBox leftBox = new VBox(20);
+		leftBox.setAlignment(Pos.TOP_LEFT);
+		leftBox.setMinWidth(600);
+		leftBox.setMaxWidth(800);
+
+		leftBox.getChildren().addAll(dataBox, technicianReasonBox);
+
+		VBox rightBox = new VBox(20);
+		rightBox.setAlignment(Pos.TOP_LEFT);
+		rightBox.setMinWidth(600);
+		rightBox.setMaxWidth(800);
+
+		rightBox.getChildren().addAll(otherBox);
+
+		formContent.getChildren().addAll(leftBox, rightBox);
+
+		return formContent;
+	}
+
+	private void initializeFields()
+	{
 		startDateErrorLabel = createErrorLabel();
 		endDateErrorLabel = createErrorLabel();
 		machineErrorLabel = createErrorLabel();
@@ -113,25 +215,34 @@ public class MaintenancePlanningForm extends VBox
 		executionDateErrorLabel = createErrorLabel();
 		errorLabel = createErrorLabel();
 
-		ComboBox<User> technicianComboBox = new ComboBox<>();
+		reasonField = new TextField();
+		reasonField.setPrefWidth(200);
+
+		commentsField = new TextArea();
+
+		technicianComboBox = new ComboBox<>();
 		technicianComboBox.getItems().addAll(uc.getAllTechniekers());
 		technicianComboBox.setPromptText("Selecteer technieker");
-		technicianComboBox.setCellFactory(cb -> new ListCell<>()
-		{
-			@Override
-			protected void updateItem(User item, boolean empty)
-			{
-				super.updateItem(item, empty);
-				setText(empty || item == null ? null : String.format("Technieker %s", item.getFullName()));
-			}
-		});
-		technicianComboBox.setButtonCell(technicianComboBox.getCellFactory().call(null));
+		technicianComboBox.setPrefWidth(200);
 
-		TextField reasonField = new TextField();
-		TextArea commentsField = new TextArea();
+		startTimeField = new ComboBox<>();
+		startTimeField.setPrefWidth(200);
+		endTimeField = new ComboBox<>();
+		endTimeField.setPrefWidth(200);
 
-		ComboBox<String> statusComboBox = new ComboBox<>();
-		ComboBox<MachineDTO> machineComboBox = new ComboBox<>();
+		startTimeField.setPromptText("Starttijd");
+		endTimeField.setPromptText("Eindtijd");
+
+		populateTimePicker(endTimeField);
+		populateTimePicker(startTimeField);
+
+		executionDatePicker = new DatePicker();
+		executionDatePicker.setEditable(false);
+
+		statusComboBox = new ComboBox<>();
+		statusComboBox.setPrefWidth(200);
+		machineComboBox = new ComboBox<>();
+		machineComboBox.setPrefWidth(200);
 
 		statusComboBox.getItems().addAll(Arrays.stream(MaintenanceStatus.values()).map(Enum::toString).toList());
 		statusComboBox.setPromptText("Selecteer status");
@@ -147,78 +258,73 @@ public class MaintenancePlanningForm extends VBox
 			List<MachineDTO> machines = mc.getMachineList();
 			machineComboBox.getItems().addAll(machines);
 		}
-		machineComboBox.setCellFactory(cb -> new ListCell<>()
-		{
-			@Override
-			protected void updateItem(MachineDTO item, boolean empty)
-			{
-				super.updateItem(item, empty);
-				setText(empty || item == null ? null : "Machine " + item.id() + ", code: " + item.code());
-			}
-		});
-		machineComboBox.setButtonCell(machineComboBox.getCellFactory().call(null));
-
-		leftColumn.getChildren().addAll(createFormField("Datum uitgevoerd:", executionDatePicker),
-				executionDateErrorLabel, createFormField("Starttijdstip", startTimeField), startDateErrorLabel,
-				createFormField("Eindtijdstip", endTimeField), endDateErrorLabel,
-				createFormField("Naam technieker:", technicianComboBox), technicianErrorLabel,
-				createFormField("Reden:", reasonField), reasonErrorLabel);
-
-		rightColumn.getChildren().addAll(createFormField("Opmerkingen:", commentsField),
-				createFormField("Status:", statusComboBox), statusErrorLabel,
-				createFormField("Machine:", machineComboBox), machineErrorLabel);
-
-		saveButton.setOnAction(e -> {
-			try
-			{
-				resetErrorLabels();
-
-				LocalDate execDate = executionDatePicker.getValue();
-				LocalTime sTime = startTimeField.getValue();
-				LocalTime eTime = endTimeField.getValue();
-
-				LocalDateTime startDateTime = (execDate != null && sTime != null) ? LocalDateTime.of(execDate, sTime)
-						: null;
-				LocalDateTime endDateTime = (execDate != null && eTime != null) ? LocalDateTime.of(execDate, eTime)
-						: null;
-
-				Machine machine = (machineComboBox.getValue() != null)
-						? mc.convertDTOToMachine(machineComboBox.getValue())
-						: null;
-
-				MaintenanceBuilder builder = new MaintenanceBuilder();
-				builder.createMaintenance();
-				builder.buildExecutionDate(execDate);
-				builder.buildStartDate(startDateTime);
-				builder.buildEndDate(endDateTime);
-				builder.buildTechnician(technicianComboBox.getValue());
-				builder.buildReason(reasonField.getText());
-				builder.buildComments(commentsField.getText());
-				if (statusComboBox.getValue() != null)
-					builder.buildStatus(MaintenanceStatus.valueOf(statusComboBox.getValue()));
-				builder.buildMachine(machine);
-
-				mntcc.createMaintenance(builder.getMaintenance());
-				mainLayout.showMaintenanceList(machineDTO);
-
-			} catch (InformationRequiredExceptionMaintenance ex)
-			{
-				handleInformationRequiredException(ex);
-			} catch (Exception ex)
-			{
-				errorLabel.setText("Er is een fout opgetreden: " + ex.getMessage());
-				ex.printStackTrace();
-			}
-		});
-
-		this.getChildren().addAll(title, errorLabel, form);
 	}
 
-	private HBox createFormField(String labelText, Control inputControl)
+	private GridPane createOtherSection()
 	{
-		Label label = new Label(labelText);
-		label.setMinWidth(150);
-		return new HBox(10, label, inputControl);
+		GridPane pane = new GridPane();
+		pane.setVgap(5);
+		pane.setHgap(10);
+
+		int row = 1;
+
+		pane.add(new Label("Opmerkingen:"), 0, row);
+		pane.add(commentsField, 1, row++);
+
+		pane.add(new Label("Status:"), 0, row);
+		pane.add(statusComboBox, 1, row++);
+		pane.add(statusErrorLabel, 1, row++);
+
+		pane.add(new Label("Machine:"), 0, row);
+		pane.add(machineComboBox, 1, row++);
+		pane.add(machineErrorLabel, 1, row++);
+
+		return pane;
+	}
+
+	private GridPane createTechnicianReasonSection()
+	{
+		GridPane pane = new GridPane();
+		pane.setVgap(5);
+		pane.setHgap(10);
+
+		int row = 1;
+
+		pane.add(new Label("Technieker:"), 0, row);
+		pane.add(technicianComboBox, 1, row++);
+		pane.add(technicianErrorLabel, 1, row++);
+
+		pane.add(new Label("Reden:"), 0, row);
+		pane.add(reasonField, 1, row++);
+		pane.add(reasonErrorLabel, 1, row++);
+
+		return pane;
+	}
+
+	private GridPane createDateSection()
+	{
+		GridPane pane = new GridPane();
+		pane.setVgap(5);
+		pane.setHgap(10);
+
+		Label sectionLabel = new Label("Datum en tijd");
+		sectionLabel.getStyleClass().add("section-label");
+		pane.add(sectionLabel, 0, 0, 2, 1);
+
+		int row = 1;
+		pane.add(new Label("Datum uitgevoerd:"), 0, row);
+		pane.add(executionDatePicker, 1, row++);
+		pane.add(executionDateErrorLabel, 1, row++);
+
+		pane.add(new Label("Starttijdstip:"), 0, row);
+		pane.add(startTimeField, 1, row++);
+		pane.add(startDateErrorLabel, 1, row++);
+
+		pane.add(new Label("Eindtijdstip:"), 0, row);
+		pane.add(endTimeField, 1, row++);
+		pane.add(endDateErrorLabel, 1, row++);
+
+		return pane;
 	}
 
 	private void handleInformationRequiredException(InformationRequiredExceptionMaintenance e)

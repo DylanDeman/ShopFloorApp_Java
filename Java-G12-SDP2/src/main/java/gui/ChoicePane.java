@@ -34,15 +34,11 @@ public class ChoicePane extends GridPane
 		Button machinesButton = createButton("Machine overzicht");
 		machinesButton.setOnAction(e -> mainLayout.showMachineScreen());
 
-		Button logoutButton = createButton("Uitloggen");
-		logoutButton.setOnAction(e -> mainLayout.showLoginScreen());
-
 		this.add(title, 0, 0, 2, 1);
 		this.add(userManagementButton, 0, 1);
 		this.add(maintenanceListButton, 1, 1);
 		this.add(sitesButton, 2, 1);
-		this.add(machinesButton, 0, 2);
-		this.add(logoutButton, 1, 2);
+		this.add(machinesButton, 3, 1);
 
 		for (javafx.scene.Node node : this.getChildren())
 		{
