@@ -34,7 +34,7 @@
 }
 
 .save-button {
-    -fx-background-color: #ba68f1;
+    -fx-background-color: green;
     -fx-text-fill: white;
     -fx-font-size: 14px;
     -fx-padding: 10px 30px;
