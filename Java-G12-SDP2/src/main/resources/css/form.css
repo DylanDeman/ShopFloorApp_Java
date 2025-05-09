@@ -44,3 +44,11 @@
 	-fx-background-color: transparent;
 	-fx-padding: 0;
 }
+
+.save-button:hover {
+    -fx-cursor: hand;
+}
+
+.back-button:hover {
+    -fx-cursor: hand;
+}

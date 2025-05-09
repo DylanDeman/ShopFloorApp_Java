@@ -112,6 +112,8 @@ public class MaintenanceDetailView extends BorderPane
 
 	private void initialize()
 	{
+		this.getStylesheets().add(getClass().getResource("/css/tablePane.css").toExternalForm());
+
 		setStyle("-fx-background-color: #f5f5f5;");
 		setPadding(new Insets(10, 30, 10, 30));
 
@@ -134,11 +136,9 @@ public class MaintenanceDetailView extends BorderPane
 		Button backButton = new Button();
 		FontIcon backIcon = new FontIcon("fas-arrow-left");
 		backIcon.setIconSize(20);
-		backIcon.setIconColor(Color.web("#333333"));
 		backButton.setGraphic(backIcon);
 		backButton.getStyleClass().add("back-button");
-		backButton.setOnAction(e ->
-		{
+		backButton.setOnAction(e -> {
 			mainLayout.showMaintenanceList();
 		});
 
@@ -174,8 +174,7 @@ public class MaintenanceDetailView extends BorderPane
 		reportIcon.setIconColor(Color.WHITE);
 		reportButton.setGraphic(reportIcon);
 		reportButton.getStyleClass().add("action-button");
-		reportButton.setOnAction(e ->
-		{
+		reportButton.setOnAction(e -> {
 			goToAddRapport(mainLayout, currentMaintenance);
 		});
 
@@ -237,9 +236,8 @@ public class MaintenanceDetailView extends BorderPane
 		table.getStyleClass().add("maintenance-table");
 
 		// Column headers
-		String[] headers =
-		{ "Onderhoudsnummer", "Uitvoeringsdatum", "Starttijd", "Eindtijd", "Technieker", "Reden", "Opmerkingen",
-				"Status" };
+		String[] headers = { "Onderhoudsnummer", "Uitvoeringsdatum", "Starttijd", "Eindtijd", "Technieker", "Reden",
+				"Opmerkingen", "Status" };
 
 		// Create header cells
 		for (int i = 0; i < headers.length; i++)
@@ -359,8 +357,7 @@ public class MaintenanceDetailView extends BorderPane
 		fileTypeFilter = new ComboBox<>();
 		fileTypeFilter.getItems().addAll("Alle", "PDF", "Foto", "Video");
 		fileTypeFilter.setValue(currentFilter);
-		fileTypeFilter.setOnAction(e ->
-		{
+		fileTypeFilter.setOnAction(e -> {
 			currentFilter = fileTypeFilter.getValue();
 			refreshFilesDisplay();
 		});
@@ -371,8 +368,7 @@ public class MaintenanceDetailView extends BorderPane
 		sortOrder.getItems().addAll("Datum (Nieuwste)", "Datum (Oudste)", "Grootte (Grootste)", "Grootte (Kleinste)",
 				"Naam (A-Z)", "Naam (Z-A)");
 		sortOrder.setValue(currentSort);
-		sortOrder.setOnAction(e ->
-		{
+		sortOrder.setOnAction(e -> {
 			currentSort = sortOrder.getValue();
 			refreshFilesDisplay();
 		});
@@ -386,8 +382,7 @@ public class MaintenanceDetailView extends BorderPane
 		filesContainer.getChildren().clear();
 
 		// Filter files
-		List<FileInfo> filteredFiles = currentFiles.stream().filter(file ->
-		{
+		List<FileInfo> filteredFiles = currentFiles.stream().filter(file -> {
 			if (currentFilter.equals("Alle"))
 				return true;
 			String fileType = file.getType().toLowerCase();
@@ -405,8 +400,7 @@ public class MaintenanceDetailView extends BorderPane
 		}).collect(Collectors.toList());
 
 		// Sort files
-		filteredFiles.sort((f1, f2) ->
-		{
+		filteredFiles.sort((f1, f2) -> {
 			switch (currentSort)
 			{
 			case "Datum (Nieuwste)":
@@ -551,8 +545,7 @@ public class MaintenanceDetailView extends BorderPane
 					mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
 
 					// Clean up temp file when done
-					mediaPlayer.setOnEndOfMedia(() ->
-					{
+					mediaPlayer.setOnEndOfMedia(() -> {
 						tempFile.delete();
 					});
 				} else
@@ -795,8 +788,7 @@ public class MaintenanceDetailView extends BorderPane
 				errorMessage.append("\n\nControleer of de bestanden het juiste type zijn en niet te groot zijn.");
 
 				// Show the alert on the JavaFX Application Thread
-				Platform.runLater(() ->
-				{
+				Platform.runLater(() -> {
 					try
 					{
 						Alert errorAlert = new Alert(Alert.AlertType.ERROR);

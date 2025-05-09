@@ -11,7 +11,6 @@ import domain.site.SiteController;
 import domain.site.SiteDTO;
 import domain.user.User;
 import gui.MainLayout;
-import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;
 import javafx.application.Platform;
@@ -37,11 +36,11 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import repository.SiteRepository;
 
-public class SiteDetailsComponent extends VBox implements Observer {
+public class SiteDetailsComponent extends VBox implements Observer
+{
 	private final MainLayout mainLayout;
 	private SiteController sc;
 	private SiteRepository siteRepo;
-
 
 	private ComboBox<String> locationFilter;
 	private ComboBox<String> statusFilter;
@@ -63,7 +62,8 @@ public class SiteDetailsComponent extends VBox implements Observer {
 	private int totalPages = 0;
 	private Pagination pagination;
 
-	public SiteDetailsComponent(MainLayout mainLayout, int siteId) {
+	public SiteDetailsComponent(MainLayout mainLayout, int siteId)
+	{
 		this.mainLayout = mainLayout;
 		this.sc = mainLayout.getServices().getSiteController();
 		this.siteRepo = mainLayout.getServices().getSiteRepo();
@@ -78,14 +78,18 @@ public class SiteDetailsComponent extends VBox implements Observer {
 		loadMachines();
 	}
 
-	private void loadMachines() {
-	    allMachines = sc.getSite(this.siteId).machines().stream().toList();
-	    filteredMachines = allMachines;
-	    updateFilterOptions();
-	    updateTable(allMachines);
+	private void loadMachines()
+	{
+		allMachines = sc.getSite(this.siteId).machines().stream().toList();
+		filteredMachines = allMachines;
+		updateFilterOptions();
+		updateTable(allMachines);
 	}
 
-	private void initializeGUI() {
+	private void initializeGUI()
+	{
+		this.getStylesheets().add(getClass().getResource("/css/tablePane.css").toExternalForm());
+
 		allMachines = sc.getSite(siteId).machines().stream().toList();
 		filteredMachines = allMachines;
 
@@ -96,8 +100,9 @@ public class SiteDetailsComponent extends VBox implements Observer {
 		this.getChildren().addAll(titleSection, tableSection);
 		updateTable(filteredMachines);
 	}
-	
-	private VBox createTitleSection() {
+
+	private VBox createTitleSection()
+	{
 		HBox windowHeader = createWindowHeader();
 
 		// TODO Replace User with UserDTO as suggested in the comment
@@ -110,8 +115,9 @@ public class SiteDetailsComponent extends VBox implements Observer {
 				.formatted(verantwoordelijke.getFirstName(), verantwoordelijke.getLastName()));
 		return new VBox(10, windowHeader, informationBox1, informationBox2);
 	}
-	
-	private HBox createWindowHeader() {
+
+	private HBox createWindowHeader()
+	{
 		HBox hbox = new HBox();
 		hbox.setAlignment(Pos.CENTER_LEFT);
 		hbox.setSpacing(10);
@@ -121,27 +127,30 @@ public class SiteDetailsComponent extends VBox implements Observer {
 		FontIcon icon = new FontIcon("fas-arrow-left");
 		icon.setIconSize(20);
 		backButton.setGraphic(icon);
-		backButton.setStyle("-fx-background-color: transparent; -fx-padding: 0;");
+		backButton.getStyleClass().add("back-button");
 		backButton.setOnAction(e -> mainLayout.showSitesList());
 
 		Label title = new Label("Site Details");
-		title.setStyle("-fx-font: 40 arial;");
+		title.getStyleClass().add("title-label");
 
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-		Button addButton = new CustomButton(new FontIcon("fas-plus"), "Machine toevoegen");
+		Button addButton = new Button("+ Machine toevoegen");
 		addButton.setOnAction(e -> openAddMachineForm());
+		addButton.getStyleClass().add("add-button");
 
 		hbox.getChildren().addAll(backButton, title, spacer, addButton);
 		return hbox;
 	}
 
-	private VBox createTableSection() {
+	private VBox createTableSection()
+	{
 		HBox filterBox = createTableHeaders();
 
 		TableColumn<MachineDTO, Void> editColumn = new TableColumn<>("");
-		editColumn.setCellFactory(param -> new TableCell<MachineDTO, Void>() {
+		editColumn.setCellFactory(param -> new TableCell<MachineDTO, Void>()
+		{
 			private final Button editButton = new Button();
 			{
 				FontIcon editIcon = new FontIcon("fas-pen");
@@ -152,7 +161,8 @@ public class SiteDetailsComponent extends VBox implements Observer {
 			}
 
 			@Override
-			protected void updateItem(Void item, boolean empty) {
+			protected void updateItem(Void item, boolean empty)
+			{
 				super.updateItem(item, empty);
 				setGraphic(empty ? null : editButton);
 			}
@@ -177,14 +187,16 @@ public class SiteDetailsComponent extends VBox implements Observer {
 		});
 
 		TableColumn<MachineDTO, String> showColumn = new TableColumn<>("");
-		showColumn.setCellFactory(param -> new TableCell<MachineDTO, String>() {
+		showColumn.setCellFactory(param -> new TableCell<MachineDTO, String>()
+		{
 			private final Button viewButton = new Button("Bekijk");
 			{
 				viewButton.setOnAction(event -> showMachineDetails(getTableRow().getItem()));
 			}
 
 			@Override
-			protected void updateItem(String item, boolean empty) {
+			protected void updateItem(String item, boolean empty)
+			{
 				super.updateItem(item, empty);
 				setGraphic(empty ? null : viewButton);
 			}
@@ -204,7 +216,8 @@ public class SiteDetailsComponent extends VBox implements Observer {
 		return new VBox(10, filterBox, tableWithPagination);
 	}
 
-	private Pagination createPagination() {
+	private Pagination createPagination()
+	{
 		updateTotalPages();
 		Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
 		pagination.setPageFactory(this::createPage);
@@ -214,106 +227,100 @@ public class SiteDetailsComponent extends VBox implements Observer {
 		});
 		return pagination;
 	}
-	
-	private HBox createPage(int pageIndex) {
+
+	private HBox createPage(int pageIndex)
+	{
 		return new HBox();
 	}
-	
-	private void updatePagination() {
+
+	private void updatePagination()
+	{
 		updateTotalPages();
 		pagination.setPageCount(Math.max(1, totalPages));
 		pagination.setCurrentPageIndex(Math.min(currentPage, Math.max(0, totalPages - 1)));
 	}
-	
-	private void updateTotalPages() {
+
+	private void updateTotalPages()
+	{
 		totalPages = (int) Math.ceil((double) filteredMachines.size() / itemsPerPage);
 	}
 
-	private HBox createTableHeaders() {
-	    searchField = new TextField();
-	    searchField.setPromptText("Zoeken...");
-	    searchField.setMaxWidth(300);
-	    searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
+	private HBox createTableHeaders()
+	{
+		searchField = new TextField();
+		searchField.setPromptText("Zoeken...");
+		searchField.setMaxWidth(300);
+		searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-	    // Location filter
-	    locationFilter = new ComboBox<>();
-	    locationFilter.setPromptText("Locatie");
-	    locationFilter.setPrefWidth(150);
-	    locationFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		// Location filter
+		locationFilter = new ComboBox<>();
+		locationFilter.setPromptText("Locatie");
+		locationFilter.setPrefWidth(150);
+		locationFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-	    // Status filter
-	    statusFilter = new ComboBox<>();
-	    statusFilter.setPromptText("Status");
-	    statusFilter.setPrefWidth(150);
-	    statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		// Status filter
+		statusFilter = new ComboBox<>();
+		statusFilter.setPromptText("Status");
+		statusFilter.setPrefWidth(150);
+		statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-	    // Production status filter
-	    productionStatusFilter = new ComboBox<>();
-	    productionStatusFilter.setPromptText("Productiestatus");
-	    productionStatusFilter.setPrefWidth(150);
-	    productionStatusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		// Production status filter
+		productionStatusFilter = new ComboBox<>();
+		productionStatusFilter.setPromptText("Productiestatus");
+		productionStatusFilter.setPrefWidth(150);
+		productionStatusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-	    // Technician filter
-	    technicianFilter = new ComboBox<>();
-	    technicianFilter.setPromptText("Technieker");
-	    technicianFilter.setPrefWidth(200);
-	    technicianFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		// Technician filter
+		technicianFilter = new ComboBox<>();
+		technicianFilter.setPromptText("Technieker");
+		technicianFilter.setPrefWidth(200);
+		technicianFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-	    Region spacer = new Region();
-	    HBox.setHgrow(spacer, Priority.ALWAYS);
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-	    // Page selector component
-	    HBox pageSelector = createPageSelector();
+		// Page selector component
+		HBox pageSelector = createPageSelector();
 
-	    HBox filterBox = new HBox(10, searchField, locationFilter, statusFilter, 
-	            productionStatusFilter, technicianFilter, spacer, pageSelector);
-	    filterBox.setAlignment(Pos.CENTER_LEFT);
-	    return filterBox;
+		HBox filterBox = new HBox(10, searchField, locationFilter, statusFilter, productionStatusFilter,
+				technicianFilter, spacer, pageSelector);
+		filterBox.setAlignment(Pos.CENTER_LEFT);
+		return filterBox;
 	}
-	
-	private void updateFilterOptions() {
-	    // Location filter options
-	    List<String> locations = new ArrayList<>();
-	    locations.add(null);
-	    locations.addAll(allMachines.stream()
-	            .map(MachineDTO::location)
-	            .distinct()
-	            .sorted()
-	            .collect(Collectors.toList()));
-	    locationFilter.setItems(FXCollections.observableArrayList(locations));
 
-	    // Status filter options
-	    List<String> statuses = new ArrayList<>();
-	    statuses.add(null);
-	    statuses.addAll(allMachines.stream()
-	            .map(m -> m.machineStatus().toString())
-	            .distinct()
-	            .sorted()
-	            .collect(Collectors.toList()));
-	    statusFilter.setItems(FXCollections.observableArrayList(statuses));
+	private void updateFilterOptions()
+	{
+		// Location filter options
+		List<String> locations = new ArrayList<>();
+		locations.add(null);
+		locations.addAll(
+				allMachines.stream().map(MachineDTO::location).distinct().sorted().collect(Collectors.toList()));
+		locationFilter.setItems(FXCollections.observableArrayList(locations));
 
-	    // Production status filter options
-	    List<String> productionStatuses = new ArrayList<>();
-	    productionStatuses.add(null);
-	    productionStatuses.addAll(allMachines.stream()
-	            .map(m -> m.productionStatus().toString())
-	            .distinct()
-	            .sorted()
-	            .collect(Collectors.toList()));
-	    productionStatusFilter.setItems(FXCollections.observableArrayList(productionStatuses));
+		// Status filter options
+		List<String> statuses = new ArrayList<>();
+		statuses.add(null);
+		statuses.addAll(allMachines.stream().map(m -> m.machineStatus().toString()).distinct().sorted()
+				.collect(Collectors.toList()));
+		statusFilter.setItems(FXCollections.observableArrayList(statuses));
 
-	    // Technician filter options
-	    List<String> technicians = new ArrayList<>();
-	    technicians.add(null);
-	    technicians.addAll(allMachines.stream()
-	            .map(m -> m.technician().getFullName())
-	            .distinct()
-	            .sorted()
-	            .collect(Collectors.toList()));
-	    technicianFilter.setItems(FXCollections.observableArrayList(technicians));
+		// Production status filter options
+		List<String> productionStatuses = new ArrayList<>();
+		productionStatuses.add(null);
+		productionStatuses.addAll(allMachines.stream().map(m -> m.productionStatus().toString()).distinct().sorted()
+				.collect(Collectors.toList()));
+		productionStatusFilter.setItems(FXCollections.observableArrayList(productionStatuses));
+
+		// Technician filter options
+		List<String> technicians = new ArrayList<>();
+		technicians.add(null);
+		technicians.addAll(allMachines.stream().map(m -> m.technician().getFullName()).distinct().sorted()
+				.collect(Collectors.toList()));
+		technicianFilter.setItems(FXCollections.observableArrayList(technicians));
 	}
-	
-	private HBox createPageSelector() {
+
+	private HBox createPageSelector()
+	{
 		Label lblItemsPerPage = new Label("Aantal per pagina:");
 
 		ComboBox<Integer> comboItemsPerPage = new ComboBox<>(FXCollections.observableArrayList(10, 20, 50, 100));
@@ -328,71 +335,73 @@ public class SiteDetailsComponent extends VBox implements Observer {
 		pageSelector.setAlignment(Pos.CENTER_RIGHT);
 		return pageSelector;
 	}
-	
-	private void updateItemsPerPage(int itemsPerPage) {
+
+	private void updateItemsPerPage(int itemsPerPage)
+	{
 		this.itemsPerPage = itemsPerPage;
 		this.currentPage = 0; // Reset to first page when changing items per page
 		updatePagination();
 		updateTableItems();
 	}
 
-	private void updateTable(List<MachineDTO> machines) {
+	private void updateTable(List<MachineDTO> machines)
+	{
 		filteredMachines = machines;
 		currentPage = 0;
 		updatePagination();
 		updateTableItems();
 	}
-	
-	private void filterTable() {
-	    String searchQuery = searchField.getText().toLowerCase();
-	    String selectedLocation = locationFilter.getValue();
-	    String selectedStatus = statusFilter.getValue();
-	    String selectedProductionStatus = productionStatusFilter.getValue();
-	    String selectedTechnician = technicianFilter.getValue();
 
-	    filteredMachines = allMachines.stream()
-	            .filter(machine -> {
-	                boolean matchesSearch = machine.location().toLowerCase().contains(searchQuery) ||
-	                        machine.machineStatus().toString().toLowerCase().contains(searchQuery) ||
-	                        machine.productionStatus().toString().toLowerCase().contains(searchQuery) ||
-	                        machine.technician().getFullName().toLowerCase().contains(searchQuery);
+	private void filterTable()
+	{
+		String searchQuery = searchField.getText().toLowerCase();
+		String selectedLocation = locationFilter.getValue();
+		String selectedStatus = statusFilter.getValue();
+		String selectedProductionStatus = productionStatusFilter.getValue();
+		String selectedTechnician = technicianFilter.getValue();
 
-	                boolean matchesLocation = selectedLocation == null || 
-	                        machine.location().equals(selectedLocation);
-	                
-	                boolean matchesStatus = selectedStatus == null || 
-	                        machine.machineStatus().toString().equals(selectedStatus);
-	                
-	                boolean matchesProductionStatus = selectedProductionStatus == null || 
-	                        machine.productionStatus().toString().equals(selectedProductionStatus);
-	                
-	                boolean matchesTechnician = selectedTechnician == null || 
-	                        machine.technician().getFullName().equals(selectedTechnician);
+		filteredMachines = allMachines.stream().filter(machine -> {
+			boolean matchesSearch = machine.location().toLowerCase().contains(searchQuery)
+					|| machine.machineStatus().toString().toLowerCase().contains(searchQuery)
+					|| machine.productionStatus().toString().toLowerCase().contains(searchQuery)
+					|| machine.technician().getFullName().toLowerCase().contains(searchQuery);
 
-	                return matchesSearch && matchesLocation && matchesStatus && 
-	                       matchesProductionStatus && matchesTechnician;
-	            })
-	            .collect(Collectors.toList());
+			boolean matchesLocation = selectedLocation == null || machine.location().equals(selectedLocation);
 
-	    currentPage = 0;
-	    updatePagination();
-	    updateTableItems();
+			boolean matchesStatus = selectedStatus == null || machine.machineStatus().toString().equals(selectedStatus);
+
+			boolean matchesProductionStatus = selectedProductionStatus == null
+					|| machine.productionStatus().toString().equals(selectedProductionStatus);
+
+			boolean matchesTechnician = selectedTechnician == null
+					|| machine.technician().getFullName().equals(selectedTechnician);
+
+			return matchesSearch && matchesLocation && matchesStatus && matchesProductionStatus && matchesTechnician;
+		}).collect(Collectors.toList());
+
+		currentPage = 0;
+		updatePagination();
+		updateTableItems();
 	}
 
-	private void updateTableItems() {
+	private void updateTableItems()
+	{
 		int fromIndex = currentPage * itemsPerPage;
 		int toIndex = Math.min(fromIndex + itemsPerPage, filteredMachines.size());
 
-		if (filteredMachines.isEmpty()) {
+		if (filteredMachines.isEmpty())
+		{
 			table.getItems().clear();
-		} else {
+		} else
+		{
 			List<MachineDTO> currentPageItems = fromIndex < toIndex ? filteredMachines.subList(fromIndex, toIndex)
 					: List.of();
 			table.getItems().setAll(currentPageItems);
 		}
 	}
 
-	private void openAddMachineForm() {
+	private void openAddMachineForm()
+	{
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle("Functionaliteit niet geïmplementeerd");
 		alert.setHeaderText("Machine toevoegen");
@@ -400,7 +409,8 @@ public class SiteDetailsComponent extends VBox implements Observer {
 		alert.showAndWait();
 	}
 
-	private void openEditMachineForm(MachineDTO machine) {
+	private void openEditMachineForm(MachineDTO machine)
+	{
 		// Implementation for editing a machine
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle("Functionaliteit niet geïmplementeerd");
@@ -409,41 +419,41 @@ public class SiteDetailsComponent extends VBox implements Observer {
 		alert.showAndWait();
 	}
 
-	private void showMachineDetails(MachineDTO machine) {
+	private void showMachineDetails(MachineDTO machine)
+	{
 		// Implementation for showing machine details
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle("Machine Details");
 		alert.setHeaderText("Details van machine " + machine.id());
-		
-		String details = String.format(
-			"ID: %d\nLocatie: %s\nStatus: %s\nProductiestatus: %s\nTechnieker: %s %s",
-			machine.id(),
-			machine.location(),
-			machine.machineStatus().toString(),
-			machine.productionStatus().toString(),
-			machine.technician().getFirstName(),
-			machine.technician().getLastName()
-		);
-		
+
+		String details = String.format("ID: %d\nLocatie: %s\nStatus: %s\nProductiestatus: %s\nTechnieker: %s %s",
+				machine.id(), machine.location(), machine.machineStatus().toString(),
+				machine.productionStatus().toString(), machine.technician().getFirstName(),
+				machine.technician().getLastName());
+
 		alert.setContentText(details);
 		alert.showAndWait();
 	}
 
-	private void deleteMachine(MachineDTO machineDTO) {
+	private void deleteMachine(MachineDTO machineDTO)
+	{
 		Alert confirmation = new Alert(AlertType.CONFIRMATION);
 		confirmation.setTitle("Bevestig verwijderen");
 		confirmation.setHeaderText("Machine verwijderen");
 		confirmation.setContentText("Weet u zeker dat u machine met ID '" + machineDTO.id() + "' wilt verwijderen?");
 
 		confirmation.showAndWait().ifPresent(response -> {
-			if (response == ButtonType.OK) {
-				try {
+			if (response == ButtonType.OK)
+			{
+				try
+				{
 					Alert alert = new Alert(AlertType.INFORMATION);
 					alert.setTitle("Functionaliteit niet geïmplementeerd");
 					alert.setHeaderText("Machine verwijderen");
 					alert.setContentText("Deze functionaliteit moet nog worden geïmplementeerd.");
 					alert.showAndWait();
-				} catch (Exception e) {
+				} catch (Exception e)
+				{
 					System.err.println("Fout bij verwijderen: " + e.getMessage());
 					e.printStackTrace();
 
@@ -460,13 +470,14 @@ public class SiteDetailsComponent extends VBox implements Observer {
 	}
 
 	@Override
-	public void update() {
-	    Platform.runLater(() -> {
-	        SiteDTO updatedSite = sc.getSite(siteId);
-	        allMachines = updatedSite.machines().stream().toList();
-	        filteredMachines = new ArrayList<>(allMachines);
-	        updateFilterOptions();
-	        updateTable(filteredMachines);
-	    });
+	public void update()
+	{
+		Platform.runLater(() -> {
+			SiteDTO updatedSite = sc.getSite(siteId);
+			allMachines = updatedSite.machines().stream().toList();
+			filteredMachines = new ArrayList<>(allMachines);
+			updateFilterOptions();
+			updateTable(filteredMachines);
+		});
 	}
 }
