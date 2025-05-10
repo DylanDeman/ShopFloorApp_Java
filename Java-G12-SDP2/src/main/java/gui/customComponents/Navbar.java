@@ -121,18 +121,11 @@ public class Navbar extends HBox
 		{
 			Button maintenanceBtn = createNavButton("Onderhoud", CurrentPage.MAINTENANCE, activePage,
 					e -> mainLayout.showMaintenanceList());
+			Button sitesBtn = createNavButton("Sites", CurrentPage.SITES, activePage, e -> mainLayout.showSitesList());
+			Button machinesBtn = createNavButton("Machines", CurrentPage.MACHINES, activePage,
+					e -> mainLayout.showMachineScreen());
 
-			navLinks.getChildren().addAll(maintenanceBtn);
-
-			if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN))
-			{
-				Button sitesBtn = createNavButton("Sites", CurrentPage.SITES, activePage,
-						e -> mainLayout.showSitesList());
-				Button machinesBtn = createNavButton("Machines", CurrentPage.MACHINES, activePage,
-						e -> mainLayout.showMachineScreen());
-
-				navLinks.getChildren().addAll(sitesBtn, machinesBtn);
-			}
+			navLinks.getChildren().addAll(maintenanceBtn, sitesBtn, machinesBtn);
 
 			if (AuthenticationUtil.hasRole(Role.ADMIN))
 			{

@@ -27,17 +27,14 @@ public class ChoicePane extends GridPane
 		Button maintenanceListButton = createButton("Lijst onderhouden");
 		maintenanceListButton.setOnAction(e -> mainLayout.showMaintenanceList());
 
-		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN))
-		{
-			Button sitesButton = createButton("Overzicht sites");
-			sitesButton.setOnAction(e -> mainLayout.showSitesList());
+		Button sitesButton = createButton("Overzicht sites");
+		sitesButton.setOnAction(e -> mainLayout.showSitesList());
 
-			Button machinesButton = createButton("Machine overzicht");
-			machinesButton.setOnAction(e -> mainLayout.showMachineScreen());
+		Button machinesButton = createButton("Machine overzicht");
+		machinesButton.setOnAction(e -> mainLayout.showMachineScreen());
 
-			this.add(sitesButton, 2, 1);
-			this.add(machinesButton, 3, 1);
-		}
+		this.add(sitesButton, 2, 1);
+		this.add(machinesButton, 3, 1);
 
 		if (AuthenticationUtil.hasRole(Role.ADMIN))
 		{

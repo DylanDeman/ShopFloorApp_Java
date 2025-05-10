@@ -102,38 +102,20 @@ public class MainLayout
 
 	public void showSitesList()
 	{
-		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMIN))
-		{
-			showNotAllowedAlert();
-		} else
-		{
-			SitesListComponent sitesListComponent = new SitesListComponent(this);
-			setContent(sitesListComponent, true, false, CurrentPage.SITES);
-		}
+		SitesListComponent sitesListComponent = new SitesListComponent(this);
+		setContent(sitesListComponent, true, false, CurrentPage.SITES);
 	}
 
 	public void showSiteDetails(int siteId)
 	{
-		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMIN))
-		{
-			showNotAllowedAlert();
-		} else
-		{
-			SiteDetailsComponent siteDetailsComponent = new SiteDetailsComponent(this, siteId);
-			setContent(siteDetailsComponent, true, false, CurrentPage.NONE);
-		}
+		SiteDetailsComponent siteDetailsComponent = new SiteDetailsComponent(this, siteId);
+		setContent(siteDetailsComponent, true, false, CurrentPage.NONE);
 	}
 
 	public void showMachineScreen()
 	{
-		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMIN))
-		{
-			showNotAllowedAlert();
-		} else
-		{
-			MachinesListComponent machineList = new MachinesListComponent(this);
-			setContent(machineList, true, false, CurrentPage.MACHINES);
-		}
+		MachinesListComponent machineList = new MachinesListComponent(this);
+		setContent(machineList, true, false, CurrentPage.MACHINES);
 	}
 
 	public void showMaintenanceList()
