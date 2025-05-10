@@ -46,7 +46,6 @@ public class ReportController {
 	}
 
 	public void createReport(Report report) {
-
 		try {
 			reportDao.startTransaction();
 			reportDao.insert(report);
@@ -101,10 +100,10 @@ public class ReportController {
 			LocalDate endDate, LocalTime endTime, String reason, String remarks, SiteDTOWithoutMachines site)
 			throws InformationRequiredExceptionReport {
 		ReportBuilder builder = new ReportBuilder();
-		
+
 		User technicianObject = DTOMapper.toUser(technician, null);
 		Site siteObject = DTOMapper.toSite(site, null);
-		
+
 		builder.createReport();
 		builder.buildMaintenance(maintenance);
 		builder.buildTechnician(technicianObject);

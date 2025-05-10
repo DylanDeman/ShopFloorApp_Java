@@ -37,7 +37,6 @@ public class Machine implements Serializable {
 		setMachineStatus(machineStatus);
 		setProductionStatus(productionStatus);
 		setFutureMaintenance(futureMaintenance);
-
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -73,14 +72,14 @@ public class Machine implements Serializable {
 				"Machine " + code + " last maintenance: " + lastMaintenance + ", current uptime: " + hours + " hours");
 		return hours;
 	}
-	
+
 	public void setSite(Site site) {
-	    if (this.site != null) {
-	        this.site.getMachines().remove(this);
-	    }
-	    this.site = site;
-	    if (site != null) {
-	        site.getMachines().add(this);
-	    }
+		if (this.site != null) {
+			this.site.getMachines().remove(this);
+		}
+		this.site = site;
+		if (site != null) {
+			site.getMachines().add(this);
+		}
 	}
 }

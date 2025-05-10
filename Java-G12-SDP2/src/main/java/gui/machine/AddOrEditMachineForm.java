@@ -300,37 +300,41 @@ public class AddOrEditMachineForm extends GridPane {
 	}
 
 	private void saveMachine() {
-		resetErrorLabels();
+	    resetErrorLabels();
 
-		try {
-			MachineBuilder machineBuilder = new MachineBuilder();
-			machineBuilder.createMachine();
+	    try {
+	        if (isNewMachine) {
+	            machineController.createMachine(
+	                siteBox.getValue(),
+	                technicianBox.getValue(),
+	                codeField.getText(),
+	                machineStatusBox.getValue(),
+	                productionStatusBox.getValue(),
+	                locationField.getText(),
+	                productInfoField.getText(),
+	                futureMaintenance.getValue()
+	            );
+	        } else {
+	            machineController.updateMachine(
+	                machineDTO.id(),
+	                siteBox.getValue(),
+	                technicianBox.getValue(),
+	                codeField.getText(),
+	                machineStatusBox.getValue(),
+	                productionStatusBox.getValue(),
+	                locationField.getText(),
+	                productInfoField.getText(),
+	                futureMaintenance.getValue()
+	            );
+	        }
 
-			if (!isNewMachine) {
-				machineBuilder.buildId(machineDTO.id());
-			}
-
-			machineBuilder.buildSite(siteBox.getValue());
-			machineBuilder.buildTechnician(technicianBox.getValue());
-			machineBuilder.buildCode(codeField.getText());
-			machineBuilder.buildStatusses(machineStatusBox.getValue(), productionStatusBox.getValue());
-			machineBuilder.buildLocation(locationField.getText());
-			machineBuilder.buildProductInfo(productInfoField.getText());
-			machineBuilder.buildMaintenance(futureMaintenance.getValue());
-
-			if (isNewMachine) {
-				machineController.addNewMachine(machineBuilder.getMachine());
-			} else {
-				machineController.updateMachine(machineBuilder.getMachine());
-			}
-
-			mainLayout.showMachineScreen();
-		} catch (InformationRequiredExceptionMachine e) {
-			handleInformationRequiredException(e);
-		} catch (Exception e) {
-			showError("Er is een fout opgetreden: " + e.getMessage());
-			e.printStackTrace();
-		}
+	        mainLayout.showMachineScreen();
+	    } catch (InformationRequiredExceptionMachine e) {
+	        handleInformationRequiredException(e);
+	    } catch (Exception e) {
+	        showError("Er is een fout opgetreden: " + e.getMessage());
+	        e.printStackTrace();
+	    }
 	}
 
 	private void resetErrorLabels() {

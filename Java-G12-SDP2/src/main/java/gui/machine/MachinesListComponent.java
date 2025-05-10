@@ -249,5 +249,4 @@ public class MachinesListComponent extends GridPane
 		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machine);
 		mainLayout.setContent(editMachineForm, true, false, CurrentPage.NONE);
 	}
-
 }

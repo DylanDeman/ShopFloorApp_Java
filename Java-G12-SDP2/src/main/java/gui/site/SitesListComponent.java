@@ -191,16 +191,13 @@ public class SitesListComponent extends VBox implements Observer {
 			}
 		});
 
-		table.getColumns().addAll(col1, col2, col3, col4, col5);
-
 		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN)) {
 			table.getColumns().add(editColumn);
 		}
+		table.getColumns().addAll(col1, col2, col3, col4, col5);
 		table.getColumns().add(showColumn);
-
 		table.setPrefHeight(300);
 
-		// Create pagination control and page selector
 		HBox paginationControls = new HBox(20);
 		pagination = createPagination();
 

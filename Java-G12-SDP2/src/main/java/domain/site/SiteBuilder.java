@@ -50,9 +50,8 @@ public class SiteBuilder {
 		address.setCity(city);
 	}
 
-	public void buildEmployee(UserDTO employee) {
-		User employeeObject = DTOMapper.toUser(employee, null);
-		site.setVerantwoordelijke(employeeObject);
+	public void buildEmployee(User employee) {
+		site.setVerantwoordelijke(employee);
 	}
 
 	public void buildStatus(Status status) {

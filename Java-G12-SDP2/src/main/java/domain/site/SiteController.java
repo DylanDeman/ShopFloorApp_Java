@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import domain.user.User;
 import dto.SiteDTOWithMachines;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
@@ -95,7 +96,9 @@ public class SiteController {
 
 		int houseNumberInt = Integer.parseInt(houseNumber);
 		int postalCodeInt = Integer.parseInt(postalCode);
-
+		
+		User employeeObject = DTOMapper.toUser(employee, null);
+		
 		SiteBuilder siteBuilder = new SiteBuilder();
 		siteBuilder.createSite();
 		siteBuilder.buildName(siteName);
@@ -104,7 +107,7 @@ public class SiteController {
 		siteBuilder.buildNumber(houseNumberInt);
 		siteBuilder.buildPostalcode(postalCodeInt);
 		siteBuilder.buildCity(city);
-		siteBuilder.buildEmployee(employee);
+		siteBuilder.buildEmployee(employeeObject);
 		siteBuilder.buildStatus(Status.ACTIEF); // New sites are active by default
 
 		Site newSite = siteBuilder.getSite();
@@ -131,7 +134,10 @@ public class SiteController {
 
 		int houseNumberInt = Integer.parseInt(houseNumber);
 		int postalCodeInt = Integer.parseInt(postalCode);
-
+		
+		User employeeObject = DTOMapper.toUser(employee, null);
+		
+		
 		SiteBuilder siteBuilder = new SiteBuilder();
 		siteBuilder.createSite();
 		siteBuilder.buildName(siteName);
@@ -140,7 +146,7 @@ public class SiteController {
 		siteBuilder.buildNumber(houseNumberInt);
 		siteBuilder.buildPostalcode(postalCodeInt);
 		siteBuilder.buildCity(city);
-		siteBuilder.buildEmployee(employee);
+		siteBuilder.buildEmployee(employeeObject);
 		siteBuilder.buildStatus(status);
 
 		Site updatedSite = siteBuilder.getSite();

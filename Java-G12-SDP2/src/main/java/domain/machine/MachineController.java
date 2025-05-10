@@ -66,11 +66,14 @@ public class MachineController implements Subject {
 	public MachineDTO createMachine(SiteDTOWithoutMachines siteDTO, UserDTO technicianDTO, String code,
 			MachineStatus machineStatus, ProductionStatus productionStatus, String location, String productInfo,
 			LocalDate futureMaintenance) throws InformationRequiredExceptionMachine {
-
+		
+		Site site = DTOMapper.toSite(siteDTO, null);
+		User technician = DTOMapper.toUser(technicianDTO, null);
+		
 		MachineBuilder builder = new MachineBuilder();
 		builder.createMachine();
-		builder.buildSite(siteDTO);
-		builder.buildTechnician(technicianDTO);
+		builder.buildSite(site);
+		builder.buildTechnician(technician);
 		builder.buildCode(code);
 		builder.buildStatusses(machineStatus, productionStatus);
 		builder.buildLocation(location);
@@ -88,11 +91,14 @@ public class MachineController implements Subject {
 			MachineStatus machineStatus, ProductionStatus productionStatus, String location, String productInfo,
 			LocalDate futureMaintenance) throws InformationRequiredExceptionMachine {
 
+		Site site = DTOMapper.toSite(siteDTO, null);
+		User technician = DTOMapper.toUser(technicianDTO, null);
+		
 		MachineBuilder builder = new MachineBuilder();
 		builder.createMachine();
 		builder.buildId(id);
-		builder.buildSite(siteDTO);
-		builder.buildTechnician(technicianDTO);
+		builder.buildSite(site);
+		builder.buildTechnician(technician);
 		builder.buildCode(code);
 		builder.buildStatusses(machineStatus, productionStatus);
 		builder.buildLocation(location);

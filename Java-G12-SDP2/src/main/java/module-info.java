@@ -19,6 +19,7 @@ module be.hogent.Java_G12_SDP_22 {
     exports main; 
     exports dto;
     exports util;
+    exports interfaces;
     
     opens images;
     opens css;

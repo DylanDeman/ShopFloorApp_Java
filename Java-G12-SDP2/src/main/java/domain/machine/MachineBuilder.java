@@ -27,15 +27,13 @@ public class MachineBuilder {
 		machine = new Machine();
 	}
 
-	public void buildSite(SiteDTOWithoutMachines siteDTO) {
+	public void buildSite(Site site) {
 		// TODO validatie nog toevoegen
-		Site site = DTOMapper.toSite(siteDTO, null);
 		machine.setSite(site);
 	}
 
-	public void buildTechnician(UserDTO technicianDTO) {
+	public void buildTechnician(User user) {
 		// TODO validatie nog toevoegen
-		User user = DTOMapper.toUser(technicianDTO, null);
 		machine.setTechnician(user);
 	}
 
