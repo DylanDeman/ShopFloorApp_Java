@@ -12,11 +12,12 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.machine.Machine;
 import domain.machine.MachineController;
-import domain.machine.MachineDTO;
 import domain.maintenance.MaintenanceBuilder;
 import domain.maintenance.MaintenanceController;
 import domain.user.User;
 import domain.user.UserController;
+import dto.MachineDTO;
+import dto.UserDTO;
 import exceptions.InformationRequiredExceptionMaintenance;
 import gui.MainLayout;
 import javafx.geometry.Insets;
@@ -53,7 +54,7 @@ public class MaintenancePlanningForm extends GridPane
 
 	private TextArea commentsField;
 
-	private ComboBox<User> technicianComboBox;
+	private ComboBox<UserDTO> technicianComboBox;
 	private ComboBox<LocalTime> startTimeField, endTimeField;
 	private ComboBox<String> statusComboBox;
 	private ComboBox<MachineDTO> machineComboBox;
@@ -143,55 +144,54 @@ public class MaintenancePlanningForm extends GridPane
 		return buttonBox;
 	}
 
-	private void savePlanning()
-	{
-		if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
-		{
-			try
-			{
-				resetErrorLabels();
+	private void savePlanning() {
+	    if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE)) {
+	        try {
+	            resetErrorLabels();
 
-				LocalDate execDate = executionDatePicker.getValue();
-				LocalTime sTime = startTimeField.getValue();
-				LocalTime eTime = endTimeField.getValue();
+	            LocalDate execDate = executionDatePicker.getValue();
+	            LocalTime startTime = startTimeField.getValue();
+	            LocalTime endTime = endTimeField.getValue();
 
-				LocalDateTime startDateTime = (execDate != null && sTime != null) ? LocalDateTime.of(execDate, sTime)
-						: null;
-				LocalDateTime endDateTime = (execDate != null && eTime != null) ? LocalDateTime.of(execDate, eTime)
-						: null;
+	            // Convert to LocalDateTime
+	            LocalDateTime startDateTime = (execDate != null && startTime != null) ? 
+	                LocalDateTime.of(execDate, startTime) : null;
+	            LocalDateTime endDateTime = (execDate != null && endTime != null) ? 
+	                LocalDateTime.of(execDate, endTime) : null;
 
-				Machine machine = (machineComboBox.getValue() != null)
-						? mc.convertDTOToMachine(machineComboBox.getValue())
-						: null;
+	            // Get IDs for technician and machine
+	            int technicianId = technicianComboBox.getValue() != null ? 
+	                technicianComboBox.getValue().id() : 0;
+	            int machineId = machineComboBox.getValue() != null ? 
+	                machineComboBox.getValue().id() : 0;
 
-				MaintenanceBuilder builder = new MaintenanceBuilder();
-				builder.createMaintenance();
-				builder.buildExecutionDate(execDate);
-				builder.buildStartDate(startDateTime);
-				builder.buildEndDate(endDateTime);
-				builder.buildTechnician(technicianComboBox.getValue());
-				builder.buildReason(reasonField.getText());
-				builder.buildComments(commentsField.getText());
-				if (statusComboBox.getValue() != null)
-					builder.buildStatus(MaintenanceStatus.valueOf(statusComboBox.getValue()));
-				builder.buildMachine(machine);
+	            // Get status
+	            MaintenanceStatus status = statusComboBox.getValue() != null ? 
+	                MaintenanceStatus.valueOf(statusComboBox.getValue()) : null;
 
-				mntcc.createMaintenance(builder.getMaintenance());
-				mainLayout.showMaintenanceList(machineDTO);
+	            // Use the controller to create the maintenance
+	            mntcc.createMaintenance(
+	                execDate,                 // execution date
+	                startDateTime,            // start date and time
+	                endDateTime,              // end date and time
+	                technicianId,             // technician ID
+	                reasonField.getText(),    // reason
+	                commentsField.getText(),  // comments
+	                status,                   // status
+	                machineId                 // machine ID
+	            );
 
-			} catch (InformationRequiredExceptionMaintenance ex)
-			{
-				handleInformationRequiredException(ex);
-			} catch (Exception ex)
-			{
-				errorLabel.setText("Er is een fout opgetreden: " + ex.getMessage());
-				ex.printStackTrace();
-			}
-		} else
-		{
-			mainLayout.showNotAllowedAlert();
-		}
+	            mainLayout.showMaintenanceList(machineDTO);
 
+	        } catch (InformationRequiredExceptionMaintenance ex) {
+	            handleInformationRequiredException(ex);
+	        } catch (Exception ex) {
+	            errorLabel.setText("Er is een fout opgetreden: " + ex.getMessage());
+	            ex.printStackTrace();
+	        }
+	    } else {
+	        mainLayout.showNotAllowedAlert();
+	    }
 	}
 
 	private HBox createFormContent()

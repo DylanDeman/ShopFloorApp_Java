@@ -8,9 +8,9 @@ import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.machine.MachineDTO;
 import domain.maintenance.MaintenanceController;
 import domain.maintenance.MaintenanceDTO;
+import dto.MachineDTO;
 import gui.MainLayout;
 import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
@@ -143,7 +143,7 @@ public class MaintenanceListComponent extends VBox
 		TableColumn<MaintenanceDTO, String> col3 = createColumn("Eindtijdstip",
 				m -> m.endDate().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")).toString());
 		TableColumn<MaintenanceDTO, String> col4 = createColumn("Naam technieker",
-				m -> m.technician() != null ? m.technician().getFullName() : "Onbekend");
+				m -> m.technician() != null ? m.technician().firstName() : "Onbekend");
 		TableColumn<MaintenanceDTO, String> col5 = createColumn("Reden", MaintenanceDTO::reason);
 		TableColumn<MaintenanceDTO, String> col6 = createColumn("Opmerkingen", MaintenanceDTO::comments);
 		TableColumn<MaintenanceDTO, String> col7 = createColumn("Status", m -> m.status().toString());
@@ -220,7 +220,7 @@ public class MaintenanceListComponent extends VBox
 		String lowerCaseQuery = query.toLowerCase();
 		filteredMaintenances = allMaintenances.stream().filter(m -> m.reason().toLowerCase().contains(lowerCaseQuery)
 				|| m.comments().toLowerCase().contains(lowerCaseQuery)
-				|| (m.technician() != null && m.technician().getFullName().toLowerCase().contains(lowerCaseQuery)))
+				|| (m.technician() != null && m.technician().firstName().toLowerCase().contains(lowerCaseQuery)))
 				.collect(Collectors.toList());
 		currentPage = 0;
 		updatePagination();

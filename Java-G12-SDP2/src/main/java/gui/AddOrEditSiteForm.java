@@ -1,16 +1,16 @@
 package gui;
 
+import java.util.List;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
-
 import org.kordamp.ikonli.javafx.FontIcon;
-
 import domain.Address;
 import domain.site.Site;
-import domain.site.SiteBuilder;
-import domain.user.User;
+import domain.site.SiteController;
 import domain.user.UserController;
+import dto.AddressDTO;
+import dto.SiteDTOWithMachines;
+import dto.UserDTO;
 import exceptions.InformationRequiredExceptionSite;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -24,18 +24,18 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import repository.SiteRepository;
 import util.AuthenticationUtil;
 import util.RequiredElementSite;
 import util.Role;
 import util.Status;
 
-public class AddOrEditSiteForm extends GridPane
-{
-	private Site site;
-	private final SiteRepository siteRepo;
+public class AddOrEditSiteForm extends GridPane {
 	private final MainLayout mainLayout;
+
+	private SiteDTOWithMachines site;
+
 	private UserController uc;
+	private SiteController sc;
 
 	private TextField siteNameField;
 	private TextField streetField, houseNumberField, postalCodeField, cityField;
@@ -48,26 +48,29 @@ public class AddOrEditSiteForm extends GridPane
 
 	private boolean isNewSite;
 
-	public AddOrEditSiteForm(MainLayout mainLayout, SiteRepository siteRepo, Site site)
-	{
-		this.siteRepo = siteRepo;
+	public AddOrEditSiteForm(MainLayout mainLayout, int siteId) {
 		this.mainLayout = mainLayout;
-		this.site = site;
-		this.isNewSite = site == null;
-		uc = new UserController();
+
+		uc = AppServices.getInstance().getUserController();
+		sc = AppServices.getInstance().getSiteController();
+		this.site = sc.getSite(siteId);
 
 		initializeFields();
 		buildGUI();
-
-		if (!isNewSite)
-		{
-			fillSiteData(site);
-		}
-
+		fillSiteData();
 	}
 
-	private void buildGUI()
-	{
+	public AddOrEditSiteForm(MainLayout mainLayout) {
+		this.mainLayout = mainLayout;
+
+		uc = AppServices.getInstance().getUserController();
+		sc = AppServices.getInstance().getSiteController();
+
+		initializeFields();
+		buildGUI();
+	}
+
+	private void buildGUI() {
 		this.getStylesheets().add(getClass().getResource("/css/form.css").toExternalForm());
 		this.setAlignment(Pos.CENTER);
 		this.setHgap(10);
@@ -87,8 +90,7 @@ public class AddOrEditSiteForm extends GridPane
 		this.add(mainContainer, 0, 0);
 	}
 
-	private HBox createFormContent()
-	{
+	private HBox createFormContent() {
 		HBox formContent = new HBox(30);
 		formContent.setAlignment(Pos.TOP_CENTER);
 		formContent.getStyleClass().add("form-box");
@@ -117,8 +119,7 @@ public class AddOrEditSiteForm extends GridPane
 		return formContent;
 	}
 
-	private HBox createSaveButton()
-	{
+	private HBox createSaveButton() {
 		Button saveButton = new Button("Opslaan");
 		saveButton.getStyleClass().add("save-button");
 		saveButton.setOnAction(e -> saveSite());
@@ -136,8 +137,7 @@ public class AddOrEditSiteForm extends GridPane
 		return buttonBox;
 	}
 
-	private VBox createTitleSection()
-	{
+	private VBox createTitleSection() {
 		HBox hbox = new HBox(10);
 		hbox.setAlignment(Pos.CENTER_LEFT);
 
@@ -160,8 +160,7 @@ public class AddOrEditSiteForm extends GridPane
 		return new VBox(10, hbox);
 	}
 
-	private Node createComboBoxSection()
-	{
+	private Node createComboBoxSection() {
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -176,8 +175,9 @@ public class AddOrEditSiteForm extends GridPane
 		employeeBox = new ComboBox<>();
 		employeeBox.setPromptText("Kies een verantwoordelijke");
 		employeeBox.setPrefWidth(200);
-		Set<String> uniqueEmployees = siteRepo.getAllEmployees().stream().map(User::getFullName)
-				.collect(Collectors.toCollection(TreeSet::new));
+		List<UserDTO> users = uc.getAllVerantwoordelijken();
+		Set<String> uniqueEmployees = users.stream().map(user -> user.firstName() + " " + user.lastName())
+				.collect(Collectors.toUnmodifiableSet());
 
 		employeeBox.getItems().addAll(uniqueEmployees);
 
@@ -186,8 +186,7 @@ public class AddOrEditSiteForm extends GridPane
 		pane.add(employeeBox, 1, row++);
 		pane.add(employeeError, 1, row++);
 
-		if (!isNewSite)
-		{
+		if (!isNewSite) {
 			statusBox = new ComboBox<>();
 			statusBox.getItems().addAll(Status.values());
 			statusBox.setPromptText("Wijzig de status");
@@ -201,65 +200,39 @@ public class AddOrEditSiteForm extends GridPane
 		return pane;
 	}
 
-	private void saveSite()
-	{
+	private void saveSite() {
 		resetErrorLabels();
 
-		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN))
-		{
-			try
-			{
-				SiteBuilder siteBuilder = new SiteBuilder();
-				siteBuilder.createSite();
-				siteBuilder.buildName(siteNameField.getText());
-				siteBuilder.createAddress();
-				siteBuilder.buildStreet(streetField.getText());
-				siteBuilder.buildNumber(Integer.parseInt(houseNumberField.getText()));
-				siteBuilder.buildPostalcode(Integer.parseInt(postalCodeField.getText()));
-				siteBuilder.buildCity(cityField.getText());
-				siteBuilder.buildEmployee(uc.getAllUsers().stream()
-						.filter(user -> user.getFullName().equals(employeeBox.getValue())).findFirst().orElse(null));
-
-				if (isNewSite)
-				{
-					siteBuilder.buildStatus(Status.ACTIEF);
-					Site newSite = siteBuilder.getSite();
-					siteRepo.addSite(newSite);
-				} else
-				{
-					siteBuilder.buildStatus(statusBox.getValue());
-					Site updatedSite = siteBuilder.getSite();
-					updatedSite.setId(site.getId());
-					updatedSite.getAddress().setId(site.getAddress().getId());
-					siteRepo.updateSite(updatedSite);
+		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN)) {
+			try {
+				if (isNewSite) {
+					sc.createSite(siteNameField.getText(), streetField.getText(), houseNumberField.getText(),
+							postalCodeField.getText(), cityField.getText(), employeeBox.getValue());
+				} else {
+					sc.updateSite(site.id(), siteNameField.getText(), streetField.getText(), houseNumberField.getText(),
+							postalCodeField.getText(), cityField.getText(), employeeBox.getValue(),
+							statusBox.getValue());
 				}
 
 				mainLayout.showSitesList();
-			} catch (InformationRequiredExceptionSite e)
-			{
+			} catch (InformationRequiredExceptionSite e) {
 				handleInformationRequiredException(e);
-			} catch (NumberFormatException e)
-			{
+			} catch (NumberFormatException e) {
 				showError("Huisnummer en postcode moeten numeriek zijn");
-			} catch (Exception e)
-			{
+			} catch (Exception e) {
 				showError("Er is een fout opgetreden: " + e.getMessage());
 				e.printStackTrace();
 			}
-		} else
-		{
+		} else {
 			mainLayout.showNotAllowedAlert();
 		}
-
 	}
 
-	private void showError(String message)
-	{
+	private void showError(String message) {
 		errorLabel.setText(message);
 	}
 
-	private void resetErrorLabels()
-	{
+	private void resetErrorLabels() {
 		errorLabel.setText("");
 		siteNameError.setText("");
 		employeeError.setText("");
@@ -270,8 +243,7 @@ public class AddOrEditSiteForm extends GridPane
 		statusError.setText("");
 	}
 
-	private void handleInformationRequiredException(InformationRequiredExceptionSite e)
-	{
+	private void handleInformationRequiredException(InformationRequiredExceptionSite e) {
 		e.getInformationRequired().forEach((field, requiredElement) -> {
 			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
 			showFieldError(field, errorMessage);
@@ -279,10 +251,8 @@ public class AddOrEditSiteForm extends GridPane
 
 	}
 
-	private String getErrorMessageForRequiredElement(RequiredElementSite element)
-	{
-		switch (element)
-		{
+	private String getErrorMessageForRequiredElement(RequiredElementSite element) {
+		switch (element) {
 		case SITE_NAME_REQUIRED:
 			return "Site naam is verplicht";
 		case EMPLOYEE_REQUIRED:
@@ -302,10 +272,8 @@ public class AddOrEditSiteForm extends GridPane
 		}
 	}
 
-	private void showFieldError(String fieldName, String message)
-	{
-		switch (fieldName)
-		{
+	private void showFieldError(String fieldName, String message) {
+		switch (fieldName) {
 		case "siteName":
 			siteNameError.setText(message);
 			break;
@@ -332,8 +300,7 @@ public class AddOrEditSiteForm extends GridPane
 		}
 	}
 
-	private GridPane createSiteNameField()
-	{
+	private GridPane createSiteNameField() {
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -352,8 +319,7 @@ public class AddOrEditSiteForm extends GridPane
 		return pane;
 	}
 
-	private GridPane createAddressFieldsSection()
-	{
+	private GridPane createAddressFieldsSection() {
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -387,8 +353,7 @@ public class AddOrEditSiteForm extends GridPane
 		return pane;
 	}
 
-	private void initializeFields()
-	{
+	private void initializeFields() {
 		siteNameField = new TextField();
 		streetField = new TextField();
 		houseNumberField = new TextField();
@@ -407,28 +372,25 @@ public class AddOrEditSiteForm extends GridPane
 		statusError = createErrorLabel();
 	}
 
-	private Label createErrorLabel()
-	{
+	private Label createErrorLabel() {
 		Label errorLabel = new Label();
 		errorLabel.getStyleClass().add("error-label");
 		return errorLabel;
 	}
 
-	private void fillSiteData(Site site)
-	{
-		siteNameField.setText(site.getSiteName());
+	private void fillSiteData() {
+		siteNameField.setText(site.siteName());
 
-		Address address = site.getAddress();
-		if (address != null)
-		{
-			streetField.setText(address.getStreet());
-			houseNumberField.setText(String.valueOf(address.getNumber()));
-			postalCodeField.setText(String.valueOf(address.getPostalcode()));
-			cityField.setText(address.getCity());
+		AddressDTO address = site.address();
+		if (address != null) {
+			streetField.setText(address.street());
+			houseNumberField.setText(String.valueOf(address.number()));
+			postalCodeField.setText(String.valueOf(address.postalcode()));
+			cityField.setText(address.city());
 		}
 
-		employeeBox.setValue(site.getVerantwoordelijke().getFullName());
-		statusBox.setValue(site.getStatus());
+		employeeBox.setValue(site.verantwoordelijke().firstName());
+		statusBox.setValue(site.status());
 	}
 
 }

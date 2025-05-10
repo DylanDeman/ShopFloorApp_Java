@@ -8,10 +8,11 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.maintenance.MaintenanceController;
 import domain.maintenance.MaintenanceDTO;
-import domain.report.ReportBuilder;
 import domain.report.ReportController;
 import domain.site.SiteController;
+import domain.user.User;
 import domain.user.UserController;
+import dto.UserDTO;
 import exceptions.InformationRequiredExceptionReport;
 import gui.MainLayout;
 import javafx.geometry.Insets;
@@ -30,8 +31,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import util.RequiredElementReport;
 
-public class AddReportForm extends GridPane
-{
+public class AddReportForm extends GridPane {
 	private Label siteNameLabel, responsiblePersonLabel, maintenanceNumberLabel;
 	private ComboBox<String> technicianComboBox;
 	private DatePicker startDatePicker, endDatePicker;
@@ -45,35 +45,32 @@ public class AddReportForm extends GridPane
 
 	private MaintenanceDTO selectedMaintenanceDTO;
 
-	private ReportController reportController;
-	private MaintenanceController maintenanceController;
-	private SiteController siteController;
-	private UserController userController;
+	private MaintenanceController mc;
+	private ReportController rc;
+	private SiteController sc;
+	private UserController uc;
 
 	private final MainLayout mainLayout;
 
-	public AddReportForm(MainLayout mainLayout, MaintenanceDTO maintenanceDTO)
-	{
-		this.maintenanceController = mainLayout.getServices().getMaintenanceController();
-		this.siteController = mainLayout.getServices().getSiteController();
-		this.reportController = mainLayout.getServices().getReportController();
-		this.userController = mainLayout.getServices().getUserController();
+	public AddReportForm(MainLayout mainLayout, MaintenanceDTO maintenanceDTO) {
+		this.mc = mainLayout.getServices().getMaintenanceController();
+		this.rc = mainLayout.getServices().getReportController();
+		this.sc = mainLayout.getServices().getSiteController();
+		this.uc = mainLayout.getServices().getUserController();
+
 		this.mainLayout = mainLayout;
 		this.selectedMaintenanceDTO = maintenanceDTO;
 
 		initializeFields();
 		buildGUI();
 
-		if (maintenanceDTO == null)
-		{
+		if (maintenanceDTO == null) {
 			mainLayout.showHomeScreen();
 			throw new IllegalArgumentException("Het onderhoud is ongeldig");
 		}
-
 	}
 
-	private void buildGUI()
-	{
+	private void buildGUI() {
 		this.getStylesheets().add(getClass().getResource("/css/form.css").toExternalForm());
 		this.setAlignment(Pos.CENTER);
 		this.setHgap(10);
@@ -91,8 +88,7 @@ public class AddReportForm extends GridPane
 		this.add(mainContainer, 0, 0);
 	}
 
-	private HBox createFormContent()
-	{
+	private HBox createFormContent() {
 		HBox formContent = new HBox(30);
 		formContent.setAlignment(Pos.TOP_CENTER);
 		formContent.getStyleClass().add("form-box");
@@ -121,8 +117,7 @@ public class AddReportForm extends GridPane
 		return formContent;
 	}
 
-	private Node createInformationBox()
-	{
+	private Node createInformationBox() {
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -146,8 +141,7 @@ public class AddReportForm extends GridPane
 		return pane;
 	}
 
-	private Node createTechnicianBox()
-	{
+	private Node createTechnicianBox() {
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -158,8 +152,8 @@ public class AddReportForm extends GridPane
 		pane.add(sectionLabel, 0, 0, 2, 1);
 
 		technicianComboBox = new ComboBox<>();
-		technicianComboBox.getItems().addAll(userController.getAllTechniekers().stream().map(user -> user.getFullName())
-				.collect(Collectors.toList()));
+		technicianComboBox.getItems().addAll(
+				uc.getAllTechniekers().stream().map(user -> user.firstName()).collect(Collectors.toList()));
 
 		technicianComboBox.setPromptText("Selecteer een technieker");
 		technicianComboBox.setPrefWidth(200);
@@ -172,8 +166,7 @@ public class AddReportForm extends GridPane
 		return pane;
 	}
 
-	private Node createDatesBox()
-	{
+	private Node createDatesBox() {
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -203,8 +196,7 @@ public class AddReportForm extends GridPane
 		return pane;
 	}
 
-	private Node createLowBox()
-	{
+	private Node createLowBox() {
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -221,8 +213,7 @@ public class AddReportForm extends GridPane
 		return pane;
 	}
 
-	private HBox createSaveButton()
-	{
+	private HBox createSaveButton() {
 		Button saveButton = new Button("Opslaan");
 		saveButton.getStyleClass().add("save-button");
 		saveButton.setOnAction(e -> createReport());
@@ -240,12 +231,11 @@ public class AddReportForm extends GridPane
 		return buttonBox;
 	}
 
-	private void initializeFields()
-	{
+	private void initializeFields() {
 		siteNameLabel = new Label(selectedMaintenanceDTO.machine().site().siteName());
 		siteNameLabel.getStyleClass().add("info-value");
 
-		responsiblePersonLabel = new Label(selectedMaintenanceDTO.technician().getFullName());
+		responsiblePersonLabel = new Label(selectedMaintenanceDTO.technician().firstName());
 		responsiblePersonLabel.getStyleClass().add("info-value");
 
 		maintenanceNumberLabel = new Label("" + selectedMaintenanceDTO.id());
@@ -285,8 +275,7 @@ public class AddReportForm extends GridPane
 		reasonErrorLabel = createErrorLabel();
 	}
 
-	private VBox createTitleSection()
-	{
+	private VBox createTitleSection() {
 		HBox hbox = new HBox(10);
 		hbox.setAlignment(Pos.CENTER_LEFT);
 
@@ -309,34 +298,27 @@ public class AddReportForm extends GridPane
 		return new VBox(10, hbox);
 	}
 
-	private void populateTimePicker(ComboBox<LocalTime> timePicker)
-	{
+	private void populateTimePicker(ComboBox<LocalTime> timePicker) {
 		LocalTime time = LocalTime.of(0, 0);
-		while (time.isBefore(LocalTime.of(23, 45)))
-		{
+		while (time.isBefore(LocalTime.of(23, 45))) {
 			timePicker.getItems().add(time);
 			time = time.plusMinutes(15);
 		}
 
-		timePicker.setConverter(new javafx.util.StringConverter<>()
-		{
+		timePicker.setConverter(new javafx.util.StringConverter<>() {
 			private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
 			@Override
-			public String toString(LocalTime time)
-			{
-				if (time != null)
-				{
+			public String toString(LocalTime time) {
+				if (time != null) {
 					return formatter.format(time);
 				}
 				return "";
 			}
 
 			@Override
-			public LocalTime fromString(String string)
-			{
-				if (string != null && !string.isEmpty())
-				{
+			public LocalTime fromString(String string) {
+				if (string != null && !string.isEmpty()) {
 					return LocalTime.parse(string, formatter);
 				}
 				return null;
@@ -344,52 +326,39 @@ public class AddReportForm extends GridPane
 		});
 	}
 
-	private void createReport()
-	{
+	private void createReport() {
 		resetErrorLabels();
-		try
-		{
-			ReportBuilder reportBuilder = new ReportBuilder();
-			reportBuilder.createReport();
+		try {
+			UserDTO selectedTechnician = null;
+			if (technicianComboBox.getValue() != null) {
+				selectedTechnician = uc.getAllTechniekers().stream()
+						.filter(user -> user.firstName().equals(technicianComboBox.getValue())).findFirst()
+						.orElse(null);
+			}
 
-			reportBuilder.buildMaintenance(maintenanceController.getMaintenance(selectedMaintenanceDTO.id()));
-			userController.getAllTechniekers().stream()
-					.filter(user -> user.getFullName().equals(technicianComboBox.getValue())).findFirst()
-					.ifPresent(reportBuilder::buildTechnician);
-
-			reportBuilder.buildStartDate(startDatePicker.getValue());
-			reportBuilder.buildStartTime(startTimeField.getValue());
-			reportBuilder.buildEndDate(endDatePicker.getValue());
-			reportBuilder.buildEndTime(endTimeField.getValue());
-			reportBuilder.buildReason(reasonField.getText().trim());
-			reportBuilder.buildRemarks(commentsArea.getText().trim());
-			reportBuilder.buildSite(siteController.getSiteObject(selectedMaintenanceDTO.machine().site()));
-
-			reportController.createReport(reportBuilder.getReport());
+			rc.createReport(mc.getMaintenance(selectedMaintenanceDTO.id()),
+					selectedTechnician, startDatePicker.getValue(), startTimeField.getValue(), endDatePicker.getValue(),
+					endTimeField.getValue(), reasonField.getText().trim(), commentsArea.getText().trim(),
+					selectedMaintenanceDTO.machine().site());
 
 			mainLayout.showMaintenanceDetails(selectedMaintenanceDTO);
-		} catch (InformationRequiredExceptionReport e)
-		{
+		} catch (InformationRequiredExceptionReport e) {
 			handleInformationRequiredException(e);
-		} catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 			showError("Er is een fout opgetreden: " + e.getMessage());
 		}
 	}
 
-	private void handleInformationRequiredException(InformationRequiredExceptionReport e)
-	{
+	private void handleInformationRequiredException(InformationRequiredExceptionReport e) {
 		e.getInformationRequired().forEach((field, requiredElement) -> {
 			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
 			showFieldError(field, errorMessage);
 		});
 	}
 
-	private String getErrorMessageForRequiredElement(RequiredElementReport element)
-	{
-		switch (element)
-		{
+	private String getErrorMessageForRequiredElement(RequiredElementReport element) {
+		switch (element) {
 		case MAINTENANCE_REQUIRED:
 			return "Onderhoud is verplicht";
 		case TECHNICIAN_REQUIRED:
@@ -415,10 +384,8 @@ public class AddReportForm extends GridPane
 		}
 	}
 
-	private void showFieldError(String fieldName, String message)
-	{
-		switch (fieldName)
-		{
+	private void showFieldError(String fieldName, String message) {
+		switch (fieldName) {
 		case "technician":
 			technicianErrorLabel.setText(message);
 			break;
@@ -442,13 +409,11 @@ public class AddReportForm extends GridPane
 		}
 	}
 
-	private void showError(String message)
-	{
+	private void showError(String message) {
 		errorLabel.setText(message);
 	}
 
-	private void resetErrorLabels()
-	{
+	private void resetErrorLabels() {
 		errorLabel.setText("");
 		technicianErrorLabel.setText("");
 		startDateErrorLabel.setText("");
@@ -458,8 +423,7 @@ public class AddReportForm extends GridPane
 		reasonErrorLabel.setText("");
 	}
 
-	private Label createErrorLabel()
-	{
+	private Label createErrorLabel() {
 		Label errorLabel = new Label();
 		errorLabel.getStyleClass().add("error-label");
 		return errorLabel;

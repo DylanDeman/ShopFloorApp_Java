@@ -278,8 +278,8 @@ public class MaintenanceDetailView extends BorderPane
 			table.add(endDateLabel, 3, 2);
 
 			Label technicianLabel = new Label(
-					currentMaintenance.technician() != null ? currentMaintenance.technician().getFirstName() + " "
-							+ currentMaintenance.technician().getLastName() : "");
+					currentMaintenance.technician() != null ? currentMaintenance.technician().firstName() + " "
+							+ currentMaintenance.technician().lastName() : "");
 			technicianLabel.getStyleClass().add("table-cell");
 			table.add(technicianLabel, 4, 2);
 

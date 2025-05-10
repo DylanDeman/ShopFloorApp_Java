@@ -5,9 +5,9 @@ import java.util.List;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.machine.MachineController;
-import domain.machine.MachineDTO;
 import domain.site.SiteController;
 import domain.user.UserController;
+import dto.MachineDTO;
 import gui.MainLayout;
 import gui.customComponents.CustomInformationBox;
 import javafx.beans.property.SimpleStringProperty;
@@ -97,7 +97,7 @@ public class MachinesListComponent extends GridPane
 
 		TableColumn<MachineDTO, String> technicianCol = new TableColumn<>("Technieker");
 		technicianCol.setCellValueFactory(data -> new SimpleStringProperty(
-				data.getValue().technician() != null ? data.getValue().technician().getFullName() : "Onbekend"));
+				data.getValue().technician() != null ? data.getValue().technician().firstName() : "Onbekend"));
 
 		TableColumn<MachineDTO, String> productInfoCol = new TableColumn<>("Product info");
 		productInfoCol.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().productInfo()));
@@ -249,5 +249,4 @@ public class MachinesListComponent extends GridPane
 		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machine);
 		mainLayout.setContent(editMachineForm, true, false, CurrentPage.NONE);
 	}
-
 }

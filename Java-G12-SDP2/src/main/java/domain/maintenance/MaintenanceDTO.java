@@ -1,15 +1,14 @@
 package domain.maintenance;
 
+
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-import domain.machine.MachineDTO;
-import domain.report.Report;
-import domain.user.User;
+import dto.MachineDTO;
+import dto.UserDTO;
 import util.MaintenanceStatus;
 
 public record MaintenanceDTO(int id, LocalDate executionDate, LocalDateTime startDate, LocalDateTime endDate,
-		User technician, String reason, String comments, MaintenanceStatus status, MachineDTO machine)
-{
+		UserDTO technician, String reason, String comments, MaintenanceStatus status, MachineDTO machine) {
 
 }

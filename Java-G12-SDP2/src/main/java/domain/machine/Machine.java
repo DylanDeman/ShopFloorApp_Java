@@ -11,8 +11,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToOne;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -22,7 +23,7 @@ import util.ProductionStatus;
 
 @Entity
 @ToString
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @Getter
 @Setter
 public class Machine implements Serializable {
@@ -36,7 +37,6 @@ public class Machine implements Serializable {
 		setMachineStatus(machineStatus);
 		setProductionStatus(productionStatus);
 		setFutureMaintenance(futureMaintenance);
-
 	}
 
 	private static final long serialVersionUID = 1L;
@@ -46,6 +46,7 @@ public class Machine implements Serializable {
 	private int id;
 
 	@ManyToOne
+	@JoinColumn(name = "SITE_ID")
 	private Site site;
 
 	@ManyToOne
@@ -70,5 +71,15 @@ public class Machine implements Serializable {
 		System.out.println(
 				"Machine " + code + " last maintenance: " + lastMaintenance + ", current uptime: " + hours + " hours");
 		return hours;
+	}
+
+	public void setSite(Site site) {
+		if (this.site != null) {
+			this.site.getMachines().remove(this);
+		}
+		this.site = site;
+		if (site != null) {
+			site.getMachines().add(this);
+		}
 	}
 }

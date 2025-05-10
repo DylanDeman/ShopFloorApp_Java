@@ -9,6 +9,8 @@ import exceptions.InformationRequiredExceptionReport;
 import util.AuthenticationUtil;
 import util.Role;
 
+// Een director is enkel nodig als je een vaste volgorde hebt,
+// hierbij geen director nodig denk ik 
 public class ReportDirector
 {
 	private ReportBuilder builder;
