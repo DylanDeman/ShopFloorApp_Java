@@ -16,9 +16,8 @@ import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
 
 public class DTOMapper {
-    
-    // Address mappings
-    public static AddressDTO toAddressDTO(Address address) {
+
+	public static AddressDTO toAddressDTO(Address address) {
         if (address == null) {
             return null;
         }
@@ -47,7 +46,6 @@ public class DTOMapper {
         return address;
     }
     
-    // User mappings
     public static UserDTO toUserDTO(User user) {
         if (user == null) {
             return null;
@@ -113,7 +111,6 @@ public class DTOMapper {
     }
 
     
-    // Site mappings
     public static SiteDTOWithoutMachines toSiteDTOWithoutMachines(Site site) {
         if (site == null) {
             return null;
@@ -143,15 +140,12 @@ public class DTOMapper {
             return null;
         }
         
-        // First create SiteDTO without machines
         SiteDTOWithoutMachines siteDTOWithoutMachines = toSiteDTOWithoutMachines(site);
         
-        // Then create machine DTOs with proper site reference
         Set<MachineDTO> machineDTOs = site.getMachines().stream()
             .map(machine -> toMachineDTO(machine, siteDTOWithoutMachines))
             .collect(Collectors.toSet());
         
-        // Create the final SiteDTO with machines included
         return new SiteDTOWithMachines(
             site.getId(),
             site.getSiteName(),
@@ -220,7 +214,6 @@ public class DTOMapper {
         machine.setLastMaintenance(dto.lastMaintenance());
         machine.setFutureMaintenance(dto.futureMaintenance());
         machine.setNumberDaysSinceLastMaintenance(dto.numberDaysSinceLastMaintenance());
-        // Uptime might be calculated, so we don't set it directly
         
         return machine;
     }

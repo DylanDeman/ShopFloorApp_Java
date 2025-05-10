@@ -26,9 +26,6 @@ public class SiteController {
 
 	public List<SiteDTOWithMachines> getSites() {
 		List<Site> sites = siteRepo.findAll();
-		if (sites == null) {
-			return new ArrayList<>();
-		}
 		return DTOMapper.toSiteDTOsWithMachines(sites);
 	}
 
@@ -149,8 +146,6 @@ public class SiteController {
 		Site updatedSite = siteBuilder.getSite();
 		updatedSite.setId(existingSite.getId());
 		updatedSite.getAddress().setId(existingSite.getAddress().getId());
-
-		existingSite.getMachines().forEach(updatedSite::addMachine);
 
 		siteRepo.startTransaction();
 		siteRepo.update(updatedSite);

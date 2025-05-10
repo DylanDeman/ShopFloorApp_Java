@@ -1,5 +1,7 @@
 package domain.site;
 
+import java.util.List;
+
 import repository.GenericDao;
 
 // Mag later weg indien geen methodes bijkomen

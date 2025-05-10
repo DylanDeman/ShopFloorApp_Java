@@ -14,6 +14,7 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -50,10 +51,10 @@ public class Site implements Serializable, Subject {
 
 	@Setter
 	@ManyToOne(cascade = CascadeType.PERSIST)
-	@JoinColumn(name = "address_id")
+	@JoinColumn(name = "ADDRESS_ID")
 	private Address address;
 
-	@OneToMany(mappedBy = "site")
+	@OneToMany(mappedBy = "site", fetch = FetchType.EAGER)
 	private Set<Machine> machines = new HashSet<>();
 
 	@Enumerated(EnumType.STRING)
@@ -94,14 +95,12 @@ public class Site implements Serializable, Subject {
 		this.status = status;
 		notifyObservers();
 	}
-
+	
 	public void addMachine(Machine machine) {
-		machines.add(machine);
-		machine.setSite(this);
-	}
-
-	public Set<Machine> getMachines() {
-		return Collections.unmodifiableSet(machines);
+	    machines.add(machine);
+	    if (machine.getSite() != this) {
+	        machine.setSite(this);
+	    }
 	}
 
 	@Override
@@ -120,4 +119,5 @@ public class Site implements Serializable, Subject {
 			observer.update();
 		});
 	}
+	
 }
