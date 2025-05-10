@@ -167,7 +167,7 @@ public class MaintenanceDetailView extends BorderPane
 		titleBox.setAlignment(Pos.CENTER_LEFT);
 		titleBox.getChildren().addAll(backButton, titleVBox);
 
-		// Action buttons
+	/*	// Action buttons
 		Button reportButton = new Button("Rapport aanmaken");
 		FontIcon reportIcon = new FontIcon("fas-file-alt");
 		reportIcon.setIconSize(16);
@@ -176,7 +176,7 @@ public class MaintenanceDetailView extends BorderPane
 		reportButton.getStyleClass().add("action-button");
 		reportButton.setOnAction(e -> {
 			goToAddRapport(mainLayout, currentMaintenance);
-		});
+		});*/
 
 		Button uploadButton = new Button("Bestanden toevoegen");
 		FontIcon uploadIcon = new FontIcon("fas-upload");
@@ -188,7 +188,7 @@ public class MaintenanceDetailView extends BorderPane
 
 		HBox actionsBox = new HBox(10);
 		actionsBox.setAlignment(Pos.CENTER_RIGHT);
-		actionsBox.getChildren().addAll(reportButton, uploadButton);
+		actionsBox.getChildren().add(uploadButton);
 
 		// Combine title and actions in a header bar
 		BorderPane headerPane = new BorderPane();
@@ -199,12 +199,12 @@ public class MaintenanceDetailView extends BorderPane
 		setTop(headerPane);
 	}
 
-	private void goToAddRapport(MainLayout mainLayout, MaintenanceDTO maintenance)
+	/*private void goToAddRapport(MainLayout mainLayout, MaintenanceDTO maintenance)
 	{
 		AddReportForm form = new AddReportForm(mainLayout, maintenance);
 		form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").toExternalForm());
 		mainLayout.showAddReport(maintenance);
-	}
+	}*/
 
 	private void createMaintenanceInfoSection()
 	{
