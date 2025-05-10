@@ -30,6 +30,11 @@ import util.Role;
 import util.Status;
 
 public class StartUpGUI extends Application {
+	
+	public static void main(String[] args) {
+		launch(args);
+	}
+	
 	@Override
 	public void start(Stage primaryStage) {
 		MainLayout mainLayout = new MainLayout(primaryStage);
@@ -152,9 +157,5 @@ public class StartUpGUI extends Application {
 				entityManager.close();
 			}
 		}
-	}
-
-	public static void main(String[] args) {
-		launch(args);
 	}
 }
