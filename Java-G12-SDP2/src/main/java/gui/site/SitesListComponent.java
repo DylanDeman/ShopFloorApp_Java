@@ -7,7 +7,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.site.Site;
 import domain.site.SiteController;
-import domain.site.SiteDTO;
+import dto.SiteDTO;
 import gui.AddOrEditSiteForm;
 import gui.MainLayout;
 import gui.customComponents.CustomInformationBox;

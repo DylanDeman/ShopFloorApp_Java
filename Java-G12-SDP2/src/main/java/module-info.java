@@ -17,6 +17,8 @@ module be.hogent.Java_G12_SDP_22 {
     exports domain.notifications; 
     exports domain; 
     exports main; 
+    exports dto;
+    exports util;
     
     opens images;
     opens css;

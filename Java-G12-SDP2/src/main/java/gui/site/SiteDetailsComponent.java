@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.machine.MachineDTO;
 import domain.site.SiteController;
-import domain.site.SiteDTO;
 import domain.user.User;
+import dto.MachineDTO;
+import dto.SiteDTO;
 import gui.MainLayout;
 import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;

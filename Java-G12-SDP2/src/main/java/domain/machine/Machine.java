@@ -22,7 +22,7 @@ import util.ProductionStatus;
 
 @Entity
 @ToString
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @Getter
 @Setter
 public class Machine implements Serializable {

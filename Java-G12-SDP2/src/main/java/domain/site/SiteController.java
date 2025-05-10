@@ -2,10 +2,15 @@ package domain.site;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
-import domain.machine.Machine;
-import domain.machine.MachineDTO;
+
+import dto.SiteDTOWithMachines;
+import dto.SiteDTOWithoutMachines;
+import dto.UserDTO;
+import exceptions.InformationRequiredExceptionSite;
+import gui.AppServices;
+import util.DTOMapper;
+import util.Status;
 
 public class SiteController {
 	private SiteDao siteRepo;
@@ -14,88 +19,143 @@ public class SiteController {
 		siteRepo = new SiteDaoJpa();
 	}
 
-	public SiteDTO getSite(int id) {
+	public SiteDTOWithMachines getSite(int id) {
 		Site site = siteRepo.get(id);
-		return makeSiteDTO(site);
+		return DTOMapper.toSiteDTOWithMachines(site);
 	}
 
-	public List<SiteDTO> getSites() {
+	public List<SiteDTOWithMachines> getSites() {
 		List<Site> sites = siteRepo.findAll();
 		if (sites == null) {
 			return new ArrayList<>();
 		}
-		return makeSiteDTOs(sites);
+		return DTOMapper.toSiteDTOsWithMachines(sites);
 	}
 
 	public List<Site> getSiteObjects() {
 		return siteRepo.findAll();
 	}
 
-	public List<SiteDTO> makeSiteDTOs(List<Site> sites) {
-		return sites.stream().map(site -> {
-			Set<MachineDTO> machineDTOs = toMachineDTOs(site.getMachines());
-			return new SiteDTO(site.getId(), site.getSiteName(), site.getVerantwoordelijke(), machineDTOs,
-					site.getStatus(), site.getAddress());
-		}).collect(Collectors.toUnmodifiableList());
+	public Site getSiteObject(int siteId) {
+		return siteRepo.get(siteId);
 	}
 
-	public SiteDTO makeSiteDTO(Site site) {
-		Set<MachineDTO> machineDTOs = toMachineDTOs(site.getMachines());
-		return new SiteDTO(site.getId(), site.getSiteName(), site.getVerantwoordelijke(), machineDTOs, site.getStatus(),
-				site.getAddress());
+	public List<SiteDTOWithMachines> getFilteredSites(String searchFilter, String statusFilter, String siteNameFilter,
+			String verantwoordelijkeFilter, Integer minMachinesFilter, Integer maxMachinesFilter) {
+
+		String lowerCaseSearchFilter = searchFilter == null ? "" : searchFilter.toLowerCase();
+
+		// Set default values for min and max filters if null
+		int minMachines = minMachinesFilter != null ? minMachinesFilter : 0;
+		int maxMachines = maxMachinesFilter != null ? maxMachinesFilter : Integer.MAX_VALUE;
+
+		return getSites().stream().filter(site -> statusFilter == null || site.status().toString().equals(statusFilter))
+				.filter(site -> siteNameFilter == null
+						|| site.siteName().toLowerCase().contains(siteNameFilter.toLowerCase()))
+				.filter(site -> verantwoordelijkeFilter == null || (site.verantwoordelijke() != null
+						&& (site.verantwoordelijke().firstName() + " " + site.verantwoordelijke().lastName())
+								.equals(verantwoordelijkeFilter)))
+				.filter(site -> site.machines().size() >= minMachines && site.machines().size() <= maxMachines)
+				.filter(site -> site.siteName().toLowerCase().contains(lowerCaseSearchFilter)
+						|| (site.verantwoordelijke() != null && (site.verantwoordelijke().firstName().toLowerCase()
+								.contains(lowerCaseSearchFilter)
+								|| site.verantwoordelijke().lastName().toLowerCase().contains(lowerCaseSearchFilter)))
+						|| site.status().toString().toLowerCase().contains(lowerCaseSearchFilter))
+				.collect(Collectors.toList());
 	}
-
-	public MachineDTO makeMachineDTO(Machine machine) {
-		return new MachineDTO(machine.getId(), null, machine.getTechnician(), machine.getCode(),
-				machine.getMachineStatus(), machine.getProductionStatus(), machine.getLocation(),
-				machine.getProductInfo(), machine.getLastMaintenance(), machine.getFutureMaintenance(),
-				machine.getNumberDaysSinceLastMaintenance(), machine.getUpTimeInHours());
-	}
-
-	private Set<MachineDTO> toMachineDTOs(Set<Machine> machines) {
-		return machines.stream()
-				.map(machine -> new MachineDTO(machine.getId(), null, machine.getTechnician(), machine.getCode(),
-						machine.getMachineStatus(), machine.getProductionStatus(), machine.getLocation(),
-						machine.getProductInfo(), machine.getLastMaintenance(), machine.getFutureMaintenance(),
-						machine.getNumberDaysSinceLastMaintenance(), machine.getUpTimeInHours()))
-				.collect(Collectors.toSet());
-	}
-
-	public Site getSiteObject(SiteDTO site) {
-		return siteRepo.get(site.id());
-	}
-
-	public List<SiteDTO> getFilteredSites(String searchFilter, String statusFilter, String siteNameFilter, String verantwoordelijkeFilter,
-	        Integer minMachinesFilter, Integer maxMachinesFilter) {
-
-	    String lowerCaseSearchFilter = searchFilter == null ? "" : searchFilter.toLowerCase();
-
-	    return getSites().stream()
-	            .filter(site -> statusFilter == null || site.status().toString().equals(statusFilter))
-	            .filter(site -> siteNameFilter == null || site.siteName().toLowerCase().contains(siteNameFilter.toLowerCase()))
-	            .filter(site -> verantwoordelijkeFilter == null || site.verantwoordelijke().getFullName().equals(verantwoordelijkeFilter))
-	            .filter(site -> site.machines().size() >= minMachinesFilter && site.machines().size() <= maxMachinesFilter)
-	            .filter(site -> site.siteName().toLowerCase().contains(lowerCaseSearchFilter)
-	                    || site.verantwoordelijke().getFirstName().toLowerCase().contains(lowerCaseSearchFilter)
-	                    || site.verantwoordelijke().getLastName().toLowerCase().contains(lowerCaseSearchFilter)
-	                    || site.status().toString().toLowerCase().contains(lowerCaseSearchFilter))
-	            .collect(Collectors.toList());
-	}
-
 
 	public List<String> getAllStatusses() {
-		List<SiteDTO> allSites = getSites();
+		List<SiteDTOWithMachines> allSites = getSites();
 		return allSites.stream().map(s -> s.status().toString()).distinct().sorted().collect(Collectors.toList());
 	}
 
 	public List<String> getAllSiteNames() {
-		List<SiteDTO> allSites = getSites();
-		return allSites.stream().map(SiteDTO::siteName).distinct().sorted().collect(Collectors.toList());
+		List<SiteDTOWithMachines> allSites = getSites();
+		return allSites.stream().map(SiteDTOWithMachines::siteName).distinct().sorted().collect(Collectors.toList());
 	}
 
 	public List<String> getAllVerantwoordelijken() {
-		List<SiteDTO> allSites = getSites();
-		return allSites.stream().map(s -> s.verantwoordelijke().getFullName()).distinct().sorted()
-				.collect(Collectors.toList());
+		List<SiteDTOWithMachines> allSites = getSites();
+		return allSites.stream().filter(s -> s.verantwoordelijke() != null)
+				.map(s -> s.verantwoordelijke().firstName() + " " + s.verantwoordelijke().lastName()).distinct()
+				.sorted().collect(Collectors.toList());
+	}
+
+	public List<SiteDTOWithoutMachines> getSitesWithoutMachines() {
+		List<Site> sites = siteRepo.findAll();
+		if (sites == null) {
+			return new ArrayList<>();
+		}
+		return DTOMapper.toSiteDTOsWithoutMachines(sites);
+	}
+
+	public SiteDTOWithMachines createSite(String siteName, String street, String houseNumber, String postalCode,
+			String city, String employeeFullName) throws InformationRequiredExceptionSite, NumberFormatException {
+
+		UserDTO employee = AppServices.getInstance().getUserController().getAllVerantwoordelijken().stream()
+				.filter(user -> (user.firstName() + " " + user.lastName()).equals(employeeFullName)).findFirst()
+				.orElse(null);
+
+		int houseNumberInt = Integer.parseInt(houseNumber);
+		int postalCodeInt = Integer.parseInt(postalCode);
+
+		SiteBuilder siteBuilder = new SiteBuilder();
+		siteBuilder.createSite();
+		siteBuilder.buildName(siteName);
+		siteBuilder.createAddress();
+		siteBuilder.buildStreet(street);
+		siteBuilder.buildNumber(houseNumberInt);
+		siteBuilder.buildPostalcode(postalCodeInt);
+		siteBuilder.buildCity(city);
+		siteBuilder.buildEmployee(employee);
+		siteBuilder.buildStatus(Status.ACTIEF); // New sites are active by default
+
+		Site newSite = siteBuilder.getSite();
+
+		siteRepo.startTransaction();
+		siteRepo.insert(newSite);
+		siteRepo.commitTransaction();
+
+		return DTOMapper.toSiteDTOWithMachines(newSite);
+	}
+
+	public SiteDTOWithMachines updateSite(int siteId, String siteName, String street, String houseNumber,
+			String postalCode, String city, String employeeFullName, Status status)
+			throws InformationRequiredExceptionSite, NumberFormatException {
+
+		Site existingSite = siteRepo.get(siteId);
+		if (existingSite == null) {
+			throw new IllegalArgumentException("Site with ID " + siteId + " not found");
+		}
+
+		UserDTO employee = AppServices.getInstance().getUserController().getAllVerantwoordelijken().stream()
+				.filter(user -> (user.firstName() + " " + user.lastName()).equals(employeeFullName)).findFirst()
+				.orElse(null);
+
+		int houseNumberInt = Integer.parseInt(houseNumber);
+		int postalCodeInt = Integer.parseInt(postalCode);
+
+		SiteBuilder siteBuilder = new SiteBuilder();
+		siteBuilder.createSite();
+		siteBuilder.buildName(siteName);
+		siteBuilder.createAddress();
+		siteBuilder.buildStreet(street);
+		siteBuilder.buildNumber(houseNumberInt);
+		siteBuilder.buildPostalcode(postalCodeInt);
+		siteBuilder.buildCity(city);
+		siteBuilder.buildEmployee(employee);
+		siteBuilder.buildStatus(status);
+
+		Site updatedSite = siteBuilder.getSite();
+		updatedSite.setId(existingSite.getId());
+		updatedSite.getAddress().setId(existingSite.getAddress().getId());
+
+		existingSite.getMachines().forEach(updatedSite::addMachine);
+
+		siteRepo.startTransaction();
+		siteRepo.update(updatedSite);
+		siteRepo.commitTransaction();
+
+		return DTOMapper.toSiteDTOWithMachines(updatedSite);
 	}
 }

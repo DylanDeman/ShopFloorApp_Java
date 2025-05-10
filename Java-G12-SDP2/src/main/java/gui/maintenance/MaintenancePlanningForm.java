@@ -12,11 +12,12 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.machine.Machine;
 import domain.machine.MachineController;
-import domain.machine.MachineDTO;
 import domain.maintenance.MaintenanceBuilder;
 import domain.maintenance.MaintenanceController;
 import domain.user.User;
 import domain.user.UserController;
+import dto.MachineDTO;
+import dto.UserDTO;
 import exceptions.InformationRequiredExceptionMaintenance;
 import gui.MainLayout;
 import javafx.geometry.Insets;
@@ -53,7 +54,7 @@ public class MaintenancePlanningForm extends GridPane
 
 	private TextArea commentsField;
 
-	private ComboBox<User> technicianComboBox;
+	private ComboBox<UserDTO> technicianComboBox;
 	private ComboBox<LocalTime> startTimeField, endTimeField;
 	private ComboBox<String> statusComboBox;
 	private ComboBox<MachineDTO> machineComboBox;

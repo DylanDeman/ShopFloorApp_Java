@@ -158,7 +158,7 @@ public class AddReportForm extends GridPane
 		pane.add(sectionLabel, 0, 0, 2, 1);
 
 		technicianComboBox = new ComboBox<>();
-		technicianComboBox.getItems().addAll(userController.getAllTechniekers().stream().map(user -> user.getFullName())
+		technicianComboBox.getItems().addAll(userController.getAllTechniekers().stream().map(user -> user.firstName())
 				.collect(Collectors.toList()));
 
 		technicianComboBox.setPromptText("Selecteer een technieker");
@@ -245,7 +245,7 @@ public class AddReportForm extends GridPane
 		siteNameLabel = new Label(selectedMaintenanceDTO.machine().site().siteName());
 		siteNameLabel.getStyleClass().add("info-value");
 
-		responsiblePersonLabel = new Label(selectedMaintenanceDTO.technician().getFullName());
+		responsiblePersonLabel = new Label(selectedMaintenanceDTO.technician().firstName());
 		responsiblePersonLabel.getStyleClass().add("info-value");
 
 		maintenanceNumberLabel = new Label("" + selectedMaintenanceDTO.id());
@@ -354,7 +354,7 @@ public class AddReportForm extends GridPane
 
 			reportBuilder.buildMaintenance(maintenanceController.getMaintenance(selectedMaintenanceDTO.id()));
 			userController.getAllTechniekers().stream()
-					.filter(user -> user.getFullName().equals(technicianComboBox.getValue())).findFirst()
+					.filter(user -> user.firstName().equals(technicianComboBox.getValue())).findFirst()
 					.ifPresent(reportBuilder::buildTechnician);
 
 			reportBuilder.buildStartDate(startDatePicker.getValue());
@@ -363,7 +363,8 @@ public class AddReportForm extends GridPane
 			reportBuilder.buildEndTime(endTimeField.getValue());
 			reportBuilder.buildReason(reasonField.getText().trim());
 			reportBuilder.buildRemarks(commentsArea.getText().trim());
-			reportBuilder.buildSite(siteController.getSiteObject(selectedMaintenanceDTO.machine().site()));
+			
+			reportBuilder.buildSite(selectedMaintenanceDTO.machine().site());
 
 			reportController.createReport(reportBuilder.getReport());
 

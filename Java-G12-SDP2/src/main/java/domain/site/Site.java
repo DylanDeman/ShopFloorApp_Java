@@ -31,8 +31,7 @@ import util.Status;
 @Table(name = "sites")
 @Entity
 @NoArgsConstructor
-public class Site implements Serializable, Subject
-{
+public class Site implements Serializable, Subject {
 	private static final long serialVersionUID = 1L;
 
 	@Transient
@@ -60,23 +59,20 @@ public class Site implements Serializable, Subject
 	@Enumerated(EnumType.STRING)
 	private Status status;
 
-	public Site(String siteName, User verantwoordelijke, Status status)
-	{
+	public Site(String siteName, User verantwoordelijke, Status status) {
 		this.siteName = siteName;
 		this.verantwoordelijke = verantwoordelijke;
 		this.status = status;
 	}
 
-	public Site(String siteName, User verantwoordelijke, Status status, Address address)
-	{
+	public Site(String siteName, User verantwoordelijke, Status status, Address address) {
 		this.siteName = siteName;
 		this.verantwoordelijke = verantwoordelijke;
 		this.status = status;
 		this.address = address;
 	}
 
-	public Site(int id, String siteName, User verantwoordelijke, Status status, Address address)
-	{
+	public Site(int id, String siteName, User verantwoordelijke, Status status, Address address) {
 		this.id = id;
 		this.siteName = siteName;
 		this.verantwoordelijke = verantwoordelijke;
@@ -84,50 +80,42 @@ public class Site implements Serializable, Subject
 		this.address = address;
 	}
 
-	public void setSiteName(String siteName)
-	{
+	public void setSiteName(String siteName) {
 		this.siteName = siteName.trim();
 		notifyObservers();
 	}
 
-	public void setVerantwoordelijke(User verantwoordelijke)
-	{
+	public void setVerantwoordelijke(User verantwoordelijke) {
 		this.verantwoordelijke = verantwoordelijke;
 		notifyObservers();
 	}
 
-	public void setStatus(Status status)
-	{
+	public void setStatus(Status status) {
 		this.status = status;
 		notifyObservers();
 	}
 
-	public void addMachine(Machine machine)
-	{
+	public void addMachine(Machine machine) {
 		machines.add(machine);
 		machine.setSite(this);
 	}
 
-	public Set<Machine> getMachines()
-	{
+	public Set<Machine> getMachines() {
 		return Collections.unmodifiableSet(machines);
 	}
 
 	@Override
-	public void addObserver(Observer o)
-	{
+	public void addObserver(Observer o) {
 		observers.add(o);
 	}
 
 	@Override
-	public void removeObserver(Observer o)
-	{
+	public void removeObserver(Observer o) {
 		observers.remove(o);
 	}
 
 	@Override
-	public void notifyObservers()
-	{
+	public void notifyObservers() {
 		observers.forEach(observer -> {
 			observer.update();
 		});
