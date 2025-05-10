@@ -1,6 +1,7 @@
 package gui.maintenance;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -28,6 +29,8 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import util.AuthenticationUtil;
+import util.Role;
 
 public class MaintenanceListComponent extends VBox
 {
@@ -108,11 +111,24 @@ public class MaintenanceListComponent extends VBox
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-		CustomButton maintenancePlanBtn = new CustomButton("Onderhoud inplannen");
-		maintenancePlanBtn.setOnAction((e) -> goToMaintenancePlanning(mainLayout));
-		maintenancePlanBtn.getStyleClass().add("add-button");
+		hbox.getChildren().addAll(backButton, title);
+		if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+		{
+			CustomButton maintenancePlanBtn = new CustomButton("Onderhoud inplannen");
+			maintenancePlanBtn.setOnAction((e) -> {
+				if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+				{
+					mainLayout.showMaintenancePlanning(machineDTO);
+				} else
+				{
+					mainLayout.showNotAllowedAlert();
+				}
+			});
+			maintenancePlanBtn.getStyleClass().add("add-button");
 
-		hbox.getChildren().addAll(backButton, title, spacer, maintenancePlanBtn);
+			hbox.getChildren().addAll(spacer, maintenancePlanBtn);
+		}
+
 		return hbox;
 	}
 
@@ -132,16 +148,22 @@ public class MaintenanceListComponent extends VBox
 		TableColumn<MaintenanceDTO, String> col7 = createColumn("Status", m -> m.status().toString());
 		TableColumn<MaintenanceDTO, String> col8 = createColumn("Machine",
 				m -> String.format("Machine %d", m.machine().id()));
-		TableColumn<MaintenanceDTO, Void> col9 = createDetailsButton();
 
 		List<TableColumn<MaintenanceDTO, ?>> columns;
 		if (machineDTO != null)
 		{
-			columns = List.of(col1, col2, col3, col4, col5, col6, col7, col9);
+			columns = new ArrayList<>(List.of(col1, col2, col3, col4, col5, col6, col7));
 		} else
 		{
-			columns = List.of(col1, col2, col3, col4, col5, col6, col7, col8, col9);
+			columns = new ArrayList<>(List.of(col1, col2, col3, col4, col5, col6, col7, col8));
 		}
+
+		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN))
+		{
+			TableColumn<MaintenanceDTO, Void> col9 = createDetailsButton();
+			columns.add(col9);
+		}
+
 		table.getColumns().addAll(columns);
 		table.setPrefHeight(500);
 
@@ -218,8 +240,15 @@ public class MaintenanceListComponent extends VBox
 			private final CustomButton btn = new CustomButton("Details", Pos.CENTER);
 			{
 				btn.setOnAction(e -> {
-					MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
-					goToDetails(mainLayout, selectedMaintenance);
+					if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+					{
+						MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
+						goToDetails(mainLayout, selectedMaintenance);
+					} else
+					{
+						mainLayout.showNotAllowedAlert();
+					}
+
 				});
 				btn.setMaxWidth(Double.MAX_VALUE);
 				btn.setAlignment(Pos.CENTER);
@@ -287,19 +316,6 @@ public class MaintenanceListComponent extends VBox
 		filteredMaintenances = list;
 		updatePagination();
 		updateTableItems();
-	}
-
-	/*
-	 * private void goToAddRapport(MainLayout mainLayout, MaintenanceDTO
-	 * maintenance) { AddReportForm form = new AddReportForm(mainLayout,
-	 * maintenance);
-	 * form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").
-	 * toExternalForm()); }
-	 */
-
-	private void goToMaintenancePlanning(MainLayout mainlayout)
-	{
-		mainLayout.showMaintenancePlanning(machineDTO);
 	}
 
 	private void goToDetails(MainLayout mainLayout, MaintenanceDTO maintenance)

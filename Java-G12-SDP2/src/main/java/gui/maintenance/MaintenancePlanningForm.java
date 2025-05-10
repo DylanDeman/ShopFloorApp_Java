@@ -32,7 +32,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import util.AuthenticationUtil;
 import util.MaintenanceStatus;
+import util.Role;
 
 public class MaintenancePlanningForm extends GridPane
 {
@@ -117,7 +119,16 @@ public class MaintenancePlanningForm extends GridPane
 	{
 		Button saveButton = new Button("Opslaan");
 		saveButton.getStyleClass().add("save-button");
-		saveButton.setOnAction(e -> savePlanning());
+		saveButton.setOnAction(e -> {
+
+			if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+			{
+				savePlanning();
+			} else
+			{
+				mainLayout.showNotAllowedAlert();
+			}
+		});
 
 		saveButton.setPrefSize(300, 40);
 		saveButton.setMaxWidth(Double.MAX_VALUE);
@@ -134,44 +145,53 @@ public class MaintenancePlanningForm extends GridPane
 
 	private void savePlanning()
 	{
-		try
+		if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
 		{
-			resetErrorLabels();
+			try
+			{
+				resetErrorLabels();
 
-			LocalDate execDate = executionDatePicker.getValue();
-			LocalTime sTime = startTimeField.getValue();
-			LocalTime eTime = endTimeField.getValue();
+				LocalDate execDate = executionDatePicker.getValue();
+				LocalTime sTime = startTimeField.getValue();
+				LocalTime eTime = endTimeField.getValue();
 
-			LocalDateTime startDateTime = (execDate != null && sTime != null) ? LocalDateTime.of(execDate, sTime)
-					: null;
-			LocalDateTime endDateTime = (execDate != null && eTime != null) ? LocalDateTime.of(execDate, eTime) : null;
+				LocalDateTime startDateTime = (execDate != null && sTime != null) ? LocalDateTime.of(execDate, sTime)
+						: null;
+				LocalDateTime endDateTime = (execDate != null && eTime != null) ? LocalDateTime.of(execDate, eTime)
+						: null;
 
-			Machine machine = (machineComboBox.getValue() != null) ? mc.convertDTOToMachine(machineComboBox.getValue())
-					: null;
+				Machine machine = (machineComboBox.getValue() != null)
+						? mc.convertDTOToMachine(machineComboBox.getValue())
+						: null;
 
-			MaintenanceBuilder builder = new MaintenanceBuilder();
-			builder.createMaintenance();
-			builder.buildExecutionDate(execDate);
-			builder.buildStartDate(startDateTime);
-			builder.buildEndDate(endDateTime);
-			builder.buildTechnician(technicianComboBox.getValue());
-			builder.buildReason(reasonField.getText());
-			builder.buildComments(commentsField.getText());
-			if (statusComboBox.getValue() != null)
-				builder.buildStatus(MaintenanceStatus.valueOf(statusComboBox.getValue()));
-			builder.buildMachine(machine);
+				MaintenanceBuilder builder = new MaintenanceBuilder();
+				builder.createMaintenance();
+				builder.buildExecutionDate(execDate);
+				builder.buildStartDate(startDateTime);
+				builder.buildEndDate(endDateTime);
+				builder.buildTechnician(technicianComboBox.getValue());
+				builder.buildReason(reasonField.getText());
+				builder.buildComments(commentsField.getText());
+				if (statusComboBox.getValue() != null)
+					builder.buildStatus(MaintenanceStatus.valueOf(statusComboBox.getValue()));
+				builder.buildMachine(machine);
 
-			mntcc.createMaintenance(builder.getMaintenance());
-			mainLayout.showMaintenanceList(machineDTO);
+				mntcc.createMaintenance(builder.getMaintenance());
+				mainLayout.showMaintenanceList(machineDTO);
 
-		} catch (InformationRequiredExceptionMaintenance ex)
+			} catch (InformationRequiredExceptionMaintenance ex)
+			{
+				handleInformationRequiredException(ex);
+			} catch (Exception ex)
+			{
+				errorLabel.setText("Er is een fout opgetreden: " + ex.getMessage());
+				ex.printStackTrace();
+			}
+		} else
 		{
-			handleInformationRequiredException(ex);
-		} catch (Exception ex)
-		{
-			errorLabel.setText("Er is een fout opgetreden: " + ex.getMessage());
-			ex.printStackTrace();
+			mainLayout.showNotAllowedAlert();
 		}
+
 	}
 
 	private HBox createFormContent()
@@ -179,7 +199,7 @@ public class MaintenancePlanningForm extends GridPane
 		HBox formContent = new HBox(30);
 		formContent.setAlignment(Pos.TOP_CENTER);
 		formContent.getStyleClass().add("form-box");
-		HBox.setHgrow(formContent, Priority.ALWAYS); // Laat de box groeien
+		HBox.setHgrow(formContent, Priority.ALWAYS);
 
 		VBox dataBox = new VBox(15, createDateSection());
 		VBox technicianReasonBox = new VBox(15, createTechnicianReasonSection());

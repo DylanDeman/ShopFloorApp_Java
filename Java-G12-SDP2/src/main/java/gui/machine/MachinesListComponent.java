@@ -26,7 +26,9 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import util.AuthenticationUtil;
 import util.CurrentPage;
+import util.Role;
 
 public class MachinesListComponent extends GridPane
 {
@@ -60,14 +62,23 @@ public class MachinesListComponent extends GridPane
 
 		buildColumns();
 
-		addButton = new Button("Machine toevoegen +");
+		addButton = new Button("+ Machine toevoegen");
 		addButton.getStyleClass().add("add-button");
-		addButton.setOnAction(e -> openAddMachineForm());
+		addButton.setOnAction(e -> {
+			if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+			{
+				openAddMachineForm();
+			}
+		});
 
 		GridPane.setHalignment(addButton, HPos.RIGHT);
 		GridPane.setMargin(addButton, new Insets(0, 0, 10, 0));
 
-		add(addButton, 0, 0);
+		if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+		{
+			add(addButton, 0, 0);
+		}
+
 		add(machineTable, 0, 1);
 
 		GridPane.setHgrow(machineTable, Priority.ALWAYS);
@@ -189,7 +200,12 @@ public class MachinesListComponent extends GridPane
 		machineTable.getColumns().addAll(idCol, codeCol, locationCol, statusCol, prodStatusCol, maintenanceCol, siteCol,
 				technicianCol, productInfoCol, lastMaintenanceCol, daysSinceMaintenanceCol, uptimeCol);
 
-		machineTable.getColumns().addAll(editCol, onderhoudCol);
+		machineTable.getColumns().addAll(onderhoudCol);
+
+		if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+		{
+			machineTable.getColumns().add(editCol);
+		}
 
 		List<MachineDTO> dtos = machineController.getMachineList();
 		machineTable.getItems().setAll(dtos);

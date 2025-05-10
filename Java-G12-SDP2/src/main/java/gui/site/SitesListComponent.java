@@ -32,7 +32,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import repository.SiteRepository;
+import util.AuthenticationUtil;
 import util.CurrentPage;
+import util.Role;
 
 public class SitesListComponent extends VBox implements Observer
 {
@@ -121,11 +123,17 @@ public class SitesListComponent extends VBox implements Observer
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-		Button addButton = new Button("+ Site toevoegen");
-		addButton.setOnAction(e -> openAddSiteForm());
-		addButton.getStyleClass().add("add-button");
+		hbox.getChildren().addAll(backButton, title);
 
-		hbox.getChildren().addAll(backButton, title, spacer, addButton);
+		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN))
+		{
+			Button addButton = new Button("+ Site toevoegen");
+			addButton.setOnAction(e -> openAddSiteForm());
+			addButton.getStyleClass().add("add-button");
+
+			hbox.getChildren().addAll(spacer, addButton);
+		}
+
 		return hbox;
 	}
 
@@ -205,7 +213,11 @@ public class SitesListComponent extends VBox implements Observer
 		});
 
 		table.getColumns().addAll(col1, col2, col3, col4, col5);
-		table.getColumns().add(editColumn);
+
+		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN))
+		{
+			table.getColumns().add(editColumn);
+		}
 		table.getColumns().add(showColumn);
 
 		table.setPrefHeight(300);

@@ -25,7 +25,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import repository.SiteRepository;
+import util.AuthenticationUtil;
 import util.RequiredElementSite;
+import util.Role;
 import util.Status;
 
 public class AddOrEditSiteForm extends GridPane
@@ -144,7 +146,7 @@ public class AddOrEditSiteForm extends GridPane
 		Button backButton = new Button();
 		backButton.setGraphic(icon);
 		backButton.getStyleClass().add("back-button");
-		backButton.setOnAction(e -> mainLayout.showSiteList());
+		backButton.setOnAction(e -> mainLayout.showSitesList());
 		this.add(backButton, 0, 0, 2, 1);
 
 		Label title = new Label(isNewSite ? "Site toevoegen" : "Site aanpassen");
@@ -203,45 +205,52 @@ public class AddOrEditSiteForm extends GridPane
 	{
 		resetErrorLabels();
 
-		try
+		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN))
 		{
-			SiteBuilder siteBuilder = new SiteBuilder();
-			siteBuilder.createSite();
-			siteBuilder.buildName(siteNameField.getText());
-			siteBuilder.createAddress();
-			siteBuilder.buildStreet(streetField.getText());
-			siteBuilder.buildNumber(Integer.parseInt(houseNumberField.getText()));
-			siteBuilder.buildPostalcode(Integer.parseInt(postalCodeField.getText()));
-			siteBuilder.buildCity(cityField.getText());
-			siteBuilder.buildEmployee(uc.getAllUsers().stream()
-					.filter(user -> user.getFullName().equals(employeeBox.getValue())).findFirst().orElse(null));
+			try
+			{
+				SiteBuilder siteBuilder = new SiteBuilder();
+				siteBuilder.createSite();
+				siteBuilder.buildName(siteNameField.getText());
+				siteBuilder.createAddress();
+				siteBuilder.buildStreet(streetField.getText());
+				siteBuilder.buildNumber(Integer.parseInt(houseNumberField.getText()));
+				siteBuilder.buildPostalcode(Integer.parseInt(postalCodeField.getText()));
+				siteBuilder.buildCity(cityField.getText());
+				siteBuilder.buildEmployee(uc.getAllUsers().stream()
+						.filter(user -> user.getFullName().equals(employeeBox.getValue())).findFirst().orElse(null));
 
-			if (isNewSite)
+				if (isNewSite)
+				{
+					siteBuilder.buildStatus(Status.ACTIEF);
+					Site newSite = siteBuilder.getSite();
+					siteRepo.addSite(newSite);
+				} else
+				{
+					siteBuilder.buildStatus(statusBox.getValue());
+					Site updatedSite = siteBuilder.getSite();
+					updatedSite.setId(site.getId());
+					updatedSite.getAddress().setId(site.getAddress().getId());
+					siteRepo.updateSite(updatedSite);
+				}
+
+				mainLayout.showSitesList();
+			} catch (InformationRequiredExceptionSite e)
 			{
-				siteBuilder.buildStatus(Status.ACTIEF);
-				Site newSite = siteBuilder.getSite();
-				siteRepo.addSite(newSite);
-			} else
+				handleInformationRequiredException(e);
+			} catch (NumberFormatException e)
 			{
-				siteBuilder.buildStatus(statusBox.getValue());
-				Site updatedSite = siteBuilder.getSite();
-				updatedSite.setId(site.getId());
-				updatedSite.getAddress().setId(site.getAddress().getId());
-				siteRepo.updateSite(updatedSite);
+				showError("Huisnummer en postcode moeten numeriek zijn");
+			} catch (Exception e)
+			{
+				showError("Er is een fout opgetreden: " + e.getMessage());
+				e.printStackTrace();
 			}
-
-			mainLayout.showSiteList();
-		} catch (InformationRequiredExceptionSite e)
+		} else
 		{
-			handleInformationRequiredException(e);
-		} catch (NumberFormatException e)
-		{
-			showError("Huisnummer en postcode moeten numeriek zijn");
-		} catch (Exception e)
-		{
-			showError("Er is een fout opgetreden: " + e.getMessage());
-			e.printStackTrace();
+			mainLayout.showNotAllowedAlert();
 		}
+
 	}
 
 	private void showError(String message)

@@ -17,6 +17,8 @@ import gui.site.SitesListComponent;
 import javafx.geometry.Insets;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundImage;
@@ -27,7 +29,9 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import lombok.Getter;
+import util.AuthenticationUtil;
 import util.CurrentPage;
+import util.Role;
 
 public class MainLayout
 {
@@ -86,14 +90,26 @@ public class MainLayout
 
 	public void showUserManagementScreen()
 	{
-		UserManagementPane userManagement = new UserManagementPane(this);
-		setContent(userManagement, true, false, CurrentPage.USERS);
+		if (!AuthenticationUtil.hasRole(Role.ADMIN))
+		{
+			showNotAllowedAlert();
+		} else
+		{
+			UserManagementPane userManagement = new UserManagementPane(this);
+			setContent(userManagement, true, false, CurrentPage.USERS);
+		}
 	}
 
-	public void showSiteList()
+	public void showSitesList()
 	{
-		SitesListComponent siteList = new SitesListComponent(this);
-		setContent(siteList, true, false, CurrentPage.SITES);
+		SitesListComponent sitesListComponent = new SitesListComponent(this);
+		setContent(sitesListComponent, true, false, CurrentPage.SITES);
+	}
+
+	public void showSiteDetails(int siteId)
+	{
+		SiteDetailsComponent siteDetailsComponent = new SiteDetailsComponent(this, siteId);
+		setContent(siteDetailsComponent, true, false, CurrentPage.NONE);
 	}
 
 	public void showMachineScreen()
@@ -116,20 +132,38 @@ public class MainLayout
 
 	public void showMaintenanceDetails(MaintenanceDTO maintenance)
 	{
-		MaintenanceDetailView detailView = new MaintenanceDetailView(this, maintenance);
-		setContent(detailView, true, false, CurrentPage.NONE);
+		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMIN))
+		{
+			showNotAllowedAlert();
+		} else
+		{
+			MaintenanceDetailView detailView = new MaintenanceDetailView(this, maintenance);
+			setContent(detailView, true, false, CurrentPage.NONE);
+		}
 	}
 
 	public void showNotificationDetails(NotificationDTO notification)
 	{
-		NotificationDetailComponent detail = new NotificationDetailComponent(this, notification);
-		setContent(detail, true, false, CurrentPage.NONE);
+		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMIN))
+		{
+			showNotAllowedAlert();
+		} else
+		{
+			NotificationDetailComponent detail = new NotificationDetailComponent(this, notification);
+			setContent(detail, true, false, CurrentPage.NONE);
+		}
 	}
 
 	public void showAddReport(MaintenanceDTO maintenance)
 	{
-		AddReportForm addReport = new AddReportForm(this, maintenance);
-		setContent(addReport, true, false, CurrentPage.NONE);
+		if (!AuthenticationUtil.hasRole(Role.TECHNIEKER) && !AuthenticationUtil.hasRole(Role.ADMIN))
+		{
+			showNotAllowedAlert();
+		} else
+		{
+			AddReportForm addReport = new AddReportForm(this, maintenance);
+			setContent(addReport, true, false, CurrentPage.NONE);
+		}
 	}
 
 	public void showNotificationList()
@@ -140,20 +174,14 @@ public class MainLayout
 
 	public void showMaintenancePlanning(MachineDTO machineDTO)
 	{
-		MaintenancePlanningForm maintenancePlanningForm = new MaintenancePlanningForm(this, machineDTO);
-		setContent(maintenancePlanningForm, true, false, CurrentPage.NONE);
-	}
-
-	public void showSitesList()
-	{
-		SitesListComponent sitesListComponent = new SitesListComponent(this);
-		setContent(sitesListComponent, true, false, CurrentPage.SITES);
-	}
-
-	public void showSiteDetails(int siteId)
-	{
-		SiteDetailsComponent siteDetailsComponent = new SiteDetailsComponent(this, siteId);
-		setContent(siteDetailsComponent, true, false, CurrentPage.NONE);
+		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMIN))
+		{
+			showNotAllowedAlert();
+		} else
+		{
+			MaintenancePlanningForm maintenancePlanningForm = new MaintenancePlanningForm(this, machineDTO);
+			setContent(maintenancePlanningForm, true, false, CurrentPage.NONE);
+		}
 	}
 
 	public void setContent(Parent content, boolean showNavbar, boolean isHomeScreen, CurrentPage activePage)
@@ -166,4 +194,13 @@ public class MainLayout
 		rootLayout.setTop(showNavbar ? new Navbar(this, isHomeScreen, activePage) : null);
 	}
 
+	public void showNotAllowedAlert()
+	{
+		Alert alert = new Alert(AlertType.ERROR);
+		alert.setTitle("Geen toegang!");
+		alert.setHeaderText("U heeft geen toegang om dit deel van de applicatie te bekijken!");
+		alert.setContentText(
+				"Neem contact op met een administrator of verantwoordelijke als u dit deel van de applicatie wel zou moeten kunnen bekijken.");
+		alert.showAndWait();
+	}
 }

@@ -19,6 +19,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import repository.UserRepository;
+import util.AuthenticationUtil;
 import util.RequiredElement;
 import util.Role;
 import util.Status;
@@ -266,6 +267,12 @@ public class AddOrEditUserForm extends GridPane
 	private void saveUser()
 	{
 		resetErrorLabels();
+
+		if (!AuthenticationUtil.hasRole(Role.ADMIN))
+		{
+			mainLayout.showNotAllowedAlert();
+			return;
+		}
 
 		try
 		{

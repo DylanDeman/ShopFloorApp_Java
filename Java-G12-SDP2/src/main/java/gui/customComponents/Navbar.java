@@ -25,6 +25,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import util.AuthenticationUtil;
 import util.CurrentPage;
+import util.Role;
 
 public class Navbar extends HBox
 {
@@ -52,6 +53,7 @@ public class Navbar extends HBox
 
 		this.userName = new Label();
 		this.userRole = new Label();
+		userRole.getStyleClass().add("role-label");
 		fillUserData();
 		VBox userInfo = new VBox(2, userName, userRole);
 		userInfo.getStyleClass().add("user-info");
@@ -62,17 +64,14 @@ public class Navbar extends HBox
 		notificationBtn.setGraphic(bellIcon);
 		notificationBtn.getStyleClass().add("icon-btn");
 
-		// Create the dropdown (ContextMenu)
 		ContextMenu notificationMenu = new ContextMenu();
 		notificationMenu.setMinSize(500, 500);
 
 		notificationBtn.setOnAction(e -> {
 			if (!notificationMenu.isShowing())
 			{
-				// Clear old items
 				notificationMenu.getItems().clear();
 
-				// Fetch unread notifications
 				List<NotificationDTO> unread = notificationController.getAllUnread();
 
 				if (unread.isEmpty())
@@ -87,10 +86,9 @@ public class Navbar extends HBox
 						MenuItem item = new MenuItem(dto.message());
 						item.getStyleClass().add("menu-item");
 
-						// Optionally mark as read on click
 						item.setOnAction(ev -> {
 							notificationController.markAsRead(dto.id());
-							mainLayout.showNotificationDetails(dto); // Or another action
+							mainLayout.showNotificationDetails(dto);
 							notificationMenu.hide();
 						});
 
@@ -98,14 +96,12 @@ public class Navbar extends HBox
 					}
 				}
 
-				// Always add "See all" item at the end
 				MenuItem seeAll = new MenuItem("Zie alle notificaties");
 				seeAll.setStyle("-fx-font-weight: bold;");
 				seeAll.setOnAction(ev -> mainLayout.showNotificationList());
 				notificationMenu.getItems().add(new SeparatorMenuItem());
 				notificationMenu.getItems().add(seeAll);
 
-				// Show the menu
 				notificationMenu.show(notificationBtn, Side.BOTTOM, 0, 0);
 			} else
 			{
@@ -123,15 +119,21 @@ public class Navbar extends HBox
 
 		if (!isHomeScreen)
 		{
-			Button sitesBtn = createNavButton("Sites", CurrentPage.SITES, activePage, e -> mainLayout.showSiteList());
-			Button machinesBtn = createNavButton("Machines", CurrentPage.MACHINES, activePage,
-					e -> mainLayout.showMachineScreen());
-			Button userBtn = createNavButton("Gebruikers", CurrentPage.USERS, activePage,
-					e -> mainLayout.showUserManagementScreen());
 			Button maintenanceBtn = createNavButton("Onderhoud", CurrentPage.MAINTENANCE, activePage,
 					e -> mainLayout.showMaintenanceList());
+			Button sitesBtn = createNavButton("Sites", CurrentPage.SITES, activePage, e -> mainLayout.showSitesList());
+			Button machinesBtn = createNavButton("Machines", CurrentPage.MACHINES, activePage,
+					e -> mainLayout.showMachineScreen());
 
-			navLinks.getChildren().addAll(sitesBtn, machinesBtn, userBtn, maintenanceBtn);
+			navLinks.getChildren().addAll(maintenanceBtn, sitesBtn, machinesBtn);
+
+			if (AuthenticationUtil.hasRole(Role.ADMIN))
+			{
+				Button userBtn = createNavButton("Gebruikers", CurrentPage.USERS, activePage,
+						e -> mainLayout.showUserManagementScreen());
+				navLinks.getChildren().add(userBtn);
+			}
+
 		}
 
 		Region leftSpacer = new Region();
