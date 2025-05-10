@@ -8,6 +8,8 @@ import domain.Address;
 import domain.site.Site;
 import domain.site.SiteController;
 import domain.user.UserController;
+import dto.AddressDTO;
+import dto.SiteDTOWithMachines;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionSite;
 import javafx.geometry.Insets;
@@ -28,8 +30,10 @@ import util.Role;
 import util.Status;
 
 public class AddOrEditSiteForm extends GridPane {
-	private Site site;
 	private final MainLayout mainLayout;
+
+	private SiteDTOWithMachines site;
+
 	private UserController uc;
 	private SiteController sc;
 
@@ -44,21 +48,26 @@ public class AddOrEditSiteForm extends GridPane {
 
 	private boolean isNewSite;
 
-	public AddOrEditSiteForm(MainLayout mainLayout, Site site) {
+	public AddOrEditSiteForm(MainLayout mainLayout, int siteId) {
 		this.mainLayout = mainLayout;
-		this.site = site;
-		this.isNewSite = site == null;
-		
+
 		uc = AppServices.getInstance().getUserController();
 		sc = AppServices.getInstance().getSiteController();
-		
+		this.site = sc.getSite(siteId);
+
 		initializeFields();
 		buildGUI();
+		fillSiteData();
+	}
 
-		if (!isNewSite) {
-			fillSiteData(site);
-		}
+	public AddOrEditSiteForm(MainLayout mainLayout) {
+		this.mainLayout = mainLayout;
 
+		uc = AppServices.getInstance().getUserController();
+		sc = AppServices.getInstance().getSiteController();
+
+		initializeFields();
+		buildGUI();
 	}
 
 	private void buildGUI() {
@@ -192,44 +201,31 @@ public class AddOrEditSiteForm extends GridPane {
 	}
 
 	private void saveSite() {
-	    resetErrorLabels();
+		resetErrorLabels();
 
-	    if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN)) {
-	        try {
-	            if (isNewSite) {
-	                sc.createSite(
-	                    siteNameField.getText(),
-	                    streetField.getText(),
-	                    houseNumberField.getText(),
-	                    postalCodeField.getText(),
-	                    cityField.getText(),
-	                    employeeBox.getValue()
-	                );
-	            } else {
-	                sc.updateSite(
-	                    site.getId(),
-	                    siteNameField.getText(),
-	                    streetField.getText(),
-	                    houseNumberField.getText(),
-	                    postalCodeField.getText(),
-	                    cityField.getText(),
-	                    employeeBox.getValue(),
-	                    statusBox.getValue()
-	                );
-	            }
-	            
-	            mainLayout.showSitesList();
-	        } catch (InformationRequiredExceptionSite e) {
-	            handleInformationRequiredException(e);
-	        } catch (NumberFormatException e) {
-	            showError("Huisnummer en postcode moeten numeriek zijn");
-	        } catch (Exception e) {
-	            showError("Er is een fout opgetreden: " + e.getMessage());
-	            e.printStackTrace();
-	        }
-	    } else {
-	        mainLayout.showNotAllowedAlert();
-	    }
+		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN)) {
+			try {
+				if (isNewSite) {
+					sc.createSite(siteNameField.getText(), streetField.getText(), houseNumberField.getText(),
+							postalCodeField.getText(), cityField.getText(), employeeBox.getValue());
+				} else {
+					sc.updateSite(site.id(), siteNameField.getText(), streetField.getText(), houseNumberField.getText(),
+							postalCodeField.getText(), cityField.getText(), employeeBox.getValue(),
+							statusBox.getValue());
+				}
+
+				mainLayout.showSitesList();
+			} catch (InformationRequiredExceptionSite e) {
+				handleInformationRequiredException(e);
+			} catch (NumberFormatException e) {
+				showError("Huisnummer en postcode moeten numeriek zijn");
+			} catch (Exception e) {
+				showError("Er is een fout opgetreden: " + e.getMessage());
+				e.printStackTrace();
+			}
+		} else {
+			mainLayout.showNotAllowedAlert();
+		}
 	}
 
 	private void showError(String message) {
@@ -382,19 +378,19 @@ public class AddOrEditSiteForm extends GridPane {
 		return errorLabel;
 	}
 
-	private void fillSiteData(Site site) {
-		siteNameField.setText(site.getSiteName());
+	private void fillSiteData() {
+		siteNameField.setText(site.siteName());
 
-		Address address = site.getAddress();
+		AddressDTO address = site.address();
 		if (address != null) {
-			streetField.setText(address.getStreet());
-			houseNumberField.setText(String.valueOf(address.getNumber()));
-			postalCodeField.setText(String.valueOf(address.getPostalcode()));
-			cityField.setText(address.getCity());
+			streetField.setText(address.street());
+			houseNumberField.setText(String.valueOf(address.number()));
+			postalCodeField.setText(String.valueOf(address.postalcode()));
+			cityField.setText(address.city());
 		}
 
-		employeeBox.setValue(site.getVerantwoordelijke().getFullName());
-		statusBox.setValue(site.getStatus());
+		employeeBox.setValue(site.verantwoordelijke().firstName());
+		statusBox.setValue(site.status());
 	}
 
 }

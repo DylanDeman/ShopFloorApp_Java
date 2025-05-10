@@ -3,13 +3,13 @@ package gui.site;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.kordamp.ikonli.javafx.FontIcon;
-
 import domain.site.SiteController;
 import domain.user.User;
 import dto.MachineDTO;
 import dto.SiteDTO;
+import dto.SiteDTOWithMachines;
+import dto.UserDTO;
 import gui.MainLayout;
 import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;
@@ -34,13 +34,10 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import repository.SiteRepository;
 
-public class SiteDetailsComponent extends VBox implements Observer
-{
+public class SiteDetailsComponent extends VBox implements Observer {
 	private final MainLayout mainLayout;
 	private SiteController sc;
-	private SiteRepository siteRepo;
 
 	private ComboBox<String> locationFilter;
 	private ComboBox<String> statusFilter;
@@ -48,7 +45,7 @@ public class SiteDetailsComponent extends VBox implements Observer
 	private ComboBox<String> technicianFilter;
 
 	private final int siteId;
-	private final SiteDTO site;
+	private final SiteDTOWithMachines site;
 
 	// Table with machines
 	private TableView<MachineDTO> table;
@@ -62,32 +59,26 @@ public class SiteDetailsComponent extends VBox implements Observer
 	private int totalPages = 0;
 	private Pagination pagination;
 
-	public SiteDetailsComponent(MainLayout mainLayout, int siteId)
-	{
+	public SiteDetailsComponent(MainLayout mainLayout, int siteId) {
 		this.mainLayout = mainLayout;
 		this.sc = mainLayout.getServices().getSiteController();
-		this.siteRepo = mainLayout.getServices().getSiteRepo();
 
 		this.siteId = siteId;
 		this.site = sc.getSite(siteId);
 
-		// Fix the observer registration - use 'this' instead of null
-		this.siteRepo.addObserver(this);
 		this.table = new TableView<>();
 		initializeGUI();
 		loadMachines();
 	}
 
-	private void loadMachines()
-	{
+	private void loadMachines() {
 		allMachines = sc.getSite(this.siteId).machines().stream().toList();
 		filteredMachines = allMachines;
 		updateFilterOptions();
 		updateTable(allMachines);
 	}
 
-	private void initializeGUI()
-	{
+	private void initializeGUI() {
 		this.getStylesheets().add(getClass().getResource("/css/tablePane.css").toExternalForm());
 
 		allMachines = sc.getSite(siteId).machines().stream().toList();
@@ -101,23 +92,20 @@ public class SiteDetailsComponent extends VBox implements Observer
 		updateTable(filteredMachines);
 	}
 
-	private VBox createTitleSection()
-	{
+	private VBox createTitleSection() {
 		HBox windowHeader = createWindowHeader();
 
-		// TODO Replace User with UserDTO as suggested in the comment
-		User verantwoordelijke = site.verantwoordelijke();
+		UserDTO verantwoordelijke = site.verantwoordelijke();
 
 		HBox informationBox1 = new CustomInformationBox(
 				"Hieronder vindt u een overzicht van alle machines voor deze site. Klik op een machine om de details te bekijken!");
 
 		HBox informationBox2 = new CustomInformationBox("Verantwoordelijke: %s %s"
-				.formatted(verantwoordelijke.getFirstName(), verantwoordelijke.getLastName()));
+				.formatted(verantwoordelijke.firstName(), verantwoordelijke.lastName()));
 		return new VBox(10, windowHeader, informationBox1, informationBox2);
 	}
 
-	private HBox createWindowHeader()
-	{
+	private HBox createWindowHeader() {
 		HBox hbox = new HBox();
 		hbox.setAlignment(Pos.CENTER_LEFT);
 		hbox.setSpacing(10);
@@ -144,13 +132,11 @@ public class SiteDetailsComponent extends VBox implements Observer
 		return hbox;
 	}
 
-	private VBox createTableSection()
-	{
+	private VBox createTableSection() {
 		HBox filterBox = createTableHeaders();
 
 		TableColumn<MachineDTO, Void> editColumn = new TableColumn<>("");
-		editColumn.setCellFactory(param -> new TableCell<MachineDTO, Void>()
-		{
+		editColumn.setCellFactory(param -> new TableCell<MachineDTO, Void>() {
 			private final Button editButton = new Button();
 			{
 				FontIcon editIcon = new FontIcon("fas-pen");
@@ -161,8 +147,7 @@ public class SiteDetailsComponent extends VBox implements Observer
 			}
 
 			@Override
-			protected void updateItem(Void item, boolean empty)
-			{
+			protected void updateItem(Void item, boolean empty) {
 				super.updateItem(item, empty);
 				setGraphic(empty ? null : editButton);
 			}
@@ -182,21 +167,19 @@ public class SiteDetailsComponent extends VBox implements Observer
 
 		TableColumn<MachineDTO, String> col5 = new TableColumn<>("Technieker");
 		col5.setCellValueFactory(data -> {
-			User technician = data.getValue().technician();
-			return new SimpleStringProperty(technician.getFirstName());
+			UserDTO technician = data.getValue().technician();
+			return new SimpleStringProperty(technician.firstName());
 		});
 
 		TableColumn<MachineDTO, String> showColumn = new TableColumn<>("");
-		showColumn.setCellFactory(param -> new TableCell<MachineDTO, String>()
-		{
+		showColumn.setCellFactory(param -> new TableCell<MachineDTO, String>() {
 			private final Button viewButton = new Button("Bekijk");
 			{
 				viewButton.setOnAction(event -> showMachineDetails(getTableRow().getItem()));
 			}
 
 			@Override
-			protected void updateItem(String item, boolean empty)
-			{
+			protected void updateItem(String item, boolean empty) {
 				super.updateItem(item, empty);
 				setGraphic(empty ? null : viewButton);
 			}
@@ -216,8 +199,7 @@ public class SiteDetailsComponent extends VBox implements Observer
 		return new VBox(10, filterBox, tableWithPagination);
 	}
 
-	private Pagination createPagination()
-	{
+	private Pagination createPagination() {
 		updateTotalPages();
 		Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
 		pagination.setPageFactory(this::createPage);
@@ -228,25 +210,21 @@ public class SiteDetailsComponent extends VBox implements Observer
 		return pagination;
 	}
 
-	private HBox createPage(int pageIndex)
-	{
+	private HBox createPage(int pageIndex) {
 		return new HBox();
 	}
 
-	private void updatePagination()
-	{
+	private void updatePagination() {
 		updateTotalPages();
 		pagination.setPageCount(Math.max(1, totalPages));
 		pagination.setCurrentPageIndex(Math.min(currentPage, Math.max(0, totalPages - 1)));
 	}
 
-	private void updateTotalPages()
-	{
+	private void updateTotalPages() {
 		totalPages = (int) Math.ceil((double) filteredMachines.size() / itemsPerPage);
 	}
 
-	private HBox createTableHeaders()
-	{
+	private HBox createTableHeaders() {
 		searchField = new TextField();
 		searchField.setPromptText("Zoeken...");
 		searchField.setMaxWidth(300);
@@ -288,8 +266,7 @@ public class SiteDetailsComponent extends VBox implements Observer
 		return filterBox;
 	}
 
-	private void updateFilterOptions()
-	{
+	private void updateFilterOptions() {
 		// Location filter options
 		List<String> locations = new ArrayList<>();
 		locations.add(null);
@@ -314,13 +291,12 @@ public class SiteDetailsComponent extends VBox implements Observer
 		// Technician filter options
 		List<String> technicians = new ArrayList<>();
 		technicians.add(null);
-		technicians.addAll(allMachines.stream().map(m -> m.technician().getFullName()).distinct().sorted()
+		technicians.addAll(allMachines.stream().map(m -> m.technician().firstName()).distinct().sorted()
 				.collect(Collectors.toList()));
 		technicianFilter.setItems(FXCollections.observableArrayList(technicians));
 	}
 
-	private HBox createPageSelector()
-	{
+	private HBox createPageSelector() {
 		Label lblItemsPerPage = new Label("Aantal per pagina:");
 
 		ComboBox<Integer> comboItemsPerPage = new ComboBox<>(FXCollections.observableArrayList(10, 20, 50, 100));
@@ -336,24 +312,21 @@ public class SiteDetailsComponent extends VBox implements Observer
 		return pageSelector;
 	}
 
-	private void updateItemsPerPage(int itemsPerPage)
-	{
+	private void updateItemsPerPage(int itemsPerPage) {
 		this.itemsPerPage = itemsPerPage;
 		this.currentPage = 0; // Reset to first page when changing items per page
 		updatePagination();
 		updateTableItems();
 	}
 
-	private void updateTable(List<MachineDTO> machines)
-	{
+	private void updateTable(List<MachineDTO> machines) {
 		filteredMachines = machines;
 		currentPage = 0;
 		updatePagination();
 		updateTableItems();
 	}
 
-	private void filterTable()
-	{
+	private void filterTable() {
 		String searchQuery = searchField.getText().toLowerCase();
 		String selectedLocation = locationFilter.getValue();
 		String selectedStatus = statusFilter.getValue();
@@ -364,7 +337,7 @@ public class SiteDetailsComponent extends VBox implements Observer
 			boolean matchesSearch = machine.location().toLowerCase().contains(searchQuery)
 					|| machine.machineStatus().toString().toLowerCase().contains(searchQuery)
 					|| machine.productionStatus().toString().toLowerCase().contains(searchQuery)
-					|| machine.technician().getFullName().toLowerCase().contains(searchQuery);
+					|| machine.technician().firstName().toLowerCase().contains(searchQuery);
 
 			boolean matchesLocation = selectedLocation == null || machine.location().equals(selectedLocation);
 
@@ -374,7 +347,7 @@ public class SiteDetailsComponent extends VBox implements Observer
 					|| machine.productionStatus().toString().equals(selectedProductionStatus);
 
 			boolean matchesTechnician = selectedTechnician == null
-					|| machine.technician().getFullName().equals(selectedTechnician);
+					|| machine.technician().firstName().equals(selectedTechnician);
 
 			return matchesSearch && matchesLocation && matchesStatus && matchesProductionStatus && matchesTechnician;
 		}).collect(Collectors.toList());
@@ -384,24 +357,20 @@ public class SiteDetailsComponent extends VBox implements Observer
 		updateTableItems();
 	}
 
-	private void updateTableItems()
-	{
+	private void updateTableItems() {
 		int fromIndex = currentPage * itemsPerPage;
 		int toIndex = Math.min(fromIndex + itemsPerPage, filteredMachines.size());
 
-		if (filteredMachines.isEmpty())
-		{
+		if (filteredMachines.isEmpty()) {
 			table.getItems().clear();
-		} else
-		{
+		} else {
 			List<MachineDTO> currentPageItems = fromIndex < toIndex ? filteredMachines.subList(fromIndex, toIndex)
 					: List.of();
 			table.getItems().setAll(currentPageItems);
 		}
 	}
 
-	private void openAddMachineForm()
-	{
+	private void openAddMachineForm() {
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle("Functionaliteit niet geïmplementeerd");
 		alert.setHeaderText("Machine toevoegen");
@@ -409,8 +378,7 @@ public class SiteDetailsComponent extends VBox implements Observer
 		alert.showAndWait();
 	}
 
-	private void openEditMachineForm(MachineDTO machine)
-	{
+	private void openEditMachineForm(MachineDTO machine) {
 		// Implementation for editing a machine
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle("Functionaliteit niet geïmplementeerd");
@@ -419,8 +387,7 @@ public class SiteDetailsComponent extends VBox implements Observer
 		alert.showAndWait();
 	}
 
-	private void showMachineDetails(MachineDTO machine)
-	{
+	private void showMachineDetails(MachineDTO machine) {
 		// Implementation for showing machine details
 		Alert alert = new Alert(AlertType.INFORMATION);
 		alert.setTitle("Machine Details");
@@ -428,32 +395,28 @@ public class SiteDetailsComponent extends VBox implements Observer
 
 		String details = String.format("ID: %d\nLocatie: %s\nStatus: %s\nProductiestatus: %s\nTechnieker: %s %s",
 				machine.id(), machine.location(), machine.machineStatus().toString(),
-				machine.productionStatus().toString(), machine.technician().getFirstName(),
-				machine.technician().getLastName());
+				machine.productionStatus().toString(), machine.technician().firstName(),
+				machine.technician().lastName());
 
 		alert.setContentText(details);
 		alert.showAndWait();
 	}
 
-	private void deleteMachine(MachineDTO machineDTO)
-	{
+	private void deleteMachine(MachineDTO machineDTO) {
 		Alert confirmation = new Alert(AlertType.CONFIRMATION);
 		confirmation.setTitle("Bevestig verwijderen");
 		confirmation.setHeaderText("Machine verwijderen");
 		confirmation.setContentText("Weet u zeker dat u machine met ID '" + machineDTO.id() + "' wilt verwijderen?");
 
 		confirmation.showAndWait().ifPresent(response -> {
-			if (response == ButtonType.OK)
-			{
-				try
-				{
+			if (response == ButtonType.OK) {
+				try {
 					Alert alert = new Alert(AlertType.INFORMATION);
 					alert.setTitle("Functionaliteit niet geïmplementeerd");
 					alert.setHeaderText("Machine verwijderen");
 					alert.setContentText("Deze functionaliteit moet nog worden geïmplementeerd.");
 					alert.showAndWait();
-				} catch (Exception e)
-				{
+				} catch (Exception e) {
 					System.err.println("Fout bij verwijderen: " + e.getMessage());
 					e.printStackTrace();
 
@@ -470,10 +433,9 @@ public class SiteDetailsComponent extends VBox implements Observer
 	}
 
 	@Override
-	public void update()
-	{
+	public void update() {
 		Platform.runLater(() -> {
-			SiteDTO updatedSite = sc.getSite(siteId);
+			SiteDTOWithMachines updatedSite = sc.getSite(siteId);
 			allMachines = updatedSite.machines().stream().toList();
 			filteredMachines = new ArrayList<>(allMachines);
 			updateFilterOptions();

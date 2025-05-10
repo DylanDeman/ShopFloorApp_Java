@@ -34,8 +34,7 @@ public class MaintenanceBuilder {
 		maintenance.setEndDate(endDate);
 	}
 
-	public void buildTechnician(UserDTO technicianDTO) {
-		User user = DTOMapper.toUser(technicianDTO, null);
+	public void buildTechnician(User user) {
 		maintenance.setTechnician(user);
 	}
 

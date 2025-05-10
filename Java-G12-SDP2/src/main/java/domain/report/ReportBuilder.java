@@ -28,9 +28,8 @@ public class ReportBuilder {
 		report.setMaintenance(maintenance);
 	}
 
-	public void buildTechnician(UserDTO technician) {
-		User user = DTOMapper.toUser(technician, null);
-		report.setTechnician(user);
+	public void buildTechnician(User technician) {
+		report.setTechnician(technician);
 	}
 
 	public void buildStartDate(LocalDate startDate) {
@@ -57,8 +56,7 @@ public class ReportBuilder {
 		report.setRemarks(comments);
 	}
 
-	public void buildSite(SiteDTOWithoutMachines site) {
-		Site site = DTOMapper.toSite(site, null);
+	public void buildSite(Site site) {
 		report.setSite(site);
 	}
 
