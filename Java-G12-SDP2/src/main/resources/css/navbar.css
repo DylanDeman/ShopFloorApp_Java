@@ -24,6 +24,10 @@
     -fx-text-fill: #555555;
 }
 
+.role-label {
+	-fx-font-weight: bold;
+}
+
 .icon-btn {
     -fx-background-color: transparent;
     -fx-padding: 5px 10px;

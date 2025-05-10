@@ -53,6 +53,7 @@ public class Navbar extends HBox
 
 		this.userName = new Label();
 		this.userRole = new Label();
+		userRole.getStyleClass().add("role-label");
 		fillUserData();
 		VBox userInfo = new VBox(2, userName, userRole);
 		userInfo.getStyleClass().add("user-info");
@@ -118,13 +119,20 @@ public class Navbar extends HBox
 
 		if (!isHomeScreen)
 		{
-			Button sitesBtn = createNavButton("Sites", CurrentPage.SITES, activePage, e -> mainLayout.showSiteList());
-			Button machinesBtn = createNavButton("Machines", CurrentPage.MACHINES, activePage,
-					e -> mainLayout.showMachineScreen());
 			Button maintenanceBtn = createNavButton("Onderhoud", CurrentPage.MAINTENANCE, activePage,
 					e -> mainLayout.showMaintenanceList());
 
-			navLinks.getChildren().addAll(sitesBtn, machinesBtn, maintenanceBtn);
+			navLinks.getChildren().addAll(maintenanceBtn);
+
+			if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN))
+			{
+				Button sitesBtn = createNavButton("Sites", CurrentPage.SITES, activePage,
+						e -> mainLayout.showSitesList());
+				Button machinesBtn = createNavButton("Machines", CurrentPage.MACHINES, activePage,
+						e -> mainLayout.showMachineScreen());
+
+				navLinks.getChildren().addAll(sitesBtn, machinesBtn);
+			}
 
 			if (AuthenticationUtil.hasRole(Role.ADMIN))
 			{

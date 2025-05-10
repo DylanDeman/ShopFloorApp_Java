@@ -28,7 +28,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import repository.UserRepository;
+import util.AuthenticationUtil;
 import util.CurrentPage;
+import util.Role;
 
 public class UserManagementPane extends GridPane implements Observer
 {
@@ -58,9 +60,17 @@ public class UserManagementPane extends GridPane implements Observer
 		userTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
 		buildColumns();
 
-		addButton = new Button("Gebruiker toevoegen +");
+		addButton = new Button("+ Gebruiker toevoegen");
 		addButton.getStyleClass().add("add-button");
-		addButton.setOnAction(e -> openAddUserForm());
+		addButton.setOnAction(e -> {
+			if (AuthenticationUtil.hasRole(Role.ADMIN))
+			{
+				openAddUserForm();
+			} else
+			{
+				mainLayout.showNotAllowedAlert();
+			}
+		});
 
 		GridPane.setHalignment(addButton, HPos.RIGHT);
 		GridPane.setMargin(addButton, new Insets(0, 0, 10, 0));
@@ -132,7 +142,15 @@ public class UserManagementPane extends GridPane implements Observer
 				editIcon.setIconSize(20);
 				editButton.setGraphic(editIcon);
 				editButton.setBackground(Background.EMPTY);
-				editButton.setOnAction(event -> openEditUserForm(getTableRow().getItem()));
+				editButton.setOnAction(event -> {
+					if (AuthenticationUtil.hasRole(Role.ADMIN))
+					{
+						openEditUserForm(getTableRow().getItem());
+					} else
+					{
+						mainLayout.showNotAllowedAlert();
+					}
+				});
 			}
 
 			@Override
@@ -153,7 +171,15 @@ public class UserManagementPane extends GridPane implements Observer
 				deleteIcon.setIconSize(20);
 				deleteButton.setGraphic(deleteIcon);
 				deleteButton.setBackground(Background.EMPTY);
-				deleteButton.setOnAction(event -> deleteUser(getTableRow().getItem()));
+				deleteButton.setOnAction(event -> {
+					if (AuthenticationUtil.hasRole(Role.ADMIN))
+					{
+						deleteUser(getTableRow().getItem());
+					} else
+					{
+						mainLayout.showNotAllowedAlert();
+					}
+				});
 			}
 
 			@Override

@@ -144,7 +144,7 @@ public class AddOrEditSiteForm extends GridPane
 		Button backButton = new Button();
 		backButton.setGraphic(icon);
 		backButton.getStyleClass().add("back-button");
-		backButton.setOnAction(e -> mainLayout.showSiteList());
+		backButton.setOnAction(e -> mainLayout.showSitesList());
 		this.add(backButton, 0, 0, 2, 1);
 
 		Label title = new Label(isNewSite ? "Site toevoegen" : "Site aanpassen");
@@ -230,7 +230,7 @@ public class AddOrEditSiteForm extends GridPane
 				siteRepo.updateSite(updatedSite);
 			}
 
-			mainLayout.showSiteList();
+			mainLayout.showSitesList();
 		} catch (InformationRequiredExceptionSite e)
 		{
 			handleInformationRequiredException(e);
