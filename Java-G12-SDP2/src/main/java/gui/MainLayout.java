@@ -48,7 +48,7 @@ public class MainLayout
 	public MainLayout(Stage primaryStage)
 	{
 		this.primaryStage = primaryStage;
-		this.services = new AppServices();
+		this.services = AppServices.getInstance();
 
 		this.rootLayout = new BorderPane();
 		applyRootStyles();
