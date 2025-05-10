@@ -14,6 +14,7 @@ import domain.maintenance.MaintenanceDTO;
 import gui.MainLayout;
 import gui.customComponents.CustomButton;
 import gui.customComponents.CustomInformationBox;
+import gui.report.AddReportForm;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.geometry.Pos;
@@ -162,6 +163,8 @@ public class MaintenanceListComponent extends VBox
 		{
 			TableColumn<MaintenanceDTO, Void> col9 = createDetailsButton();
 			columns.add(col9);
+			TableColumn<MaintenanceDTO, Void> col10 = createAddReportButton();
+			columns.add(col10);
 		}
 
 		table.getColumns().addAll(columns);
@@ -253,6 +256,44 @@ public class MaintenanceListComponent extends VBox
 				btn.setMaxWidth(Double.MAX_VALUE);
 				btn.setAlignment(Pos.CENTER);
 			}
+			
+			
+
+			@Override
+			protected void updateItem(Void item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				setGraphic(empty ? null : btn);
+				setAlignment(Pos.CENTER);
+			}
+		});
+		return col;
+	}
+	
+	private TableColumn<MaintenanceDTO, Void> createAddReportButton()
+	{
+		TableColumn<MaintenanceDTO, Void> col = new TableColumn<>("Rapport toevoegen");
+
+		col.setCellFactory(param -> new TableCell<>()
+		{
+			private final CustomButton btn = new CustomButton("Rapport toevoegen", Pos.CENTER);
+			{
+				btn.setOnAction(e -> {
+					if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+					{
+						MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
+						goToAddReport(mainLayout, selectedMaintenance);
+					} else
+					{
+						mainLayout.showNotAllowedAlert();
+					}
+
+				});
+				btn.setMaxWidth(Double.MAX_VALUE);
+				btn.setAlignment(Pos.CENTER);
+			}
+			
+			
 
 			@Override
 			protected void updateItem(Void item, boolean empty)
@@ -323,6 +364,13 @@ public class MaintenanceListComponent extends VBox
 		MaintenanceDetailView form = new MaintenanceDetailView(mainLayout, maintenance);
 		form.getStylesheets().add(getClass().getResource("/css/maintenanceDetails.css").toExternalForm());
 		mainLayout.showMaintenanceDetails(maintenance);
+	}
+	
+	private void goToAddReport(MainLayout mainLayout, MaintenanceDTO maintenance)
+	{
+		AddReportForm form = new AddReportForm(mainLayout, maintenance);
+		form.getStylesheets().add(getClass().getResource("/css/maintenanceDetails.css").toExternalForm());
+		mainLayout.showAddReport(maintenance);
 	}
 
 }
