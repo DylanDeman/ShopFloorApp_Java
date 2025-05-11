@@ -20,8 +20,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "addresses")
-public class Address implements Serializable
-{
+public class Address implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	@Id
@@ -39,8 +38,7 @@ public class Address implements Serializable
 	@OneToMany(mappedBy = "address")
 	private List<Site> sites;
 
-	public Address(String street, int number, int postalcode, String city)
-	{
+	public Address(String street, int number, int postalcode, String city) {
 		setStreet(street);
 		setNumber(number);
 		setPostalcode(postalcode);
@@ -48,8 +46,7 @@ public class Address implements Serializable
 	}
 
 	@Override
-	public String toString()
-	{
+	public String toString() {
 		return "%s, %d, %d, %s".formatted(street != null ? street : "N/A", number, postalcode,
 				city != null ? city : "N/A");
 	}

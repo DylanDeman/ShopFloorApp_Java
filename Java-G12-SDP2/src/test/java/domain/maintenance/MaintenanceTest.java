@@ -20,9 +20,9 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domain.machine.Machine;
-import domain.machine.MachineDTO;
 import domain.site.Site;
 import domain.user.User;
+import dto.MachineDTO;
 import util.MaintenanceStatus;
 
 @ExtendWith(MockitoExtension.class)

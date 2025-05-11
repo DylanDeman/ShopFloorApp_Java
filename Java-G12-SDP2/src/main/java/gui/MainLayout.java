@@ -1,8 +1,8 @@
 package gui;
 
-import domain.machine.MachineDTO;
 import domain.maintenance.MaintenanceDTO;
 import domain.notifications.NotificationDTO;
+import dto.MachineDTO;
 import gui.customComponents.Navbar;
 import gui.login.LoginPane;
 import gui.machine.MachinesListComponent;
@@ -48,7 +48,7 @@ public class MainLayout
 	public MainLayout(Stage primaryStage)
 	{
 		this.primaryStage = primaryStage;
-		this.services = new AppServices();
+		this.services = AppServices.getInstance();
 
 		this.rootLayout = new BorderPane();
 		applyRootStyles();

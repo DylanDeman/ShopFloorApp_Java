@@ -28,7 +28,6 @@ import lombok.Setter;
 import util.Role;
 import util.Status;
 
-// Dit is ons model: plaats voor observers toe te voegen:
 @Setter
 @Getter
 @NoArgsConstructor

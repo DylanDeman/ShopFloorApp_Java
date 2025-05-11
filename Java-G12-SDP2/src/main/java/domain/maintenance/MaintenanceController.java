@@ -1,77 +1,206 @@
 package domain.maintenance;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
-
 import domain.machine.Machine;
-import domain.machine.MachineDTO;
-import domain.site.Site;
-import domain.site.SiteDTO;
+import domain.machine.MachineController;
+import domain.user.User;
+import domain.user.UserController;
+import dto.MachineDTO;
+import dto.SiteDTOWithoutMachines;
+import exceptions.InformationRequiredExceptionMaintenance;
+import gui.AppServices;
+import util.DTOMapper;
 import util.MaintenanceStatus;
 
-public class MaintenanceController
-{
-	private MaintenanceDao maintenanceRepo;
+public class MaintenanceController {
+    private MaintenanceDao maintenanceRepo;
+    
+    public MaintenanceController() {
+        maintenanceRepo = new MaintenanceDaoJpa();
+    }
+    
+    protected MaintenanceDao getMaintenanceDao() {
+        return maintenanceRepo;
+    }
+    
+    public List<MaintenanceDTO> getMaintenances() {
+        List<Maintenance> maintenances = maintenanceRepo.findAll();
+        return makeMaintenanceDTOs(maintenances);
+    }
+    
+    public List<MaintenanceDTO> makeMaintenanceDTOs(List<Maintenance> maintenances) {
+        if (maintenances == null) {
+            return List.of();
+        }
+        
+        return maintenances.stream()
+            .map(this::makeMaintenanceDTO)
+            .collect(Collectors.toUnmodifiableList());
+    }
+    
+    public MaintenanceDTO makeMaintenanceDTO(Maintenance maintenance) {
+        if (maintenance == null) {
+            return null;
+        }
+        
+        MachineDTO machineDTO = null;
+        if (maintenance.getMachine() != null) {
+            SiteDTOWithoutMachines siteDTO = DTOMapper.toSiteDTOWithoutMachines(maintenance.getMachine().getSite());
+            machineDTO = DTOMapper.toMachineDTO(maintenance.getMachine(), siteDTO);
+        }
+        
+        return new MaintenanceDTO(
+            maintenance.getId(),
+            maintenance.getExecutionDate(),
+            maintenance.getStartDate(),
+            maintenance.getEndDate(),
+            DTOMapper.toUserDTO(maintenance.getTechnician()),
+            maintenance.getReason(),
+            maintenance.getComments(),
+            maintenance.getStatus(),
+            machineDTO
+        );
+    }
+    
+    public Maintenance getMaintenance(int id) {
+        return maintenanceRepo.get(id);
+    }
+    
+    public MaintenanceDTO getMaintenanceDTO(int id) {
+        Maintenance maintenance = getMaintenance(id);
+        return makeMaintenanceDTO(maintenance);
+    }
+    
+    public void createMaintenance(Maintenance maintenance) {
+        maintenanceRepo.startTransaction();
+        maintenanceRepo.insert(maintenance);
+        maintenanceRepo.commitTransaction();
+    }
+    
+    public MaintenanceDTO createMaintenance(
+    		LocalDate executionDate,
+            LocalDateTime startDate, 
+            LocalDateTime endDate,
+            int technicianId,
+            String reason,
+            String comments,
+            MaintenanceStatus status,
+            int machineId) throws InformationRequiredExceptionMaintenance {
+        
+        MaintenanceBuilder builder = new MaintenanceBuilder();
+        builder.createMaintenance();
+        builder.buildExecutionDate(executionDate);
+        builder.buildStartDate(startDate);
+        builder.buildEndDate(endDate);
 
-	public MaintenanceController()
-	{
-		maintenanceRepo = new MaintenanceDaoJpa();
-	}
+        
+        User technician = getUserById(technicianId);
+        Machine machine = getMachineById(machineId);
+        
+        builder.buildTechnician(technician);
+        builder.buildReason(reason);
+        builder.buildComments(comments);
+        builder.buildStatus(status);
+        builder.buildMachine(machine);
+        
+        Maintenance maintenance = builder.getMaintenance();
+        
+        createMaintenance(maintenance);
+        
+        if (status == MaintenanceStatus.VOLTOOID && 
+            (machine.getLastMaintenance() == null || 
+             executionDate.isAfter(machine.getLastMaintenance()))) {
+            
+            machine.setLastMaintenance(executionDate);
+            updateMachine(machine);
+        }
+        
+        return makeMaintenanceDTO(maintenance);
+    }
+    
+    public void updateMaintenance(Maintenance maintenance) {
+        maintenanceRepo.startTransaction();
+        maintenanceRepo.update(maintenance);
+        maintenanceRepo.commitTransaction();
+    }
 
-	protected MaintenanceDao getMaintenanceDao() {
-		return maintenanceRepo;
-	}
-	
-	public List<MaintenanceDTO> getMaintenances()
-	{
-		List<Maintenance> sites = maintenanceRepo.findAll();
-		return makeMaintenanceDTOs(sites);
-	}
-
-	public List<MaintenanceDTO> makeMaintenanceDTOs(List<Maintenance> maintenances)
-	{
-		return maintenances.stream().map(maintenance -> {
-			return new MaintenanceDTO(maintenance.getId(), maintenance.getExecutionDate(), maintenance.getStartDate(),
-					maintenance.getEndDate(), maintenance.getTechnician(), maintenance.getReason(),
-					maintenance.getComments(), maintenance.getStatus(), convertToMachineDTO(maintenance.getMachine()));
-		}).collect(Collectors.toUnmodifiableList());
-
-	}
-
-	public Maintenance getMaintenance(int id)
-	{
-		return maintenanceRepo.get(id);
-	}
-
-	public MachineDTO convertToMachineDTO(Machine machine)
-	{
-		SiteDTO siteDTO = convertToSiteDTO(machine.getSite()); // Convert the Site object to a SiteDTO
-		return new MachineDTO(machine.getId(), siteDTO, machine.getTechnician(), machine.getCode(),
-				machine.getMachineStatus(), machine.getProductionStatus(), machine.getLocation(),
-				machine.getProductInfo(), machine.getLastMaintenance(), machine.getFutureMaintenance(),
-				machine.getNumberDaysSinceLastMaintenance(), machine.getUpTimeInHours());
-	}
-
-	private SiteDTO convertToSiteDTO(Site site)
-	{
-		return new SiteDTO(site.getId(), site.getSiteName(), site.getVerantwoordelijke(), // Assuming this is a User
-																							// object
-				convertMachinesToMachineDTOs(site.getMachines()), // If Site has a set of Machines, convert them to
-																	// MachineDTOs
-				site.getStatus(), site.getAddress());
-	}
-
-	private Set<MachineDTO> convertMachinesToMachineDTOs(Set<Machine> machines)
-	{
-		return machines.stream().map(this::convertToMachineDTO).collect(Collectors.toSet());
-	}
-	
-	public void createMaintenance(Maintenance maintenance) {
-		maintenanceRepo.startTransaction();
-	    maintenanceRepo.insert(maintenance);
-	    maintenanceRepo.commitTransaction();
-	}
-
+    public MaintenanceDTO updateMaintenance(
+            int maintenanceId,
+            LocalDate executionDate,
+            LocalDateTime startDate, 
+            LocalDateTime endDate,
+            int technicianId,
+            String reason,
+            String comments,
+            MaintenanceStatus status,
+            int machineId) throws InformationRequiredExceptionMaintenance {
+        
+        Maintenance existingMaintenance = getMaintenance(maintenanceId);
+        if (existingMaintenance == null) {
+            throw new IllegalArgumentException("Maintenance with ID " + maintenanceId + " not found");
+        }
+        
+        MaintenanceBuilder builder = new MaintenanceBuilder();
+        builder.createMaintenance();
+        builder.buildExecutionDate(executionDate);
+        builder.buildStartDate(startDate);
+        builder.buildEndDate(endDate);
+        
+        User technician = getUserById(technicianId);
+        Machine machine = getMachineById(machineId);
+        
+        builder.buildTechnician(technician);
+        builder.buildReason(reason);
+        builder.buildComments(comments);
+        builder.buildStatus(status);
+        builder.buildMachine(machine);
+        
+        Maintenance updatedMaintenance = builder.getMaintenance();
+        updatedMaintenance.setId(existingMaintenance.getId());
+        
+        updateMaintenance(updatedMaintenance);
+        
+        if (status == MaintenanceStatus.VOLTOOID && 
+            (machine.getLastMaintenance() == null || 
+             executionDate.isAfter(machine.getLastMaintenance()))) {
+            
+            machine.setLastMaintenance(executionDate);
+            updateMachine(machine);
+        }
+        
+        return makeMaintenanceDTO(updatedMaintenance);
+    }
+    
+//    public List<MaintenanceDTO> getMaintenancesForMachine(int machineId) {
+//        List<Maintenance> maintenances = maintenanceRepo.findByMachine(machineId);
+//        return makeMaintenanceDTOs(maintenances);
+//    }
+//    
+//    public List<MaintenanceDTO> getMaintenancesForTechnician(int technicianId) {
+//        List<Maintenance> maintenances = maintenanceRepo.findByTechnician(technicianId);
+//        return makeMaintenanceDTOs(maintenances);
+//    }
+//    
+//    public List<MaintenanceDTO> getMaintenancesByStatus(MaintenanceStatus status) {
+//        List<Maintenance> maintenances = maintenanceRepo.findByStatus(status);
+//        return makeMaintenanceDTOs(maintenances);
+//    }
+    
+    private User getUserById(int userId) {
+    	UserController uc = AppServices.getInstance().getUserController();
+    	return uc.getUserById(userId);
+    }
+    
+    private Machine getMachineById(int machineId) {
+    	MachineController mc = AppServices.getInstance().getMachineController();
+    	return mc.getMachineById(machineId);
+    }
+    
+    private void updateMachine(Machine machine) {
+    	MachineController mc = AppServices.getInstance().getMachineController();
+    	mc.updateMachine(machine);
+    }
 }

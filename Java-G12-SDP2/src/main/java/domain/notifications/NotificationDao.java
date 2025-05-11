@@ -5,10 +5,7 @@ import java.util.List;
 import repository.GenericDao;
 
 public interface NotificationDao extends GenericDao<Notification>{
-	
 	public List<Notification> getAllRead();
 	public List<Notification> getAllUnread();
 	void markAsRead(int notificationId);
-
-
 }

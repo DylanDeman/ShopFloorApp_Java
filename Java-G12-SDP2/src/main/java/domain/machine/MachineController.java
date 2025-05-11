@@ -1,139 +1,120 @@
 package domain.machine;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import domain.Observer;
 import domain.Subject;
 import domain.site.Site;
-import domain.site.SiteDTO;
+import domain.site.SiteController;
+import domain.user.User;
+import dto.MachineDTO;
+import dto.SiteDTOWithoutMachines;
+import dto.UserDTO;
+import exceptions.InformationRequiredExceptionMachine;
+import gui.AppServices;
+import util.DTOMapper;
+import util.MachineStatus;
+import util.ProductionStatus;
 
-public class MachineController implements Subject
-{
-
+public class MachineController implements Subject {
 	private MachineDao machineRepo;
-	private List<Machine> machineList;
-	
+	private SiteController siteController;
+
 	private List<Observer> observers = new ArrayList<>();
 
-	public MachineController()
-	{
+	public MachineController() {
 		machineRepo = new MachineDaoJpa();
+		siteController = new SiteController();
 	}
 
-	public List<MachineDTO> getMachineList()
-	{
+	public List<MachineDTO> getMachineList() {
 		List<Machine> machines = machineRepo.findAll();
-		if (machines == null)
-		{
+		if (machines == null) {
 			return List.of();
 		}
-		return makeMachineDTOs(machines);
+
+		return machines.stream().map(machine -> {
+			SiteDTOWithoutMachines siteDTO = DTOMapper.toSiteDTOWithoutMachines(machine.getSite());
+			return DTOMapper.toMachineDTO(machine, siteDTO);
+		}).collect(Collectors.toUnmodifiableList());
 	}
 
-	public List<MachineDTO> makeMachineDTOs(List<Machine> machines)
-	{
-		return machines.stream().map(this::convertToMachineDTO) // Use a helper method to convert Machine to MachineDTO
-				.collect(Collectors.toUnmodifiableList()); // Collect into a list
-	}
-
-	// Convert a Machine to MachineDTO
-	private MachineDTO convertToMachineDTO(Machine machine)
-	{
-		SiteDTO siteDTO = convertToSiteDTO(machine.getSite()); // Convert the Site object to a SiteDTO
-		return new MachineDTO(machine.getId(), siteDTO, machine.getTechnician(), machine.getCode(),
-				machine.getMachineStatus(), machine.getProductionStatus(), machine.getLocation(),
-				machine.getProductInfo(), machine.getLastMaintenance(), machine.getFutureMaintenance(),
-				machine.getNumberDaysSinceLastMaintenance(), machine.getUpTimeInHours());
-	}
-
-	private SiteDTO convertToSiteDTO(Site site)
-	{
-		return new SiteDTO(site.getId(), site.getSiteName(), site.getVerantwoordelijke(), // Assuming this is a User
-																							// object
-				convertMachinesToMachineDTOs(site.getMachines()), // If Site has a set of Machines, convert them to
-																	// MachineDTOs
-				site.getStatus(), site.getAddress());
-	}
-
-	private Set<MachineDTO> convertMachinesToMachineDTOs(Set<Machine> machines)
-	{
-		return machines.stream().map(this::convertToMachineDTO).collect(Collectors.toSet());
-	}
-
-	public void addNewMachine(Machine machine)
-	{
+	public void addNewMachine(Machine machine) {
 		machineRepo.startTransaction();
 		machineRepo.insert(machine);
 		machineRepo.commitTransaction();
-		
+
 		notifyObservers("Nieuwe machine toegevoegd: " + machine.getCode());
 	}
 
 	public void updateMachine(Machine machine) {
-	    machineRepo.startTransaction();
-	    machineRepo.update(machine); 
-	    machineRepo.commitTransaction();
-	    
-	    notifyObservers("Machine updated: " + machine.getCode());
+		machineRepo.startTransaction();
+		machineRepo.update(machine);
+		machineRepo.commitTransaction();
+
+		notifyObservers("Machine updated: " + machine.getCode());
 	}
 
-	public void addNewMachine(MachineDTO machineDTO)
-	{
+	public void addNewMachine(MachineDTO machineDTO) {
 		Machine machine = convertDTOToMachine(machineDTO);
-		addNewMachine(machine); 
+		addNewMachine(machine);
 	}
 
-	public Machine convertDTOToMachine(MachineDTO dto)
-	{
-		Machine machine = machineRepo.get(dto.id());
+	public MachineDTO createMachine(SiteDTOWithoutMachines siteDTO, UserDTO technicianDTO, String code,
+			MachineStatus machineStatus, ProductionStatus productionStatus, String location, String productInfo,
+			LocalDate futureMaintenance) throws InformationRequiredExceptionMachine {
 		
-		if(machine != null) {
-			return machine;
-		}
+		Site site = DTOMapper.toSite(siteDTO, null);
+		User technician = DTOMapper.toUser(technicianDTO, null);
 		
-		machine = new Machine();
-		// Convert SiteDTO to Site before setting it
-		machine.setId(dto.id()); // Make sure to set the ID
-		Site site = convertDTOToSite(dto.site());
-		machine.setSite(site);
-		machine.setTechnician(dto.technician());
-		machine.setProductInfo(dto.productInfo());
-		machine.setLastMaintenance(dto.lastMaintenance());
-		machine.setNumberDaysSinceLastMaintenance(dto.numberDaysSinceLastMaintenance());
-		// machine.setUpTimeInHours(dto.upTimeInHours());
-		machine.setCode(dto.code());
-		machine.setLocation(dto.location());
-		machine.setMachineStatus(dto.machineStatus());
-		machine.setProductionStatus(dto.productionStatus());
-		machine.setFutureMaintenance(dto.futureMaintenance());
+		MachineBuilder builder = new MachineBuilder();
+		builder.createMachine();
+		builder.buildSite(site);
+		builder.buildTechnician(technician);
+		builder.buildCode(code);
+		builder.buildStatusses(machineStatus, productionStatus);
+		builder.buildLocation(location);
+		builder.buildProductInfo(productInfo);
+		builder.buildMaintenance(futureMaintenance);
 
-		return machine;
+		Machine machine = builder.getMachine();
+
+		addNewMachine(machine);
+
+		return convertToMachineDTO(machine);
 	}
 
-	public Site convertDTOToSite(SiteDTO dto)
-	{
-		Site site = new Site();
+	public MachineDTO updateMachine(int id, SiteDTOWithoutMachines siteDTO, UserDTO technicianDTO, String code,
+			MachineStatus machineStatus, ProductionStatus productionStatus, String location, String productInfo,
+			LocalDate futureMaintenance) throws InformationRequiredExceptionMachine {
 
-		site.setId(dto.id());
-		site.setSiteName(dto.siteName());
-		site.setVerantwoordelijke(dto.verantwoordelijke());
-		dto.machines().forEach(machineDTO -> {
-			Machine machine = convertDTOToMachine(machineDTO);
-			site.addMachine(machine);
-		});
+		Site site = DTOMapper.toSite(siteDTO, null);
+		User technician = DTOMapper.toUser(technicianDTO, null);
+		
+		MachineBuilder builder = new MachineBuilder();
+		builder.createMachine();
+		builder.buildId(id);
+		builder.buildSite(site);
+		builder.buildTechnician(technician);
+		builder.buildCode(code);
+		builder.buildStatusses(machineStatus, productionStatus);
+		builder.buildLocation(location);
+		builder.buildProductInfo(productInfo);
+		builder.buildMaintenance(futureMaintenance);
 
-		site.setStatus(dto.status());
+		Machine machine = builder.getMachine();
 
-		return site;
+		updateMachine(machine);
+
+		return convertToMachineDTO(machine);
 	}
 
 	@Override
 	public void addObserver(Observer observer) {
 		observers.add(observer);
-		
 	}
 
 	@Override
@@ -146,10 +127,31 @@ public class MachineController implements Subject
 		for (Observer observer : observers) {
 			observer.update(message);
 		}
-		
 	}
 
-
-		
+	public Machine getMachineById(int machineId) {
+		return machineRepo.get(machineId);
 	}
 
+	public Machine convertDTOToMachine(MachineDTO dto) {
+		Machine machine = machineRepo.get(dto.id());
+		Site site = null;
+
+		if (dto.site() != null) {
+			site = siteController.getSiteObject(dto.site().id());
+		}
+
+		return DTOMapper.toMachine(dto, machine, site);
+	}
+
+	private MachineDTO convertToMachineDTO(Machine machine) {
+		if (machine == null) {
+			return null;
+		}
+
+		SiteDTOWithoutMachines siteDTO = DTOMapper.toSiteDTOWithoutMachines(machine.getSite());
+
+		return DTOMapper.toMachineDTO(machine, siteDTO);
+	}
+
+}
