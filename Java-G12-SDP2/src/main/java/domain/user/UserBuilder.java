@@ -1,11 +1,15 @@
 package domain.user;
 
+import java.security.SecureRandom;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import domain.Address;
 import exceptions.InformationRequiredException;
+import util.PasswordHasher;
 import util.RequiredElement;
 import util.Role;
 import util.Status;
@@ -137,6 +141,46 @@ public class UserBuilder
 
 		user.setAddress(address);
 
+		String password = generatePassword();
+
+		System.out.print(password);
+
+		user.setPassword(PasswordHasher.hash(password));
+
 		return this.user;
+	}
+
+	public static String generatePassword()
+	{
+		SecureRandom random = new SecureRandom();
+		String lower = "abcdefghijklmnopqrstuvwxyz";
+		String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		String digits = "0123456789";
+		String special = "!@#$%^&*()-_=+[]{}|;:'\",.<>/?";
+		String allChars = lower + upper + digits + special;
+
+		int length = 10 + random.nextInt(11);
+
+		ArrayList<Character> password = new ArrayList<>();
+
+		password.add(lower.charAt(random.nextInt(lower.length())));
+		password.add(upper.charAt(random.nextInt(upper.length())));
+		password.add(digits.charAt(random.nextInt(digits.length())));
+		password.add(special.charAt(random.nextInt(special.length())));
+
+		for (int i = 4; i < length; i++)
+		{
+			password.add(allChars.charAt(random.nextInt(allChars.length())));
+		}
+
+		Collections.shuffle(password, random);
+
+		StringBuilder sb = new StringBuilder();
+		for (char c : password)
+		{
+			sb.append(c);
+		}
+
+		return sb.toString();
 	}
 }
