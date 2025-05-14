@@ -1,6 +1,7 @@
 package gui;
 
 import org.kordamp.ikonli.javafx.FontIcon;
+
 import domain.user.UserController;
 import dto.UserDTO;
 import gui.customComponents.CustomInformationBox;
@@ -29,24 +30,27 @@ import util.AuthenticationUtil;
 import util.CurrentPage;
 import util.Role;
 
-public class UserManagementPane extends GridPane implements Observer {
+public class UserManagementPane extends GridPane implements Observer
+{
 
 	private TableView<UserDTO> userTable;
 	private Button addButton;
 	private final MainLayout mainLayout;
-	
-	private UserController uc; 
 
-	public UserManagementPane(MainLayout mainLayout) {
+	private UserController uc;
+
+	public UserManagementPane(MainLayout mainLayout)
+	{
 		this.mainLayout = mainLayout;
-		
+
 		this.uc = AppServices.getInstance().getUserController();
-		
+
 		buildGUI();
 		loadUsers();
 	}
 
-	private void buildGUI() {
+	private void buildGUI()
+	{
 		this.getStylesheets().add(getClass().getResource("/css/tablePane.css").toExternalForm());
 
 		this.getChildren().add(createTitleSection());
@@ -58,9 +62,11 @@ public class UserManagementPane extends GridPane implements Observer {
 		addButton = new Button("+ Gebruiker toevoegen");
 		addButton.getStyleClass().add("add-button");
 		addButton.setOnAction(e -> {
-			if (AuthenticationUtil.hasRole(Role.ADMIN)) {
+			if (AuthenticationUtil.hasRole(Role.ADMIN))
+			{
 				openAddUserForm();
-			} else {
+			} else
+			{
 				mainLayout.showNotAllowedAlert();
 			}
 		});
@@ -75,7 +81,8 @@ public class UserManagementPane extends GridPane implements Observer {
 		GridPane.setVgrow(userTable, Priority.ALWAYS);
 	}
 
-	private VBox createTitleSection() {
+	private VBox createTitleSection()
+	{
 		HBox hbox = new HBox(10);
 		hbox.setAlignment(Pos.CENTER_LEFT);
 
@@ -101,7 +108,8 @@ public class UserManagementPane extends GridPane implements Observer {
 		return new VBox(10, hbox, infoBox);
 	}
 
-	private void buildColumns() {
+	private void buildColumns()
+	{
 		userTable.getColumns().clear();
 
 		TableColumn<UserDTO, Integer> idColumn = new TableColumn<>("ID");
@@ -110,7 +118,7 @@ public class UserManagementPane extends GridPane implements Observer {
 		TableColumn<UserDTO, String> firstnameColumn = new TableColumn<>("Voornaam");
 		firstnameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().firstName()));
 
-		TableColumn<UserDTO, String> lastnameColumn = new TableColumn<>("Voornaam");
+		TableColumn<UserDTO, String> lastnameColumn = new TableColumn<>("Achternaam");
 		lastnameColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().lastName()));
 
 		TableColumn<UserDTO, String> emailColumn = new TableColumn<>("Email");
@@ -120,11 +128,11 @@ public class UserManagementPane extends GridPane implements Observer {
 		roleColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().role().toString()));
 
 		TableColumn<UserDTO, String> statusColumn = new TableColumn<>("Status");
-		statusColumn
-				.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().status().toString()));
+		statusColumn.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue().status().toString()));
 
 		TableColumn<UserDTO, Void> editColumn = new TableColumn<>("Bewerken");
-		editColumn.setCellFactory(param -> new TableCell<UserDTO, Void>() {
+		editColumn.setCellFactory(param -> new TableCell<UserDTO, Void>()
+		{
 			private final Button editButton = new Button();
 
 			{
@@ -133,23 +141,27 @@ public class UserManagementPane extends GridPane implements Observer {
 				editButton.setGraphic(editIcon);
 				editButton.setBackground(Background.EMPTY);
 				editButton.setOnAction(event -> {
-					if (AuthenticationUtil.hasRole(Role.ADMIN)) {
+					if (AuthenticationUtil.hasRole(Role.ADMIN))
+					{
 						openEditUserForm(getTableRow().getItem().id());
-					} else {
+					} else
+					{
 						mainLayout.showNotAllowedAlert();
 					}
 				});
 			}
 
 			@Override
-			protected void updateItem(Void item, boolean empty) {
+			protected void updateItem(Void item, boolean empty)
+			{
 				super.updateItem(item, empty);
 				setGraphic(empty ? null : editButton);
 			}
 		});
 
 		TableColumn<UserDTO, Void> deleteColumn = new TableColumn<>("Verwijderen");
-		deleteColumn.setCellFactory(param -> new TableCell<UserDTO, Void>() {
+		deleteColumn.setCellFactory(param -> new TableCell<UserDTO, Void>()
+		{
 			private final Button deleteButton = new Button();
 
 			{
@@ -158,16 +170,19 @@ public class UserManagementPane extends GridPane implements Observer {
 				deleteButton.setGraphic(deleteIcon);
 				deleteButton.setBackground(Background.EMPTY);
 				deleteButton.setOnAction(event -> {
-					if (AuthenticationUtil.hasRole(Role.ADMIN)) {
+					if (AuthenticationUtil.hasRole(Role.ADMIN))
+					{
 						deleteUser(getTableRow().getItem().id());
-					} else {
+					} else
+					{
 						mainLayout.showNotAllowedAlert();
 					}
 				});
 			}
 
 			@Override
-			protected void updateItem(Void item, boolean empty) {
+			protected void updateItem(Void item, boolean empty)
+			{
 				super.updateItem(item, empty);
 				setGraphic(empty ? null : deleteButton);
 			}
@@ -187,24 +202,30 @@ public class UserManagementPane extends GridPane implements Observer {
 
 	}
 
-	private void loadUsers() {
+	private void loadUsers()
+	{
 		userTable.getItems().setAll(uc.getAllUsers());
 	}
 
-	private void openAddUserForm() {
+	private void openAddUserForm()
+	{
 		Parent addUserForm = new AddOrEditUserForm(mainLayout);
 		mainLayout.setContent(addUserForm, true, false, CurrentPage.NONE);
 	}
 
-	private void openEditUserForm(int userId) {
+	private void openEditUserForm(int userId)
+	{
 		Parent editUserForm = new AddOrEditUserForm(mainLayout, userId);
 		mainLayout.setContent(editUserForm, true, false, CurrentPage.NONE);
 	}
 
-	private void deleteUser(int userId) {
-		try {
+	private void deleteUser(int userId)
+	{
+		try
+		{
 			uc.delete(userId);
-		} catch (Exception e) {
+		} catch (Exception e)
+		{
 			Platform.runLater(() -> {
 				Alert alert = new Alert(AlertType.ERROR);
 				alert.setTitle("Fout bij verwijderen");
@@ -216,7 +237,8 @@ public class UserManagementPane extends GridPane implements Observer {
 	}
 
 	@Override
-	public void update() {
+	public void update()
+	{
 		Platform.runLater(this::loadUsers);
 	}
 
