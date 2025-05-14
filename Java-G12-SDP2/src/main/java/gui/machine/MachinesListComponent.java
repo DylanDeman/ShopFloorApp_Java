@@ -224,7 +224,7 @@ public class MachinesListComponent extends GridPane
 		backButton.setOnAction(e -> mainLayout.showHomeScreen());
 		this.add(backButton, 0, 0, 2, 1);
 
-		Label title = new Label("Machineoverzicht");
+		Label title = new Label("Machines");
 		title.getStyleClass().add("title-label");
 
 		Region spacer = new Region();
