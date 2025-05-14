@@ -9,6 +9,7 @@ import domain.machine.MachineController;
 import domain.user.User;
 import domain.user.UserController;
 import dto.MachineDTO;
+import dto.MaintenanceDTO;
 import dto.SiteDTOWithoutMachines;
 import exceptions.InformationRequiredExceptionMaintenance;
 import gui.AppServices;

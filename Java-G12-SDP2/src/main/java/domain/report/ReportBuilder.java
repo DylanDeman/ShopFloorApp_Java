@@ -8,99 +8,118 @@ import java.util.Map;
 import domain.maintenance.Maintenance;
 import domain.site.Site;
 import domain.user.User;
-import dto.SiteDTO;
-import dto.SiteDTOWithoutMachines;
-import dto.UserDTO;
 import exceptions.InformationRequiredExceptionReport;
-import util.DTOMapper;
 import util.RequiredElementReport;
 
-public class ReportBuilder {
+public class ReportBuilder
+{
 	private Report report;
 	private Map<String, RequiredElementReport> requiredElements;
 
-	public void createReport() {
+	public void createReport()
+	{
 		report = new Report();
 		requiredElements = new HashMap<>();
 	}
 
-	public void buildMaintenance(Maintenance maintenance) {
+	public void buildMaintenance(Maintenance maintenance)
+	{
 		report.setMaintenance(maintenance);
 	}
 
-	public void buildTechnician(User technician) {
+	public void buildTechnician(User technician)
+	{
 		report.setTechnician(technician);
 	}
 
-	public void buildStartDate(LocalDate startDate) {
+	public void buildStartDate(LocalDate startDate)
+	{
 		report.setStartDate(startDate);
 	}
 
-	public void buildStartTime(LocalTime startTime) {
+	public void buildStartTime(LocalTime startTime)
+	{
 		report.setStartTime(startTime);
 	}
 
-	public void buildEndDate(LocalDate endDate) {
+	public void buildEndDate(LocalDate endDate)
+	{
 		report.setEndDate(endDate);
 	}
 
-	public void buildEndTime(LocalTime endTime) {
+	public void buildEndTime(LocalTime endTime)
+	{
 		report.setEndTime(endTime);
 	}
 
-	public void buildReason(String reason) {
+	public void buildReason(String reason)
+	{
 		report.setReason(reason);
 	}
 
-	public void buildRemarks(String comments) {
+	public void buildRemarks(String comments)
+	{
 		report.setRemarks(comments);
 	}
 
-	public void buildSite(Site site) {
+	public void buildSite(Site site)
+	{
 		report.setSite(site);
 	}
 
-	public Report getReport() throws InformationRequiredExceptionReport {
-		// Verplichte velden controleren
-		if (report.getMaintenance() == null) {
-			requiredElements.put("maintenance", RequiredElementReport.MAINTENANCE_REQUIRED);
-		}
-		if (report.getTechnician() == null) {
-			requiredElements.put("technician", RequiredElementReport.TECHNICIAN_REQUIRED);
-		}
-		if (report.getStartDate() == null) {
-			requiredElements.put("startDate", RequiredElementReport.STARTDATE_REQUIRED);
-		}
-		if (report.getStartTime() == null) {
-			requiredElements.put("startTime", RequiredElementReport.STARTTIME_REQUIRED);
-		}
-		if (report.getEndDate() == null) {
-			requiredElements.put("endDate", RequiredElementReport.ENDDATE_REQUIRED);
-		}
-		if (report.getEndTime() == null) {
-			requiredElements.put("endTime", RequiredElementReport.ENDTIME_REQUIRED);
-		}
-		if (report.getReason() == null || report.getReason().isEmpty()) {
-			requiredElements.put("reason", RequiredElementReport.REASON_REQUIRED);
-		}
-		if (report.getSite() == null) {
-			requiredElements.put("site", RequiredElementReport.SITE_REQUIRED);
-		}
+	public Report getReport() throws InformationRequiredExceptionReport
+	{
+		// Create a map to store missing or invalid elements
+		Map<String, RequiredElementReport> missingElements = new HashMap<>();
 
-		// Datum/tijd validaties
-		if (report.getEndDate() != null && report.getStartDate() != null) {
-			if (report.getEndDate().isBefore(report.getStartDate())) {
-				requiredElements.put("endDate", RequiredElementReport.END_DATE_BEFORE_START);
-			} else if (report.getEndDate().equals(report.getStartDate()) && report.getEndTime() != null
-					&& report.getStartTime() != null && report.getEndTime().isBefore(report.getStartTime())) {
-				requiredElements.put("endTime", RequiredElementReport.END_TIME_BEFORE_START);
+		// Validate all required fields
+		validateRequiredField(missingElements, report.getMaintenance() == null, "maintenance",
+				RequiredElementReport.MAINTENANCE_REQUIRED);
+		validateRequiredField(missingElements, report.getTechnician() == null, "technician",
+				RequiredElementReport.TECHNICIAN_REQUIRED);
+		validateRequiredField(missingElements, report.getStartDate() == null, "startDate",
+				RequiredElementReport.STARTDATE_REQUIRED);
+		validateRequiredField(missingElements, report.getStartTime() == null, "startTime",
+				RequiredElementReport.STARTTIME_REQUIRED);
+		validateRequiredField(missingElements, report.getEndDate() == null, "endDate",
+				RequiredElementReport.ENDDATE_REQUIRED);
+		validateRequiredField(missingElements, report.getEndTime() == null, "endTime",
+				RequiredElementReport.ENDTIME_REQUIRED);
+		validateRequiredField(missingElements, report.getReason() == null || report.getReason().isEmpty(), "reason",
+				RequiredElementReport.REASON_REQUIRED);
+		validateRequiredField(missingElements, report.getSite() == null, "site", RequiredElementReport.SITE_REQUIRED);
+
+		// Only validate date sequence if both dates and times are available
+		if (report.getStartDate() != null && report.getEndDate() != null)
+		{
+			// Check if end date is before start date
+			if (report.getEndDate().isBefore(report.getStartDate()))
+			{
+				missingElements.put("endDate", RequiredElementReport.END_DATE_BEFORE_START);
+			}
+			// If same day, check if end time is before start time
+			else if (report.getEndDate().isEqual(report.getStartDate()) && report.getStartTime() != null
+					&& report.getEndTime() != null && report.getEndTime().isBefore(report.getStartTime()))
+			{
+				missingElements.put("endTime", RequiredElementReport.END_TIME_BEFORE_START);
 			}
 		}
 
-		if (!requiredElements.isEmpty()) {
-			throw new InformationRequiredExceptionReport(requiredElements);
+		// If any validation failed, throw exception with all missing/invalid elements
+		if (!missingElements.isEmpty())
+		{
+			throw new InformationRequiredExceptionReport(missingElements);
 		}
 
 		return report;
+	}
+
+	private void validateRequiredField(Map<String, RequiredElementReport> missingElements, boolean isInvalid,
+			String fieldName, RequiredElementReport errorType)
+	{
+		if (isInvalid)
+		{
+			missingElements.put(fieldName, errorType);
+		}
 	}
 }

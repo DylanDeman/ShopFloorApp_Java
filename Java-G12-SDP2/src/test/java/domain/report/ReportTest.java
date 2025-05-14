@@ -1,101 +1,205 @@
 package domain.report;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.when;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
+import domain.maintenance.Maintenance;
 import domain.maintenance.MaintenanceController;
-import domain.maintenance.MaintenanceDTO;
 import domain.site.Site;
-import domain.site.SiteController;
 import domain.user.User;
-import exceptions.InvalidRapportException;
+import exceptions.InformationRequiredExceptionReport;
 import repository.GenericDaoJpa;
-import util.MaintenanceStatus;
 import util.Role;
 
-@ExtendWith(MockitoExtension.class)
-class ReportTest
+public class ReportTest
 {
 
-	private static final LocalDate VALID_START_DATE = LocalDate.of(2025, 4, 20);
-	private static final LocalTime VALID_START_TIME = LocalTime.of(9, 0);
-	private static final LocalDate VALID_END_DATE = LocalDate.of(2025, 4, 20);
-	private static final LocalTime VALID_END_TIME = LocalTime.of(12, 0);
-	private static final String VALID_REASON = "Routine maintenance";
-	private static final String VALID_REMARKS = "Everything OK";
-
-	@Mock
+	private ReportController reportController;
+	private GenericDaoJpa<Site> mockSiteDao;
 	private GenericDaoJpa<User> mockUserDao;
-
-	@Mock
 	private GenericDaoJpa<Report> mockReportDao;
-
-	@Mock
 	private MaintenanceController mockMaintenanceController;
 
-	@Mock
-	private SiteController mockSiteController;
+	private User validTechnician;
+	private Site validSite;
+	private Maintenance validMaintenance;
+	private LocalDate validStartDate;
+	private LocalTime validStartTime;
+	private LocalDate validEndDate;
+	private LocalTime validEndTime;
+	private String validReason;
+	private String validRemarks;
 
-	@Mock
-	private User mockTechnician;
-
-	@Mock
-	private Report mockReport;
-
-	@Mock
-	private Site mockSite;
-
-	private ReportController reportController;
-
-	private MaintenanceDTO maintenanceDTO;
-
+	@SuppressWarnings("unchecked")
 	@BeforeEach
-	void setUp()
+	public void setUp()
 	{
-		reportController = new ReportController(null, mockUserDao, mockReportDao, mockMaintenanceController);
+		// Setup mock DAOs
+		mockSiteDao = mock(GenericDaoJpa.class);
+		mockUserDao = mock(GenericDaoJpa.class);
+		mockReportDao = mock(GenericDaoJpa.class);
+		mockMaintenanceController = mock(MaintenanceController.class);
 
-		maintenanceDTO = new MaintenanceDTO(1, VALID_START_DATE, VALID_START_DATE.atTime(VALID_START_TIME),
-				VALID_END_DATE.atTime(VALID_END_TIME), mockTechnician, VALID_REASON, VALID_REMARKS,
-				MaintenanceStatus.COMPLETED, null);
+		// Initialize controller with mocks
+		reportController = new ReportController(mockSiteDao, mockUserDao, mockReportDao, mockMaintenanceController);
+
+		// Setup valid data for tests
+		validTechnician = new User();
+		validTechnician.setRole(Role.TECHNIEKER);
+
+		validSite = new Site();
+		validSite.setId(1);
+
+		validMaintenance = new Maintenance();
+
+		validStartDate = LocalDate.now();
+		validStartTime = LocalTime.of(8, 0);
+		validEndDate = LocalDate.now();
+		validEndTime = LocalTime.of(17, 0);
+		validReason = "Routine maintenance";
+		validRemarks = "Completed successfully";
 	}
 
 	@Test
-	void getTechnicians_returnsOnlyTechnicians()
+	public void createValidReport_success()
 	{
-		User technician = new User();
-		technician.setRole(Role.TECHNIEKER);
+		Report validReport = new Report(validMaintenance, validTechnician, validStartDate, validStartTime, validEndDate,
+				validEndTime, validReason, validRemarks, validSite);
 
-		User nonTechnician = new User();
-		nonTechnician.setRole(Role.ADMIN);
+		ReportBuilder builder = new ReportBuilder();
+		builder.createReport();
+		builder.buildMaintenance(validMaintenance);
+		builder.buildTechnician(validTechnician);
+		builder.buildStartDate(validStartDate);
+		builder.buildStartTime(validStartTime);
+		builder.buildEndDate(validEndDate);
+		builder.buildEndTime(validEndTime);
+		builder.buildReason(validReason);
+		builder.buildRemarks(validRemarks);
+		builder.buildSite(validSite);
 
-		when(mockUserDao.findAll()).thenReturn(List.of(technician, nonTechnician));
-
-		List<User> technicians = reportController.getTechnicians();
-
-		assertEquals(1, technicians.size());
-		assertEquals(Role.TECHNIEKER, technicians.get(0).getRole());
+		assertDoesNotThrow(() ->
+		{
+			Report report = builder.getReport();
+			assertNotNull(report);
+			assertEquals(validMaintenance, report.getMaintenance());
+			assertEquals(validTechnician, report.getTechnician());
+			assertEquals(validStartDate, report.getStartDate());
+			assertEquals(validStartTime, report.getStartTime());
+			assertEquals(validEndDate, report.getEndDate());
+			assertEquals(validEndTime, report.getEndTime());
+			assertEquals(validReason, report.getReason());
+			assertEquals(validRemarks, report.getRemarks());
+			assertEquals(validSite, report.getSite());
+		});
 	}
 
 	@Test
-	void getReportsByTechnician_nullTechnician_throwsException()
+	public void createReport_missingRequiredFields_throwsExcept()
 	{
-		assertThrows(InvalidRapportException.class, () -> reportController.getReportsByTechnician(null));
+
+		ReportBuilder builder = new ReportBuilder();
+		builder.createReport();
+
+		InformationRequiredExceptionReport exception = assertThrows(InformationRequiredExceptionReport.class, () ->
+		{
+			builder.getReport();
+		});
+
+		// Verify that the exception contains information about all required fields
+		assertFalse(exception.getMissingElements().isEmpty());
+		assertTrue(exception.getMissingElements().containsKey("maintenance"));
+		assertTrue(exception.getMissingElements().containsKey("technician"));
+		assertTrue(exception.getMissingElements().containsKey("startDate"));
+		assertTrue(exception.getMissingElements().containsKey("startTime"));
+		assertTrue(exception.getMissingElements().containsKey("endDate"));
+		assertTrue(exception.getMissingElements().containsKey("endTime"));
+		assertTrue(exception.getMissingElements().containsKey("reason"));
+		assertTrue(exception.getMissingElements().containsKey("site"));
 	}
 
 	@Test
-	void getReportsBySite_nullSite_throwsException()
+	public void createReport_invalidFields_throwsException()
 	{
-		assertThrows(InvalidRapportException.class, () -> reportController.getReportsBySite(null));
+
+		ReportBuilder builder = new ReportBuilder();
+		builder.createReport();
+		builder.buildMaintenance(validMaintenance);
+		builder.buildTechnician(validTechnician);
+		builder.buildStartDate(validStartDate);
+		builder.buildStartTime(validStartTime);
+		builder.buildEndDate(validEndDate);
+		builder.buildEndTime(validEndTime);
+		builder.buildReason(""); // Empty reason is invalid
+		builder.buildRemarks(validRemarks);
+		builder.buildSite(validSite);
+
+		InformationRequiredExceptionReport exception = assertThrows(InformationRequiredExceptionReport.class, () ->
+		{
+			builder.getReport();
+		});
+
+		assertFalse(exception.getMissingElements().isEmpty());
+		assertTrue(exception.getMissingElements().containsKey("reason"));
+	}
+
+	@Test
+	public void createReport_invalidDateTime_throwsExc_endDateBeforeStartDate()
+	{
+		ReportBuilder builder = new ReportBuilder();
+		builder.createReport();
+		builder.buildMaintenance(validMaintenance);
+		builder.buildTechnician(validTechnician);
+		builder.buildStartDate(LocalDate.now());
+		builder.buildStartTime(LocalTime.of(9, 0));
+		builder.buildEndDate(LocalDate.now().minusDays(1)); // End date before start date
+		builder.buildEndTime(LocalTime.of(17, 0));
+		builder.buildReason(validReason);
+		builder.buildRemarks(validRemarks);
+		builder.buildSite(validSite);
+
+		InformationRequiredExceptionReport exception = assertThrows(InformationRequiredExceptionReport.class, () ->
+		{
+			builder.getReport();
+		});
+
+		assertFalse(exception.getMissingElements().isEmpty());
+		assertTrue(exception.getMissingElements().containsKey("endDate"));
+	}
+
+	@Test
+	public void createReport_invalidDateTime_throwsExc_endTimeBeforeStartTime()
+	{
+
+		ReportBuilder builder = new ReportBuilder();
+		builder.createReport();
+		builder.buildMaintenance(validMaintenance);
+		builder.buildTechnician(validTechnician);
+		builder.buildStartDate(LocalDate.now());
+		builder.buildStartTime(LocalTime.of(14, 0));
+		builder.buildEndDate(LocalDate.now());
+		builder.buildEndTime(LocalTime.of(10, 0)); // End time before start time on same day
+		builder.buildReason(validReason);
+		builder.buildRemarks(validRemarks);
+		builder.buildSite(validSite);
+
+		InformationRequiredExceptionReport exception = assertThrows(InformationRequiredExceptionReport.class, () ->
+		{
+			builder.getReport();
+		});
+
+		assertFalse(exception.getMissingElements().isEmpty());
+		assertTrue(exception.getMissingElements().containsKey("endTime"));
 	}
 }

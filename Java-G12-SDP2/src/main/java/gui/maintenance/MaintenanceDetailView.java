@@ -20,7 +20,7 @@ import domain.maintenance.FileInfo;
 import domain.maintenance.FileInfoController;
 import domain.maintenance.Maintenance;
 import domain.maintenance.MaintenanceController;
-import domain.maintenance.MaintenanceDTO;
+import dto.MaintenanceDTO;
 import gui.MainLayout;
 import gui.customComponents.CustomInformationBox;
 import javafx.application.Platform;
@@ -136,7 +136,7 @@ public class MaintenanceDetailView extends BorderPane
 		backButton.getStyleClass().add("back-button");
 		backButton.setOnAction(e ->
 		{
-			mainLayout.showMaintenanceList();
+			mainLayout.showMaintenanceList(currentMaintenance.machine());
 		});
 
 		titleLabel = new Label("Onderhoud (onderhoudsnummer)");
@@ -277,9 +277,9 @@ public class MaintenanceDetailView extends BorderPane
 			endDateLabel.getStyleClass().add("table-cell");
 			table.add(endDateLabel, 3, 2);
 
-			Label technicianLabel = new Label(
-					currentMaintenance.technician() != null ? currentMaintenance.technician().firstName() + " "
-							+ currentMaintenance.technician().lastName() : "");
+			Label technicianLabel = new Label(currentMaintenance.technician() != null
+					? currentMaintenance.technician().firstName() + " " + currentMaintenance.technician().lastName()
+					: "");
 			technicianLabel.getStyleClass().add("table-cell");
 			table.add(technicianLabel, 4, 2);
 

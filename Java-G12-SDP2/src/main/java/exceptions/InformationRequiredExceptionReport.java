@@ -1,28 +1,23 @@
 package exceptions;
 
-import java.util.Collections;
 import java.util.Map;
 
 import util.RequiredElementReport;
 
 public class InformationRequiredExceptionReport extends Exception
 {
-
 	private static final long serialVersionUID = 1L;
 
-	private static final String MESSAGE = "Het rapport kan niet worden aangemaakt omdat niet alle info is ingevuld";
+	private Map<String, RequiredElementReport> missingElements;
 
-	private Map<String, RequiredElementReport> informationRequired;
-
-	public InformationRequiredExceptionReport(Map<String, RequiredElementReport> itemsRequired)
+	public InformationRequiredExceptionReport(Map<String, RequiredElementReport> missingElements)
 	{
-		super(MESSAGE);
-		informationRequired = itemsRequired;
+		super("Required information missing for report creation");
+		this.missingElements = missingElements;
 	}
 
-	public Map<String, RequiredElementReport> getInformationRequired()
+	public Map<String, RequiredElementReport> getMissingElements()
 	{
-		return Collections.unmodifiableMap(informationRequired);
+		return missingElements;
 	}
-
 }
