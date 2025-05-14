@@ -1,8 +1,8 @@
 package gui;
 
-import domain.maintenance.MaintenanceDTO;
 import domain.notifications.NotificationDTO;
 import dto.MachineDTO;
+import dto.MaintenanceDTO;
 import gui.customComponents.Navbar;
 import gui.login.LoginPane;
 import gui.machine.MachinesListComponent;

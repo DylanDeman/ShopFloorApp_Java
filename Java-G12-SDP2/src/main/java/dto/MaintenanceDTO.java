@@ -1,11 +1,10 @@
-package domain.maintenance;
+package dto;
 
 
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import dto.MachineDTO;
-import dto.UserDTO;
+
 import util.MaintenanceStatus;
 
 public record MaintenanceDTO(int id, LocalDate executionDate, LocalDateTime startDate, LocalDateTime endDate,

@@ -23,6 +23,7 @@ import domain.machine.Machine;
 import domain.site.Site;
 import domain.user.User;
 import dto.MachineDTO;
+import dto.MaintenanceDTO;
 import util.MaintenanceStatus;
 
 @ExtendWith(MockitoExtension.class)
