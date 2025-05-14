@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import domain.Observer;
 import domain.Subject;
+import domain.notifications.NotificationObserver;
 import domain.site.Site;
 import domain.site.SiteController;
 import domain.user.User;
@@ -22,12 +23,12 @@ import util.ProductionStatus;
 public class MachineController implements Subject {
 	private MachineDao machineRepo;
 	private SiteController siteController;
-
 	private List<Observer> observers = new ArrayList<>();
 
 	public MachineController() {
 		machineRepo = new MachineDaoJpa();
 		siteController = new SiteController();
+		addObserver(new NotificationObserver());
 	}
 
 	public List<MachineDTO> getMachineList() {
@@ -55,7 +56,7 @@ public class MachineController implements Subject {
 		machineRepo.update(machine);
 		machineRepo.commitTransaction();
 
-		notifyObservers("Machine updated: " + machine.getCode());
+		notifyObservers("Machine bijgewerkt: " + machine.getCode());
 	}
 
 	public void addNewMachine(MachineDTO machineDTO) {

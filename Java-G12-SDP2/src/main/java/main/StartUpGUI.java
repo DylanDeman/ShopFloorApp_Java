@@ -103,7 +103,7 @@ public class StartUpGUI extends Application {
                     new Notification(0, false, "📢 Storing gemeld op machine M1-3096", LocalDateTime.now().minusHours(1)),
                     new Notification(0, false, "🛠 Onderhoud ingepland op 2025-06-02", LocalDateTime.now().minusDays(1)),
                     new Notification(0, true, "✅ Onderhoud succesvol afgerond", LocalDateTime.now().minusDays(2)),
-                    new Notification(0, false, "⚠️ Productiefout gemeld bij Line 4", LocalDateTime.now().minusMinutes(30)),
+                    new Notification(0, false, "! Productiefout gemeld bij Line 4", LocalDateTime.now().minusMinutes(30)),
                     new Notification(0, true, "ℹ️ Nieuwe update beschikbaar voor machinegegevens",
                             LocalDateTime.now().minusDays(5)));
 
