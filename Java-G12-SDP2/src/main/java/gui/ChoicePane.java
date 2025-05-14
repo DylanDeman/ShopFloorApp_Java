@@ -30,7 +30,7 @@ public class ChoicePane extends GridPane
 		Button sitesButton = createButton("Overzicht sites");
 		sitesButton.setOnAction(e -> mainLayout.showSitesList());
 
-		Button machinesButton = createButton("Machine overzicht");
+		Button machinesButton = createButton("Overzicht machines");
 		machinesButton.setOnAction(e -> mainLayout.showMachineScreen());
 
 		this.add(sitesButton, 2, 1);

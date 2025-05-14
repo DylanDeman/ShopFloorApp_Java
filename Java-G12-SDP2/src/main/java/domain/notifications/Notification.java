@@ -31,6 +31,11 @@ import lombok.Setter;
 })
 public class Notification implements Serializable{
 
+	public Notification(boolean isRead, String message, LocalDateTime time) {
+		this.isRead = isRead;
+		this.message = message;
+		this.time = time;
+	}
 
 	private static final long serialVersionUID = 1L;
 

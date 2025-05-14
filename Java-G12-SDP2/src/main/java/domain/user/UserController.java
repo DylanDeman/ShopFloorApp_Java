@@ -1,9 +1,13 @@
 package domain.user;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import domain.Observer;
+import domain.Subject;
+import domain.notifications.NotificationObserver;
 import dto.UserDTO;
 import exceptions.InformationRequiredException;
 import exceptions.InvalidInputException;
@@ -12,11 +16,15 @@ import util.DTOMapper;
 import util.Role;
 import util.Status;
 
-public class UserController {
+public class UserController implements Subject{
 	private UserDao userRepo;
+	
+	private List<Observer> observers = new ArrayList<>();
 
 	public UserController() {
 		userRepo = new UserDaoJpa();
+		addObserver(new NotificationObserver());
+
 	}
 
 	public void authenticate(String email, String password) throws InvalidInputException {
@@ -89,6 +97,9 @@ public class UserController {
 		userRepo.startTransaction();
 		userRepo.insert(newUser);
 		userRepo.commitTransaction();
+		
+		notifyObservers("Gebruiker bijgewerkt: " + newUser.getId() + " " + newUser.getFullName());
+
 
 		return DTOMapper.toUserDTO(newUser);
 	}
@@ -127,6 +138,8 @@ public class UserController {
 		userRepo.startTransaction();
 		userRepo.update(updatedUser);
 		userRepo.commitTransaction();
+		
+		notifyObservers("Gebruiker bijgewerkt: " + updatedUser.getId() + " " + updatedUser.getFullName());
 
 		return DTOMapper.toUserDTO(updatedUser);
 	}
@@ -134,5 +147,24 @@ public class UserController {
 	public void delete(int id) {
 		User user = userRepo.get(id);
 		userRepo.delete(user);
+	}
+
+	@Override
+	public void addObserver(Observer observer) {
+		observers.add(observer);
+		
+	}
+
+	@Override
+	public void removeObserver(Observer observer) {
+		observers.remove(observer);
+		
+	}
+
+	@Override
+	public void notifyObservers(String message) {
+		for(Observer o : observers)
+			o.update(message);
+		
 	}
 }

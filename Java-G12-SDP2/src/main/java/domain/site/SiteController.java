@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import domain.Observer;
+import domain.Subject;
+import domain.notifications.NotificationObserver;
 import domain.user.User;
 import dto.SiteDTOWithMachines;
 import dto.SiteDTOWithoutMachines;
@@ -13,11 +16,13 @@ import gui.AppServices;
 import util.DTOMapper;
 import util.Status;
 
-public class SiteController {
+public class SiteController implements Subject{
 	private SiteDao siteRepo;
+	private List<Observer> observers = new ArrayList<>();
 
 	public SiteController() {
 		siteRepo = new SiteDaoJpa();
+		addObserver(new NotificationObserver());
 	}
 
 	public SiteDTOWithMachines getSite(int id) {
@@ -115,6 +120,8 @@ public class SiteController {
 		siteRepo.startTransaction();
 		siteRepo.insert(newSite);
 		siteRepo.commitTransaction();
+		
+		notifyObservers("Site aangemaakt " + newSite.getId() + " " + newSite.getSiteName());
 
 		return DTOMapper.toSiteDTOWithMachines(newSite);
 	}
@@ -156,7 +163,28 @@ public class SiteController {
 		siteRepo.startTransaction();
 		siteRepo.update(updatedSite);
 		siteRepo.commitTransaction();
+		
+		notifyObservers("Site bijgewerkt " + updatedSite.getId() + " " + updatedSite.getSiteName());
+		
 
 		return DTOMapper.toSiteDTOWithMachines(updatedSite);
+	}
+
+	@Override
+	public void addObserver(Observer observer) {
+		observers.add(observer);
+	}
+
+	@Override
+	public void removeObserver(Observer observer) {
+		observers.remove(observer);
+		
+	}
+
+	@Override
+	public void notifyObservers(String message) {
+		for (Observer o : observers)
+			o.update(message);
+		
 	}
 }
