@@ -163,6 +163,10 @@ public class MaintenanceListComponent extends VBox
 		{
 			TableColumn<MaintenanceDTO, Void> col9 = createDetailsButton();
 			columns.add(col9);
+		}
+
+		if (AuthenticationUtil.hasRole(Role.TECHNIEKER) || AuthenticationUtil.hasRole(Role.ADMIN))
+		{
 			TableColumn<MaintenanceDTO, Void> col10 = createAddReportButton();
 			columns.add(col10);
 		}
@@ -256,8 +260,6 @@ public class MaintenanceListComponent extends VBox
 				btn.setMaxWidth(Double.MAX_VALUE);
 				btn.setAlignment(Pos.CENTER);
 			}
-			
-			
 
 			@Override
 			protected void updateItem(Void item, boolean empty)
@@ -269,7 +271,7 @@ public class MaintenanceListComponent extends VBox
 		});
 		return col;
 	}
-	
+
 	private TableColumn<MaintenanceDTO, Void> createAddReportButton()
 	{
 		TableColumn<MaintenanceDTO, Void> col = new TableColumn<>("Rapport toevoegen");
@@ -279,7 +281,7 @@ public class MaintenanceListComponent extends VBox
 			private final CustomButton btn = new CustomButton("Rapport toevoegen", Pos.CENTER);
 			{
 				btn.setOnAction(e -> {
-					if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+					if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.TECHNIEKER))
 					{
 						MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
 						goToAddReport(mainLayout, selectedMaintenance);
@@ -292,8 +294,6 @@ public class MaintenanceListComponent extends VBox
 				btn.setMaxWidth(Double.MAX_VALUE);
 				btn.setAlignment(Pos.CENTER);
 			}
-			
-			
 
 			@Override
 			protected void updateItem(Void item, boolean empty)
@@ -365,7 +365,7 @@ public class MaintenanceListComponent extends VBox
 		form.getStylesheets().add(getClass().getResource("/css/maintenanceDetails.css").toExternalForm());
 		mainLayout.showMaintenanceDetails(maintenance);
 	}
-	
+
 	private void goToAddReport(MainLayout mainLayout, MaintenanceDTO maintenance)
 	{
 		AddReportForm form = new AddReportForm(mainLayout, maintenance);
