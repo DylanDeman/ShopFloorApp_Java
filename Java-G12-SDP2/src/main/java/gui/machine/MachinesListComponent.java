@@ -5,11 +5,11 @@ import java.util.List;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.machine.MachineController;
-import domain.site.SiteController;
-import domain.user.UserController;
 import dto.MachineDTO;
 import gui.MainLayout;
 import gui.customComponents.CustomInformationBox;
+import interfaces.Observer;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
@@ -30,13 +30,11 @@ import util.AuthenticationUtil;
 import util.CurrentPage;
 import util.Role;
 
-public class MachinesListComponent extends GridPane
+public class MachinesListComponent extends GridPane implements Observer
 {
 
 	private TableView<MachineDTO> machineTable;
 	private MachineController machineController;
-	private SiteController siteController;
-	private UserController userController;
 	private final MainLayout mainLayout;
 
 	private Button addButton;
@@ -46,9 +44,8 @@ public class MachinesListComponent extends GridPane
 		this.mainLayout = mainLayout;
 		this.machineTable = new TableView<>();
 		this.machineController = mainLayout.getServices().getMachineController();
-		this.siteController = mainLayout.getServices().getSiteController();
-		this.userController = mainLayout.getServices().getUserController();
 		initializeGUI();
+		loadMachines();
 	}
 
 	private void initializeGUI()
@@ -65,7 +62,7 @@ public class MachinesListComponent extends GridPane
 		addButton = new Button("+ Machine toevoegen");
 		addButton.getStyleClass().add("add-button");
 		addButton.setOnAction(e -> {
-			if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+			if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
 			{
 				openAddMachineForm();
 			}
@@ -74,7 +71,7 @@ public class MachinesListComponent extends GridPane
 		GridPane.setHalignment(addButton, HPos.RIGHT);
 		GridPane.setMargin(addButton, new Insets(0, 0, 10, 0));
 
-		if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+		if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
 		{
 			add(addButton, 0, 0);
 		}
@@ -202,7 +199,7 @@ public class MachinesListComponent extends GridPane
 
 		machineTable.getColumns().addAll(onderhoudCol);
 
-		if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+		if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
 		{
 			machineTable.getColumns().add(editCol);
 		}
@@ -248,5 +245,17 @@ public class MachinesListComponent extends GridPane
 	{
 		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machine);
 		mainLayout.setContent(editMachineForm, true, false, CurrentPage.NONE);
+	}
+
+	private void loadMachines()
+	{
+		machineTable.getItems().setAll(machineController.getMachineList());
+	}
+
+	@Override
+	public void update()
+	{
+		Platform.runLater(this::loadMachines);
+
 	}
 }

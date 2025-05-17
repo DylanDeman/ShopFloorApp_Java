@@ -2,14 +2,10 @@ package gui.machine;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.machine.MachineBuilder;
 import domain.machine.MachineController;
-import domain.site.Site;
 import domain.site.SiteController;
-import domain.user.User;
 import domain.user.UserController;
 import dto.MachineDTO;
-import dto.SiteDTO;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionMachine;
@@ -32,7 +28,8 @@ import util.MachineStatus;
 import util.ProductionStatus;
 import util.RequiredElementMachine;
 
-public class AddOrEditMachineForm extends GridPane {
+public class AddOrEditMachineForm extends GridPane
+{
 
 	private MachineController machineController;
 	private MachineDTO machineDTO;
@@ -56,7 +53,8 @@ public class AddOrEditMachineForm extends GridPane {
 
 	private boolean isNewMachine;
 
-	public AddOrEditMachineForm(MainLayout mainLayout, MachineDTO machineDTO) {
+	public AddOrEditMachineForm(MainLayout mainLayout, MachineDTO machineDTO)
+	{
 		this.mainLayout = mainLayout;
 		this.machineController = mainLayout.getServices().getMachineController();
 		this.machineDTO = machineDTO;
@@ -67,12 +65,14 @@ public class AddOrEditMachineForm extends GridPane {
 		initializeFields();
 		initializeGUI();
 
-		if (!isNewMachine) {
+		if (!isNewMachine)
+		{
 			fillMachineData(machineDTO);
 		}
 	}
 
-	private void initializeGUI() {
+	private void initializeGUI()
+	{
 		this.getStylesheets().add(getClass().getResource("/css/form.css").toExternalForm());
 		this.setAlignment(Pos.CENTER);
 		this.setHgap(10);
@@ -93,7 +93,8 @@ public class AddOrEditMachineForm extends GridPane {
 
 	}
 
-	private HBox createFormContent() {
+	private HBox createFormContent()
+	{
 		HBox formContent = new HBox(30);
 		formContent.setAlignment(Pos.TOP_CENTER);
 		formContent.getStyleClass().add("form-box");
@@ -118,7 +119,8 @@ public class AddOrEditMachineForm extends GridPane {
 		return formContent;
 	}
 
-	private Node createDatePicker() {
+	private Node createDatePicker()
+	{
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -139,7 +141,8 @@ public class AddOrEditMachineForm extends GridPane {
 		return pane;
 	}
 
-	private Node createTextFields() {
+	private Node createTextFields()
+	{
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -170,7 +173,8 @@ public class AddOrEditMachineForm extends GridPane {
 		return pane;
 	}
 
-	private Node createInfoBox() {
+	private Node createInfoBox()
+	{
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -184,25 +188,33 @@ public class AddOrEditMachineForm extends GridPane {
 		siteBox.setPromptText("Selecteer een site");
 		siteBox.setPrefWidth(200);
 
-		siteBox.setCellFactory(param -> new ListCell<SiteDTOWithoutMachines>() {
+		siteBox.setCellFactory(param -> new ListCell<SiteDTOWithoutMachines>()
+		{
 			@Override
-			protected void updateItem(SiteDTOWithoutMachines item, boolean empty) {
+			protected void updateItem(SiteDTOWithoutMachines item, boolean empty)
+			{
 				super.updateItem(item, empty);
-				if (empty || item == null) {
+				if (empty || item == null)
+				{
 					setText(null);
-				} else {
+				} else
+				{
 					setText(item.siteName());
 				}
 			}
 		});
 
-		siteBox.setButtonCell(new ListCell<SiteDTOWithoutMachines>() {
+		siteBox.setButtonCell(new ListCell<SiteDTOWithoutMachines>()
+		{
 			@Override
-			protected void updateItem(SiteDTOWithoutMachines item, boolean empty) {
+			protected void updateItem(SiteDTOWithoutMachines item, boolean empty)
+			{
 				super.updateItem(item, empty);
-				if (empty || item == null) {
+				if (empty || item == null)
+				{
 					setText(null);
-				} else {
+				} else
+				{
 					setText(item.siteName());
 				}
 			}
@@ -213,26 +225,34 @@ public class AddOrEditMachineForm extends GridPane {
 		technicianBox.setPromptText("Selecteer een technieker");
 		technicianBox.setPrefWidth(200);
 
-		technicianBox.setCellFactory(param -> new ListCell<UserDTO>() {
+		technicianBox.setCellFactory(param -> new ListCell<UserDTO>()
+		{
 			@Override
-			protected void updateItem(UserDTO technician, boolean empty) {
+			protected void updateItem(UserDTO technician, boolean empty)
+			{
 				super.updateItem(technician, empty);
-				if (empty || technician == null) {
+				if (empty || technician == null)
+				{
 					setText(null);
-				} else {
-					setText(technician.firstName()+" "+technician.lastName());
+				} else
+				{
+					setText(technician.firstName() + " " + technician.lastName());
 				}
 			}
 		});
 
-		technicianBox.setButtonCell(new ListCell<UserDTO>() {
+		technicianBox.setButtonCell(new ListCell<UserDTO>()
+		{
 			@Override
-			protected void updateItem(UserDTO technician, boolean empty) {
+			protected void updateItem(UserDTO technician, boolean empty)
+			{
 				super.updateItem(technician, empty);
-				if (empty || technician == null) {
+				if (empty || technician == null)
+				{
 					setText(null);
-				} else {
-					setText(technician.firstName()+" "+technician.lastName());
+				} else
+				{
+					setText(technician.firstName() + " " + technician.lastName());
 				}
 			}
 		});
@@ -249,7 +269,8 @@ public class AddOrEditMachineForm extends GridPane {
 		return pane;
 	}
 
-	private Node createComboBoxSection() {
+	private Node createComboBoxSection()
+	{
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -281,7 +302,8 @@ public class AddOrEditMachineForm extends GridPane {
 		return pane;
 	}
 
-	private HBox createSaveButton() {
+	private HBox createSaveButton()
+	{
 		Button saveButton = new Button("Opslaan");
 		saveButton.getStyleClass().add("save-button");
 		saveButton.setOnAction(e -> saveMachine());
@@ -299,45 +321,37 @@ public class AddOrEditMachineForm extends GridPane {
 		return buttonBox;
 	}
 
-	private void saveMachine() {
-	    resetErrorLabels();
+	private void saveMachine()
+	{
+		resetErrorLabels();
 
-	    try {
-	        if (isNewMachine) {
-	            machineController.createMachine(
-	                siteBox.getValue(),
-	                technicianBox.getValue(),
-	                codeField.getText(),
-	                machineStatusBox.getValue(),
-	                productionStatusBox.getValue(),
-	                locationField.getText(),
-	                productInfoField.getText(),
-	                futureMaintenance.getValue()
-	            );
-	        } else {
-	            machineController.updateMachine(
-	                machineDTO.id(),
-	                siteBox.getValue(),
-	                technicianBox.getValue(),
-	                codeField.getText(),
-	                machineStatusBox.getValue(),
-	                productionStatusBox.getValue(),
-	                locationField.getText(),
-	                productInfoField.getText(),
-	                futureMaintenance.getValue()
-	            );
-	        }
+		try
+		{
+			if (isNewMachine)
+			{
+				machineController.createMachine(siteBox.getValue(), technicianBox.getValue(), codeField.getText(),
+						machineStatusBox.getValue(), productionStatusBox.getValue(), locationField.getText(),
+						productInfoField.getText(), futureMaintenance.getValue());
+			} else
+			{
+				machineController.updateMachine(machineDTO.id(), siteBox.getValue(), technicianBox.getValue(),
+						codeField.getText(), machineStatusBox.getValue(), productionStatusBox.getValue(),
+						locationField.getText(), productInfoField.getText(), futureMaintenance.getValue());
+			}
 
-	        mainLayout.showMachineScreen();
-	    } catch (InformationRequiredExceptionMachine e) {
-	        handleInformationRequiredException(e);
-	    } catch (Exception e) {
-	        showError("Er is een fout opgetreden: " + e.getMessage());
-	        e.printStackTrace();
-	    }
+			mainLayout.showMachineScreen();
+		} catch (InformationRequiredExceptionMachine e)
+		{
+			handleInformationRequiredException(e);
+		} catch (Exception e)
+		{
+			showError("Er is een fout opgetreden: " + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 
-	private void resetErrorLabels() {
+	private void resetErrorLabels()
+	{
 		errorLabel.setText("");
 		codeError.setText("");
 		locationError.setText("");
@@ -350,7 +364,8 @@ public class AddOrEditMachineForm extends GridPane {
 		errorFutureMaintenance.setText("");
 	}
 
-	private void handleInformationRequiredException(InformationRequiredExceptionMachine e) {
+	private void handleInformationRequiredException(InformationRequiredExceptionMachine e)
+	{
 		e.getInformationRequired().forEach((field, requiredElement) -> {
 			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
 			showFieldError(field, errorMessage);
@@ -358,8 +373,10 @@ public class AddOrEditMachineForm extends GridPane {
 
 	}
 
-	private String getErrorMessageForRequiredElement(RequiredElementMachine element) {
-		switch (element) {
+	private String getErrorMessageForRequiredElement(RequiredElementMachine element)
+	{
+		switch (element)
+		{
 		case CODE_REQUIRED:
 			return "Code is verplicht";
 		case MACHINESTATUS_REQUIRED:
@@ -381,8 +398,10 @@ public class AddOrEditMachineForm extends GridPane {
 		}
 	}
 
-	private void showFieldError(String fieldName, String message) {
-		switch (fieldName) {
+	private void showFieldError(String fieldName, String message)
+	{
+		switch (fieldName)
+		{
 		case "code":
 			codeError.setText(message);
 			break;
@@ -412,11 +431,13 @@ public class AddOrEditMachineForm extends GridPane {
 		}
 	}
 
-	private void showError(String message) {
+	private void showError(String message)
+	{
 		errorLabel.setText(message);
 	}
 
-	private VBox createTitleSection() {
+	private VBox createTitleSection()
+	{
 		HBox hbox = new HBox(10);
 		hbox.setAlignment(Pos.CENTER_LEFT);
 
@@ -439,7 +460,8 @@ public class AddOrEditMachineForm extends GridPane {
 		return new VBox(10, hbox);
 	}
 
-	private void fillMachineData(MachineDTO machineDTO) {
+	private void fillMachineData(MachineDTO machineDTO)
+	{
 		codeField.setText(machineDTO.code());
 		locationField.setText(machineDTO.location());
 		productInfoField.setText(machineDTO.productInfo());
@@ -447,9 +469,11 @@ public class AddOrEditMachineForm extends GridPane {
 		machineStatusBox.setValue(machineDTO.machineStatus());
 		productionStatusBox.setValue(machineDTO.productionStatus());
 		futureMaintenance.setValue(machineDTO.futureMaintenance());
+		siteBox.setValue(machineDTO.site());
 	}
 
-	private void initializeFields() {
+	private void initializeFields()
+	{
 		codeField = new TextField();
 		locationField = new TextField();
 		productInfoField = new TextField();
@@ -471,7 +495,8 @@ public class AddOrEditMachineForm extends GridPane {
 		errorFutureMaintenance = createErrorLabel();
 	}
 
-	private Label createErrorLabel() {
+	private Label createErrorLabel()
+	{
 		Label errorLabel = new Label();
 		errorLabel.getStyleClass().add("error-label");
 		return errorLabel;

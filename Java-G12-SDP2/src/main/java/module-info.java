@@ -7,7 +7,8 @@ module be.hogent.Java_G12_SDP_22 {
 	requires org.apache.pdfbox; 
 	requires javafx.swing; 
 	requires javafx.media; 
-	requires jbcrypt; 
+	requires jbcrypt;
+	requires de.mkammerer.argon2.nolibs; 
 	 
 	exports domain.report; 
     exports domain.maintenance; 

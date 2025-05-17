@@ -26,6 +26,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.NamedQueries;
 import jakarta.persistence.NamedQuery;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,6 +54,7 @@ public class User implements Serializable, Subject
 {
 	private static final long serialVersionUID = 1L;
 
+	@Transient
 	private List<Observer> observers = new ArrayList<>();
 
 	@Id

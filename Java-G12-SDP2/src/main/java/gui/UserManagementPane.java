@@ -82,7 +82,7 @@ public class UserManagementPane extends GridPane implements Observer
 		addButton = new Button("+ Gebruiker toevoegen");
 		addButton.getStyleClass().add("add-button");
 		addButton.setOnAction(e -> {
-			if (AuthenticationUtil.hasRole(Role.ADMIN))
+			if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 			{
 				openAddUserForm();
 			} else
@@ -233,7 +233,7 @@ public class UserManagementPane extends GridPane implements Observer
 				editButton.setGraphic(editIcon);
 				editButton.setBackground(Background.EMPTY);
 				editButton.setOnAction(event -> {
-					if (AuthenticationUtil.hasRole(Role.ADMIN))
+					if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 					{
 						openEditUserForm(getTableRow().getItem().id());
 					} else
@@ -262,7 +262,7 @@ public class UserManagementPane extends GridPane implements Observer
 				deleteButton.setGraphic(deleteIcon);
 				deleteButton.setBackground(Background.EMPTY);
 				deleteButton.setOnAction(event -> {
-					if (AuthenticationUtil.hasRole(Role.ADMIN))
+					if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 					{
 						deleteUser(getTableRow().getItem().id());
 					} else

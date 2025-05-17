@@ -127,7 +127,7 @@ public class Navbar extends HBox
 
 			navLinks.getChildren().addAll(maintenanceBtn, sitesBtn, machinesBtn);
 
-			if (AuthenticationUtil.hasRole(Role.ADMIN))
+			if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 			{
 				Button userBtn = createNavButton("Gebruikers", CurrentPage.USERS, activePage,
 						e -> mainLayout.showUserManagementScreen());

@@ -24,7 +24,7 @@ public class ReportDirector
 			LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime)
 			throws InformationRequiredExceptionReport
 	{
-		boolean hasRole = AuthenticationUtil.hasRole(Role.ADMIN);
+		boolean hasRole = AuthenticationUtil.hasRole(Role.ADMINISTRATOR);
 
 		if (hasRole)
 		{

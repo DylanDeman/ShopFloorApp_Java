@@ -1,10 +1,9 @@
-	package domain.maintenance;
+package domain.maintenance;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import domain.report.Report;
 import domain.machine.Machine;
 import domain.user.User;
 import jakarta.persistence.CascadeType;
@@ -16,7 +15,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -48,47 +46,44 @@ public class Maintenance implements Serializable
 	@Getter
 	@Setter
 	private LocalDateTime endDate;
-	
-	@ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinColumn(name = "technician_id")
 	@Getter
 	@Setter
 	private User technician;
-	
+
 	@Getter
 	@Setter
 	private String reason;
 	@Getter
 	@Setter
 	private String comments;
-	
+
 	@Enumerated(EnumType.STRING)
 	@Getter
 	@Setter
 	private MaintenanceStatus status;
 
-	@ManyToOne(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinColumn(name = "machine_id")
 	@Getter
 	@Setter
 	private Machine machine;
-	
-    @PrePersist
-    @PreUpdate
-    void validateDates() {
-        if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
-            throw new IllegalStateException("End date cannot be before start date.");
-        }
-    }
-	
-	public Maintenance(LocalDate executionDate, 
-			LocalDateTime startDate, LocalDateTime endDate, 
-			User technician, 
-			String reason, 
-			String comments,
-			MaintenanceStatus status,
-			Machine machine
-			) {
+
+	@PrePersist
+	@PreUpdate
+	void validateDates()
+	{
+		if (startDate != null && endDate != null && endDate.isBefore(startDate))
+		{
+			throw new IllegalStateException("End date cannot be before start date.");
+		}
+	}
+
+	public Maintenance(LocalDate executionDate, LocalDateTime startDate, LocalDateTime endDate, User technician,
+			String reason, String comments, MaintenanceStatus status, Machine machine)
+	{
 		this.executionDate = executionDate;
 		this.startDate = startDate;
 		this.endDate = endDate;

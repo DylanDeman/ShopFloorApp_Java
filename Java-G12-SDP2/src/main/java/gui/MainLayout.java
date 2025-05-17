@@ -90,7 +90,7 @@ public class MainLayout
 
 	public void showUserManagementScreen()
 	{
-		if (!AuthenticationUtil.hasRole(Role.ADMIN))
+		if (!AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 		{
 			showNotAllowedAlert();
 		} else
@@ -132,7 +132,7 @@ public class MainLayout
 
 	public void showMaintenanceDetails(MaintenanceDTO maintenance)
 	{
-		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMIN))
+		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 		{
 			showNotAllowedAlert();
 		} else
@@ -144,7 +144,7 @@ public class MainLayout
 
 	public void showNotificationDetails(NotificationDTO notification)
 	{
-		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMIN))
+		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 		{
 			showNotAllowedAlert();
 		} else
@@ -156,7 +156,7 @@ public class MainLayout
 
 	public void showAddReport(MaintenanceDTO maintenance)
 	{
-		if (!AuthenticationUtil.hasRole(Role.TECHNIEKER) && !AuthenticationUtil.hasRole(Role.ADMIN))
+		if (!AuthenticationUtil.hasRole(Role.TECHNIEKER) && !AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 		{
 			showNotAllowedAlert();
 		} else
@@ -174,7 +174,7 @@ public class MainLayout
 
 	public void showMaintenancePlanning(MachineDTO machineDTO)
 	{
-		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMIN))
+		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 		{
 			showNotAllowedAlert();
 		} else
