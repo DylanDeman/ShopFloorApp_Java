@@ -8,21 +8,27 @@ import domain.maintenance.Maintenance;
 import domain.maintenance.MaintenanceController;
 import domain.site.Site;
 import domain.user.User;
-import dto.SiteDTOWithoutMachines;
-import dto.UserDTO;
-import exceptions.InformationRequiredExceptionReport;
+import dto.ReportDTO;
 import exceptions.InvalidReportException;
 import repository.GenericDaoJpa;
 import util.DTOMapper;
 import util.Role;
 
+/**
+ * Controller responsible for managing {@link Report} entities including
+ * creation, retrieval by technician or site, and validation of reports.
+ */
 public class ReportController
 {
+
 	private GenericDaoJpa<User> userDao;
 	private GenericDaoJpa<Report> reportDao;
 	private GenericDaoJpa<Site> siteDao;
 	private MaintenanceController maintenanceController;
 
+	/**
+	 * Default constructor initializing DAOs for User, Report, and Site.
+	 */
 	public ReportController()
 	{
 		this.userDao = new GenericDaoJpa<>(User.class);
@@ -30,7 +36,14 @@ public class ReportController
 		this.siteDao = new GenericDaoJpa<>(Site.class);
 	}
 
-	// Constructor for testing with mock DAOs
+	/**
+	 * Constructor used primarily for testing with mock dependencies.
+	 *
+	 * @param siteDao               the DAO for Site entities
+	 * @param userDao               the DAO for User entities
+	 * @param reportDao             the DAO for Report entities
+	 * @param maintenanceController the MaintenanceController instance
+	 */
 	public ReportController(GenericDaoJpa<Site> siteDao, GenericDaoJpa<User> userDao, GenericDaoJpa<Report> reportDao,
 			MaintenanceController maintenanceController)
 	{
@@ -40,21 +53,48 @@ public class ReportController
 		this.maintenanceController = maintenanceController;
 	}
 
+	/**
+	 * Retrieves a list of all users with the role of technician.
+	 *
+	 * @return a list of users with the {@link Role#TECHNIEKER}
+	 */
 	public List<User> getTechnicians()
 	{
 		return userDao.findAll().stream().filter(user -> user.getRole() == Role.TECHNIEKER).toList();
 	}
 
-	public void createReport(Report report) throws InvalidReportException
+	/**
+	 * Creates a new maintenance report and persists it in the database.
+	 *
+	 * @param site        the site where the maintenance occurred
+	 * @param maintenance the related maintenance activity
+	 * @param technician  the technician who performed the maintenance
+	 * @param startDate   the start date of the maintenance
+	 * @param startTime   the start time of the maintenance
+	 * @param endDate     the end date of the maintenance
+	 * @param endTime     the end time of the maintenance
+	 * @param reason      the reason for maintenance
+	 * @param remarks     any additional remarks
+	 * @return a {@link ReportDTO} representing the saved report
+	 * @throws InvalidReportException if the report is invalid or saving fails
+	 */
+	public ReportDTO createReport(Site site, Maintenance maintenance, User technician, LocalDate startDate,
+			LocalTime startTime, LocalDate endDate, LocalTime endTime, String reason, String remarks)
+			throws InvalidReportException
 	{
 		try
 		{
-			// Validate the report before saving
-			validateReport(report);
+			Report newReport = new Report.Builder().withSite(site).withMaintenance(maintenance)
+					.withTechnician(technician).withStartDate(startDate).withStartTime(startTime).withEndDate(endDate)
+					.withEndTime(endTime).withReason(reason).withRemarks(remarks).build();
+
+			validateReport(newReport);
 
 			reportDao.startTransaction();
-			reportDao.insert(report);
+			reportDao.insert(newReport);
 			reportDao.commitTransaction();
+
+			return DTOMapper.toReportDTO(newReport);
 		} catch (InvalidReportException e)
 		{
 			reportDao.rollbackTransaction();
@@ -66,26 +106,35 @@ public class ReportController
 		}
 	}
 
+	/**
+	 * Validates a report by checking for required fields.
+	 *
+	 * @param report the report to validate
+	 * @throws InvalidReportException if any critical fields are missing
+	 */
 	private void validateReport(Report report) throws InvalidReportException
 	{
 		if (report == null)
 		{
 			throw new InvalidReportException("Report cannot be null");
 		}
-
-		// Validation should already be done by ReportBuilder, but we double-check
-		// critical fields
 		if (report.getTechnician() == null)
 		{
 			throw new InvalidReportException("Technician cannot be null");
 		}
-
 		if (report.getSite() == null)
 		{
 			throw new InvalidReportException("Site cannot be null");
 		}
 	}
 
+	/**
+	 * Retrieves all reports created by a specific technician.
+	 *
+	 * @param technician the technician whose reports are to be retrieved
+	 * @return a list of {@link Report} instances created by the given technician
+	 * @throws InvalidReportException if the technician is null
+	 */
 	public List<Report> getReportsByTechnician(User technician)
 	{
 		validateTechnician(technician);
@@ -94,6 +143,13 @@ public class ReportController
 		return query.getResultList();
 	}
 
+	/**
+	 * Retrieves all reports for a given site.
+	 *
+	 * @param site the site whose reports are to be retrieved
+	 * @return a list of {@link Report} instances for the specified site
+	 * @throws InvalidReportException if the site is null
+	 */
 	public List<Report> getReportsBySite(Site site)
 	{
 		validateSite(site);
@@ -102,6 +158,12 @@ public class ReportController
 		return query.getResultList();
 	}
 
+	/**
+	 * Validates that the given technician is not null.
+	 *
+	 * @param technician the technician to validate
+	 * @throws InvalidReportException if the technician is null
+	 */
 	private void validateTechnician(User technician)
 	{
 		if (technician == null)
@@ -110,49 +172,17 @@ public class ReportController
 		}
 	}
 
+	/**
+	 * Validates that the given site is not null.
+	 *
+	 * @param site the site to validate
+	 * @throws InvalidReportException if the site is null
+	 */
 	private void validateSite(Site site)
 	{
 		if (site == null)
 		{
 			throw new InvalidReportException("Site cannot be null");
-		}
-	}
-
-	public Report createReport(Maintenance maintenance, UserDTO technician, LocalDate startDate, LocalTime startTime,
-			LocalDate endDate, LocalTime endTime, String reason, String remarks, SiteDTOWithoutMachines siteDTO)
-			throws InformationRequiredExceptionReport
-	{
-
-		// Convert DTOs to entities
-		User technicianEntity = DTOMapper.toUser(technician, null);
-		Site siteEntity = DTOMapper.toSite(siteDTO, null);
-
-		// Use the builder to create and validate the report
-		ReportBuilder builder = new ReportBuilder();
-		builder.createReport();
-		builder.buildMaintenance(maintenance);
-		builder.buildTechnician(technicianEntity);
-		builder.buildStartDate(startDate);
-		builder.buildStartTime(startTime);
-		builder.buildEndDate(endDate);
-		builder.buildEndTime(endTime);
-		builder.buildReason(reason);
-		builder.buildRemarks(remarks);
-		builder.buildSite(siteEntity);
-
-		// This will throw InformationRequiredExceptionReport if validation fails
-		Report report = builder.getReport();
-
-		try
-		{
-			reportDao.startTransaction();
-			reportDao.insert(report);
-			reportDao.commitTransaction();
-			return report;
-		} catch (Exception e)
-		{
-			reportDao.rollbackTransaction();
-			throw new InvalidReportException("Failed to persist report: " + e.getMessage());
 		}
 	}
 }

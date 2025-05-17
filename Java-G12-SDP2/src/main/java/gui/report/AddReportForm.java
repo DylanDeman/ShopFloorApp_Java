@@ -1,16 +1,21 @@
 package gui.report;
 
 import java.time.LocalTime;
+import domain.site.*;
 import java.time.format.DateTimeFormatter;
 import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import domain.maintenance.Maintenance;
 import domain.maintenance.MaintenanceController;
 import domain.report.ReportController;
 import domain.site.SiteController;
+import domain.user.User;
 import domain.user.UserController;
 import dto.MaintenanceDTO;
+import dto.SiteDTOWithMachines;
+import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionReport;
 import gui.MainLayout;
@@ -28,6 +33,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import util.DTOMapper;
 import util.RequiredElementReport;
 
 public class AddReportForm extends GridPane
@@ -346,31 +352,54 @@ public class AddReportForm extends GridPane
 
 	private void createReport()
 	{
-		resetErrorLabels();
-		try
-		{
-			UserDTO selectedTechnician = null;
-			if (technicianComboBox.getValue() != null)
-			{
-				selectedTechnician = uc.getAllTechniekers().stream()
-						.filter(user -> user.firstName().equals(technicianComboBox.getValue())).findFirst()
-						.orElse(null);
-			}
+	    resetErrorLabels();
+	    try
+	    {
+	        UserDTO selectedTechnician = null;
+	        if (technicianComboBox.getValue() != null)
+	        {
+	            selectedTechnician = uc.getAllTechniekers().stream()
+	                .filter(user -> user.firstName().equals(technicianComboBox.getValue())).findFirst()
+	                .orElse(null);
+	        }
+	        
+	        // Get the site object from the selected maintenance
+	        SiteDTOWithoutMachines siteWoMachines = selectedMaintenanceDTO.machine().site();
+	        
+	        Site site = DTOMapper.toSite(siteWoMachines, null);
+	        
+	        // Get the maintenance object
+	        Maintenance maintenance = mc.getMaintenance(selectedMaintenanceDTO.id());
+	        
+	        // Convert DTO to domain object if needed (depending on your implementation)
+	        User technician = selectedTechnician != null ? uc.getUserById(selectedTechnician.id()) : null;
+	        
+	       
+	        
+	        // Call the updated createReport method with parameters in the correct order
+	        rc.createReport(
+	            site,                          // Site (using original Site object, not DTO)
+	            maintenance,                   // Maintenance
+	            technician,                    // User technician
+	            startDatePicker.getValue(),    // LocalDate startDate
+	            startTimeField.getValue(),     // LocalTime startTime
+	            endDatePicker.getValue(),      // LocalDate endDate
+	            endTimeField.getValue(),       // LocalTime endTime
+	            reasonField.getText().trim(),  // String reason
+	            commentsArea.getText().trim()  // String remarks/comments
+	        );
 
-			rc.createReport(mc.getMaintenance(selectedMaintenanceDTO.id()), selectedTechnician,
-					startDatePicker.getValue(), startTimeField.getValue(), endDatePicker.getValue(),
-					endTimeField.getValue(), reasonField.getText().trim(), commentsArea.getText().trim(),
-					selectedMaintenanceDTO.machine().site());
-
-			mainLayout.showMaintenanceDetails(selectedMaintenanceDTO);
-		} catch (InformationRequiredExceptionReport e)
-		{
-			handleInformationRequiredException(e);
-		} catch (Exception e)
-		{
-			e.printStackTrace();
-			showError("Er is een fout opgetreden: " + e.getMessage());
-		}
+	        mainLayout.showMaintenanceDetails(selectedMaintenanceDTO);
+	    } 
+	    catch (InformationRequiredExceptionReport e)
+	    {
+	        handleInformationRequiredException(e);
+	    } 
+	    catch (Exception e)
+	    {
+	        e.printStackTrace();
+	        showError("Er is een fout opgetreden: " + e.getMessage());
+	    }
 	}
 
 	private void handleInformationRequiredException(InformationRequiredExceptionReport e)
