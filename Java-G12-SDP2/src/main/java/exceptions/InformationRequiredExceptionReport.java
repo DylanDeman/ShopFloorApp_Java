@@ -4,7 +4,7 @@ import java.util.Map;
 
 import util.RequiredElementReport;
 
-public class InformationRequiredExceptionReport extends Exception
+public class InformationRequiredExceptionReport extends IllegalArgumentException
 {
 	private static final long serialVersionUID = 1L;
 

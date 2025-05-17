@@ -79,4 +79,91 @@ public class Report implements Serializable
 		this.reason = reason;
 		this.remarks = remarks;
 	}
+	
+	public static class Builder{
+	
+		private Site site;
+
+
+		private Maintenance maintenance;
+
+		
+		private User technician;
+
+		private LocalDate startDate;
+
+		private LocalTime startTime;
+
+		private LocalDate endDate;
+
+		private LocalTime endTime;
+
+		private String reason;
+
+		private String remarks;
+		
+		public Builder() {
+			
+		}
+		
+		protected Report report;
+		
+		public Builder withSite(Site site) {
+			this.site = site;
+			return this;
+		}
+		
+		public Builder withMaintenance(Maintenance maintenance) {
+			this.maintenance = maintenance;
+			return this;
+		}
+		
+		public Builder withTechnician(User technician) {
+			this.technician = technician;
+			return this;
+		}
+		
+		public Builder withStartDate(LocalDate startDate) {
+			this.startDate = startDate;
+			return this;
+		}
+		public Builder withStartTime(LocalTime startTime) {
+		    this.startTime = startTime;
+		    return this;
+		}
+
+		public Builder withEndDate(LocalDate endDate) {
+		    this.endDate = endDate;
+		    return this;
+		}
+
+		public Builder withEndTime(LocalTime endTime) {
+		    this.endTime = endTime;
+		    return this;
+		}
+
+		public Builder withReason(String reason) {
+		    this.reason = reason;
+		    return this;
+		}
+
+		public Builder withRemarks(String remarks) {
+		    this.remarks = remarks;
+		    return this;
+		}
+
+		public Report build() {
+		    Report report = new Report();
+		    report.site = this.site;
+		    report.maintenance = this.maintenance;
+		    report.technician = this.technician;
+		    report.startDate = this.startDate;
+		    report.startTime = this.startTime;
+		    report.endDate = this.endDate;
+		    report.endTime = this.endTime;
+		    report.reason = this.reason;
+		    report.remarks = this.remarks;
+		    return report;
+		}
+	}
 }

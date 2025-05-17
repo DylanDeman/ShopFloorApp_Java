@@ -8,6 +8,7 @@ import domain.maintenance.Maintenance;
 import domain.maintenance.MaintenanceController;
 import domain.site.Site;
 import domain.user.User;
+import dto.ReportDTO;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionReport;
@@ -45,26 +46,47 @@ public class ReportController
 		return userDao.findAll().stream().filter(user -> user.getRole() == Role.TECHNIEKER).toList();
 	}
 
-	public void createReport(Report report) throws InvalidReportException
-	{
-		try
-		{
-			// Validate the report before saving
-			validateReport(report);
+	public ReportDTO createReport(Site site, Maintenance maintenance, User technician, 
+            LocalDate startDate, LocalTime startTime, LocalDate endDate, 
+            LocalTime endTime, String reason, String remarks) 
+throws InvalidReportException
+{
+try
+{
+// Create a report using the Builder pattern
+Report newReport = new Report.Builder()
+.withSite(site)
+.withMaintenance(maintenance)
+.withTechnician(technician)
+.withStartDate(startDate)
+.withStartTime(startTime)
+.withEndDate(endDate)
+.withEndTime(endTime)
+.withReason(reason)
+.withRemarks(remarks)
+.build();
 
-			reportDao.startTransaction();
-			reportDao.insert(report);
-			reportDao.commitTransaction();
-		} catch (InvalidReportException e)
-		{
-			reportDao.rollbackTransaction();
-			throw e;
-		} catch (Exception e)
-		{
-			reportDao.rollbackTransaction();
-			throw new InvalidReportException("Failed to create report: " + e.getMessage());
-		}
-	}
+// Validate the report before saving
+validateReport(newReport);
+
+reportDao.startTransaction();
+reportDao.insert(newReport);
+reportDao.commitTransaction();
+
+
+return DTOMapper.toReportDTO(newReport);
+} 
+catch (InvalidReportException e)
+{
+reportDao.rollbackTransaction();
+throw e;
+} 
+catch (Exception e)
+{
+reportDao.rollbackTransaction();
+throw new InvalidReportException("Failed to create report: " + e.getMessage());
+}
+}
 
 	private void validateReport(Report report) throws InvalidReportException
 	{
@@ -118,41 +140,6 @@ public class ReportController
 		}
 	}
 
-	public Report createReport(Maintenance maintenance, UserDTO technician, LocalDate startDate, LocalTime startTime,
-			LocalDate endDate, LocalTime endTime, String reason, String remarks, SiteDTOWithoutMachines siteDTO)
-			throws InformationRequiredExceptionReport
-	{
-
-		// Convert DTOs to entities
-		User technicianEntity = DTOMapper.toUser(technician, null);
-		Site siteEntity = DTOMapper.toSite(siteDTO, null);
-
-		// Use the builder to create and validate the report
-		ReportBuilder builder = new ReportBuilder();
-		builder.createReport();
-		builder.buildMaintenance(maintenance);
-		builder.buildTechnician(technicianEntity);
-		builder.buildStartDate(startDate);
-		builder.buildStartTime(startTime);
-		builder.buildEndDate(endDate);
-		builder.buildEndTime(endTime);
-		builder.buildReason(reason);
-		builder.buildRemarks(remarks);
-		builder.buildSite(siteEntity);
-
-		// This will throw InformationRequiredExceptionReport if validation fails
-		Report report = builder.getReport();
-
-		try
-		{
-			reportDao.startTransaction();
-			reportDao.insert(report);
-			reportDao.commitTransaction();
-			return report;
-		} catch (Exception e)
-		{
-			reportDao.rollbackTransaction();
-			throw new InvalidReportException("Failed to persist report: " + e.getMessage());
-		}
-	}
+	
+	
 }

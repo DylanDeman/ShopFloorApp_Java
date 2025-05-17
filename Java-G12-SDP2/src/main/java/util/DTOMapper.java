@@ -6,10 +6,12 @@ import java.util.stream.Collectors;
 
 import domain.Address;
 import domain.machine.Machine;
+import domain.report.Report;
 import domain.site.Site;
 import domain.user.User;
 import dto.AddressDTO;
 import dto.MachineDTO;
+import dto.ReportDTO;
 import dto.SiteDTO;
 import dto.SiteDTOWithMachines;
 import dto.SiteDTOWithoutMachines;
@@ -217,4 +219,25 @@ public class DTOMapper {
         
         return machine;
     }
+
+    public static ReportDTO toReportDTO(Report report) {
+        if (report == null) {
+            return null;
+        }
+        
+        
+        return new ReportDTO(
+            report.getMaintenance(),
+            report.getSite(),
+            report.getTechnician(),
+            report.getStartDate(),
+            report.getStartTime(),
+            report.getEndDate(),
+            report.getEndTime(),
+            report.getReason(),
+            report.getRemarks() // Assuming 'remarks' in Report maps to 'comments' in DTO
+        );
+    }
+    
+    
 }
