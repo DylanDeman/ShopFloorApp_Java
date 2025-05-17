@@ -185,4 +185,29 @@ public class UserController implements Subject
 			o.update(message);
 
 	}
+
+	public List<String> getAllStatusses()
+	{
+		List<UserDTO> allUsers = getAllUsers();
+		return allUsers.stream().map(u -> u.status().toString()).distinct().sorted().collect(Collectors.toList());
+	}
+
+	public List<String> getAllRoles()
+	{
+		List<UserDTO> allUsers = getAllUsers();
+		return allUsers.stream().map(u -> u.role().toString()).distinct().sorted().collect(Collectors.toList());
+	}
+
+	public List<UserDTO> getFilteredUsers(String searchFilter, String selectedStatus, String selectedRole)
+	{
+		String lowerCaseSearchFilter = searchFilter == null ? "" : searchFilter.toLowerCase();
+
+		return getAllUsers().stream()
+				.filter(user -> selectedStatus == null || user.status().toString().equals(selectedStatus))
+				.filter(user -> selectedRole == null || user.role().toString().equals(selectedRole))
+				.filter(user -> user.firstName().toLowerCase().contains(lowerCaseSearchFilter)
+						|| user.lastName().toLowerCase().contains(lowerCaseSearchFilter))
+				.collect(Collectors.toList());
+	}
+
 }

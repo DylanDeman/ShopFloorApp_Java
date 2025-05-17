@@ -1,5 +1,8 @@
 package gui;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.user.UserController;
@@ -9,6 +12,7 @@ import interfaces.Observer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -16,10 +20,12 @@ import javafx.scene.Parent;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -35,6 +41,13 @@ public class UserManagementPane extends GridPane implements Observer
 
 	private TableView<UserDTO> userTable;
 	private Button addButton;
+
+	private TextField searchField;
+	private ComboBox<String> statusFilter;
+	private ComboBox<String> roleFilter;
+	private List<UserDTO> allUsers;
+	private List<UserDTO> filteredUsers;
+
 	private final MainLayout mainLayout;
 
 	private UserController uc;
@@ -53,10 +66,17 @@ public class UserManagementPane extends GridPane implements Observer
 	{
 		this.getStylesheets().add(getClass().getResource("/css/tablePane.css").toExternalForm());
 
+		allUsers = uc.getAllUsers();
+		filteredUsers = allUsers;
+
 		this.getChildren().add(createTitleSection());
 
 		userTable = new TableView<>();
 		userTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
+
+		HBox filterBox = createFilters();
+		GridPane.setMargin(filterBox, new Insets(0, 0, 10, 0));
+
 		buildColumns();
 
 		addButton = new Button("+ Gebruiker toevoegen");
@@ -75,10 +95,82 @@ public class UserManagementPane extends GridPane implements Observer
 		GridPane.setMargin(addButton, new Insets(0, 0, 10, 0));
 
 		add(addButton, 0, 0);
-		add(userTable, 0, 1);
+		add(filterBox, 0, 1);
+		add(userTable, 0, 2);
 
 		GridPane.setHgrow(userTable, Priority.ALWAYS);
 		GridPane.setVgrow(userTable, Priority.ALWAYS);
+
+		updateFilterOptions();
+		updateTable(filteredUsers);
+	}
+
+	private HBox createFilters()
+	{
+		searchField = new TextField();
+		searchField.setPromptText("Zoeken...");
+		searchField.setPrefWidth(300);
+		searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
+
+		statusFilter = new ComboBox<>();
+		statusFilter.setPromptText("Statussen");
+		statusFilter.setPrefWidth(150);
+		statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+
+		roleFilter = new ComboBox<>();
+		roleFilter.setPromptText("Rollen");
+		roleFilter.setPrefWidth(150);
+		roleFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+
+		HBox filterBox = new HBox(10, searchField, statusFilter, roleFilter);
+		filterBox.setAlignment(Pos.CENTER_LEFT);
+		return filterBox;
+	}
+
+	private void filterTable()
+	{
+		String searchQuery = searchField.getText().toLowerCase();
+		String selectedStatus = statusFilter.getValue();
+		String selectedRole = roleFilter.getValue();
+
+		filteredUsers = uc.getFilteredUsers(searchQuery, selectedStatus, selectedRole);
+
+		updateTableItems();
+	}
+
+	private void updateTable(List<UserDTO> filteredUsers2)
+	{
+		String searchQuery = searchField.getText().toLowerCase();
+		String selectedStatus = statusFilter.getValue();
+		String selectedRole = roleFilter.getValue();
+
+		filteredUsers = uc.getFilteredUsers(searchQuery, selectedStatus, selectedRole);
+
+		updateTableItems();
+	}
+
+	private void updateTableItems()
+	{
+		if (filteredUsers.isEmpty())
+		{
+			userTable.getItems().clear();
+		} else
+		{
+			userTable.getItems().setAll(filteredUsers);
+		}
+	}
+
+	private void updateFilterOptions()
+	{
+		List<String> statusses = new ArrayList<>();
+		statusses.add(null);
+		statusses.addAll(uc.getAllStatusses());
+		statusFilter.setItems(FXCollections.observableArrayList(statusses));
+
+		List<String> roles = new ArrayList<>();
+		roles.add(null);
+		roles.addAll(uc.getAllRoles());
+		roleFilter.setItems(FXCollections.observableArrayList(roles));
 	}
 
 	private VBox createTitleSection()
