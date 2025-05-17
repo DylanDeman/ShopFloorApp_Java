@@ -35,6 +35,10 @@ import util.RequiredElement;
 import util.Role;
 import util.Status;
 
+/**
+ * Represents a user entity in the system. This class models all user-related
+ * data and implements the Subject interface for observer pattern support.
+ */
 @Setter
 @Getter
 @NoArgsConstructor
@@ -72,6 +76,19 @@ public class User implements Serializable, Subject
 	@Enumerated(EnumType.STRING)
 	private Role role;
 
+	/**
+	 * Constructs a new User with all required fields.
+	 * 
+	 * @param firstName   The user's first name
+	 * @param lastName    The user's last name
+	 * @param email       The user's email address
+	 * @param phoneNumber The user's phone number
+	 * @param password    The user's hashed password
+	 * @param birthdate   The user's birthdate
+	 * @param address     The user's address
+	 * @param status      The user's system status
+	 * @param role        The user's system role
+	 */
 	public User(String firstName, String lastName, String email, String phoneNumber, String password,
 			LocalDate birthdate, Address address, Status status, Role role)
 	{
@@ -86,11 +103,21 @@ public class User implements Serializable, Subject
 		setRole(role);
 	}
 
+	/**
+	 * Calculates the user's age based on birthdate.
+	 * 
+	 * @return The user's age in years
+	 */
 	public int getAge()
 	{
 		return Period.between(birthdate, LocalDate.now()).getYears();
 	}
 
+	/**
+	 * Returns a string representation of the user.
+	 * 
+	 * @return Formatted string containing all user fields
+	 */
 	@Override
 	public String toString()
 	{
@@ -101,6 +128,11 @@ public class User implements Serializable, Subject
 				status != null ? status.toString() : "N/A", role != null ? role.toString() : "N/A");
 	}
 
+	/**
+	 * Returns the user's full name.
+	 * 
+	 * @return Concatenation of first and last name
+	 */
 	public String getFullName()
 	{
 		return String.format("%s %s", firstName, lastName);
@@ -126,6 +158,11 @@ public class User implements Serializable, Subject
 		observers.forEach(o -> o.update());
 	}
 
+	/**
+	 * Builder class for constructing User instances with validation. Implements a
+	 * fluent interface for setting properties and includes validation of required
+	 * fields before building the User object.
+	 */
 	public static class Builder
 	{
 		private String firstName;
@@ -144,54 +181,109 @@ public class User implements Serializable, Subject
 
 		protected User user;
 
+		/**
+		 * Sets the user's first name.
+		 * 
+		 * @param firstName The first name to set
+		 * @return The builder instance for method chaining
+		 */
 		public Builder withFirstName(String firstName)
 		{
 			this.firstName = firstName;
 			return this;
 		}
 
+		/**
+		 * Sets the user's last name.
+		 * 
+		 * @param lastName The last name to set
+		 * @return The builder instance for method chaining
+		 */
 		public Builder withLastName(String lastName)
 		{
 			this.lastName = lastName;
 			return this;
 		}
 
+		/**
+		 * Sets the user's email address.
+		 * 
+		 * @param email The email to set
+		 * @return The builder instance for method chaining
+		 */
 		public Builder withEmail(String email)
 		{
 			this.email = email;
 			return this;
 		}
 
+		/**
+		 * Sets the user's phone number.
+		 * 
+		 * @param phoneNumber The phone number to set
+		 * @return The builder instance for method chaining
+		 */
 		public Builder withPhoneNumber(String phoneNumber)
 		{
 			this.phoneNumber = phoneNumber;
 			return this;
 		}
 
+		/**
+		 * Sets the user's birthdate.
+		 * 
+		 * @param birthdate The birthdate to set
+		 * @return The builder instance for method chaining
+		 */
 		public Builder withBirthdate(LocalDate birthdate)
 		{
 			this.birthdate = birthdate;
 			return this;
 		}
 
+		/**
+		 * Sets the user's role.
+		 * 
+		 * @param role The role to set
+		 * @return The builder instance for method chaining
+		 */
 		public Builder withRole(Role role)
 		{
 			this.role = role;
 			return this;
 		}
 
+		/**
+		 * Sets the user's status.
+		 * 
+		 * @param status The status to set
+		 * @return The builder instance for method chaining
+		 */
 		public Builder withStatus(Status status)
 		{
 			this.status = status;
 			return this;
 		}
 
+		/**
+		 * Sets the user's address.
+		 * 
+		 * @param address The address to set
+		 * @return The builder instance for method chaining
+		 */
 		public Builder withAddress(Address address)
 		{
 			this.address = address;
 			return this;
 		}
 
+		/**
+		 * Builds the User instance after validating all required fields. Automatically
+		 * generates and hashes a secure password.
+		 * 
+		 * @return The constructed User instance
+		 * @throws InformationRequiredException If any required fields are missing
+		 */
 		public User build() throws InformationRequiredException
 		{
 			validateRequiredFields();
@@ -213,6 +305,11 @@ public class User implements Serializable, Subject
 			return user;
 		}
 
+		/**
+		 * Validates that all required fields have been set.
+		 * 
+		 * @throws InformationRequiredException If any required fields are missing
+		 */
 		private void validateRequiredFields() throws InformationRequiredException
 		{
 			Map<String, RequiredElement> requiredElements = new HashMap<>();
@@ -273,6 +370,20 @@ public class User implements Serializable, Subject
 			}
 		}
 
+		/**
+		 * Generates a secure random password with a mix of character types. The
+		 * password will contain at least one lowercase letter, one uppercase letter,
+		 * one digit, and one special character. The total length of the password will
+		 * be between 10 and 20 characters (inclusive).
+		 * 
+		 * The password is generated using cryptographically secure random numbers and
+		 * includes characters from the following categories: - Lowercase letters (a-z)
+		 * - Uppercase letters (A-Z) - Digits (0-9) - Special characters
+		 * (!@#$%^&*()-_=+[]{}|;:'",.<>/?)
+		 * 
+		 * @return A randomly generated secure password as a String
+		 * @see SecureRandom
+		 */
 		private static String generatePassword()
 		{
 			SecureRandom random = new SecureRandom();
