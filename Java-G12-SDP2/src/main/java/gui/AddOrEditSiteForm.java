@@ -55,6 +55,8 @@ public class AddOrEditSiteForm extends GridPane
 
 		uc = AppServices.getInstance().getUserController();
 		sc = AppServices.getInstance().getSiteController();
+		this.isNewSite = false;
+		
 		this.site = sc.getSite(siteId);
 
 		initializeFields();
@@ -68,6 +70,7 @@ public class AddOrEditSiteForm extends GridPane
 
 		uc = AppServices.getInstance().getUserController();
 		sc = AppServices.getInstance().getSiteController();
+		this.isNewSite = true;
 
 		initializeFields();
 		buildGUI();

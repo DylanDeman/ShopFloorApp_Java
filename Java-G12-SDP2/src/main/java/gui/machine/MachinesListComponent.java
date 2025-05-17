@@ -253,7 +253,7 @@ public class MachinesListComponent extends GridPane implements Observer
 	}
 
 	@Override
-	public void update()
+	public void update(String message)
 	{
 		Platform.runLater(this::loadMachines);
 

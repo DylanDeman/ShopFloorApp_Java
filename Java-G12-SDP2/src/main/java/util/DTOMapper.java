@@ -60,7 +60,7 @@ public class DTOMapper {
             user.getBirthdate(),
             toAddressDTO(user.getAddress()),
             user.getRole(),
-            user.getStatus()
+            user.getStatus(), user.getPassword()
         );
     }
     
@@ -81,12 +81,15 @@ public class DTOMapper {
         
         User user = existingUser != null ? existingUser : new User();
         user.setId(dto.id());
+        user.setBirthdate(dto.birDate());
         user.setFirstName(dto.firstName());
         user.setLastName(dto.lastName());
         user.setEmail(dto.email());
+        user.setPhoneNumber(dto.phoneNumber());
         user.setAddress(toAddress(dto.address()));
         user.setRole(dto.role());
         user.setStatus(dto.status());
+        user.setPassword(dto.password());
         
         return user;
     }

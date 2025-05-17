@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import domain.Observer;
-import domain.Subject;
+import interfaces.Observer;
+import interfaces.Subject;
 import domain.notifications.NotificationObserver;
 import domain.user.User;
+import domain.user.UserDao;
+import domain.user.UserDaoJpa;
 import dto.SiteDTOWithMachines;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
@@ -18,9 +20,11 @@ import util.Status;
 
 public class SiteController implements Subject{
 	private SiteDao siteRepo;
+	private UserDao userDao;
 	private List<Observer> observers = new ArrayList<>();
 
 	public SiteController() {
+		userDao = new UserDaoJpa();
 		siteRepo = new SiteDaoJpa();
 		addObserver(new NotificationObserver());
 	}
@@ -102,7 +106,9 @@ public class SiteController implements Subject{
 		int houseNumberInt = Integer.parseInt(houseNumber);
 		int postalCodeInt = Integer.parseInt(postalCode);
 		
-		User employeeObject = DTOMapper.toUser(employee, null);
+		User existingUser = userDao.getByEmail(employee.email());
+		
+		User employeeObject = DTOMapper.toUser(employee, existingUser);
 		
 		SiteBuilder siteBuilder = new SiteBuilder();
 		siteBuilder.createSite();
@@ -183,8 +189,6 @@ public class SiteController implements Subject{
 
 	@Override
 	public void notifyObservers(String message) {
-		for (Observer o : observers)
-			o.update(message);
-		
+		observers.stream().forEach((o) -> o.update(message));
 	}
 }

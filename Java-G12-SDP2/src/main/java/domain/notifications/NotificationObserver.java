@@ -2,7 +2,7 @@ package domain.notifications;
 
 import java.time.LocalDateTime;
 
-import domain.Observer;
+import interfaces.Observer;
 
 public class NotificationObserver implements Observer {
 	private NotificationDao notificationRepo;

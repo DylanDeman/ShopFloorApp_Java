@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import domain.Address;
-import domain.Observer;
-import domain.Subject;
+import interfaces.Observer;
+import interfaces.Subject;
 import domain.notifications.NotificationObserver;
 import dto.UserDTO;
 import exceptions.InformationRequiredException;
@@ -128,7 +128,29 @@ public class UserController implements Subject
 	{
 		return userRepo.getByEmail(email);
 	}
+	
+	/**
+	 * Retrieves a user DTO by their name.
+	 * 
+	 * @param name The name of the user to retrieve
+	 * @return The UserDTO object with the specified name
+	 */
+	public UserDTO getUserByName(String name)
+	{
+	    if (name == null || !name.contains(" ")) {
+	        return null; // or throw an exception
+	    }
 
+	    String[] parts = name.trim().split(" ", 2);
+	    String firstname = parts[0];
+	    String lastname = parts[1]; // everything after the first space
+
+	    return getAllVerantwoordelijken().stream()
+	        .filter(v -> v.firstName().equalsIgnoreCase(firstname) && v.lastName().equalsIgnoreCase(lastname))
+	        .findFirst()
+	        .orElse(null);
+	}
+	
 	/**
 	 * Retrieves a user DTO by their email address.
 	 * 

@@ -251,35 +251,6 @@ public class UserManagementPane extends GridPane implements Observer
 			}
 		});
 
-		TableColumn<UserDTO, Void> deleteColumn = new TableColumn<>("Verwijderen");
-		deleteColumn.setCellFactory(param -> new TableCell<UserDTO, Void>()
-		{
-			private final Button deleteButton = new Button();
-
-			{
-				FontIcon deleteIcon = new FontIcon("far-trash-alt");
-				deleteIcon.setIconSize(20);
-				deleteButton.setGraphic(deleteIcon);
-				deleteButton.setBackground(Background.EMPTY);
-				deleteButton.setOnAction(event -> {
-					if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
-					{
-						deleteUser(getTableRow().getItem().id());
-					} else
-					{
-						mainLayout.showNotAllowedAlert();
-					}
-				});
-			}
-
-			@Override
-			protected void updateItem(Void item, boolean empty)
-			{
-				super.updateItem(item, empty);
-				setGraphic(empty ? null : deleteButton);
-			}
-		});
-
 		userTable.setPlaceholder(new Label("Geen gebruikers gevonden"));
 
 		userTable.getColumns().add(idColumn);
@@ -290,7 +261,6 @@ public class UserManagementPane extends GridPane implements Observer
 		userTable.getColumns().add(statusColumn);
 
 		userTable.getColumns().add(editColumn);
-		userTable.getColumns().add(deleteColumn);
 
 	}
 
@@ -311,25 +281,8 @@ public class UserManagementPane extends GridPane implements Observer
 		mainLayout.setContent(editUserForm, true, false, CurrentPage.NONE);
 	}
 
-	private void deleteUser(int userId)
-	{
-		try
-		{
-			uc.delete(userId);
-		} catch (Exception e)
-		{
-			Platform.runLater(() -> {
-				Alert alert = new Alert(AlertType.ERROR);
-				alert.setTitle("Fout bij verwijderen");
-				alert.setHeaderText("Kan gebruiker niet verwijderen");
-				alert.setContentText("Deze gebruiker is nog gekoppeld aan een site");
-				alert.showAndWait();
-			});
-		}
-	}
-
 	@Override
-	public void update()
+	public void update(String message)
 	{
 		Platform.runLater(this::loadUsers);
 	}

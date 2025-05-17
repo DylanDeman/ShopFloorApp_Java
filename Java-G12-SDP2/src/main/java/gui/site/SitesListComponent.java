@@ -432,8 +432,8 @@ public class SitesListComponent extends VBox implements Observer
 	}
 
 	@Override
-	public void update()
-	{
+	public void update(String message)
+	{	
 		Platform.runLater(() -> {
 			allSites = sc.getSites();
 			filteredSites = new ArrayList<>(allSites);

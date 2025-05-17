@@ -113,8 +113,8 @@ public class Machine implements Serializable, Subject
 	}
 
 	@Override
-	public void notifyObservers()
+	public void notifyObservers(String message)
 	{
-		observers.stream().forEach(Observer::notify);
+		observers.stream().forEach((o) -> o.update(message));
 	}
 }

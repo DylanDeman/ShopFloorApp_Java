@@ -332,11 +332,13 @@ public class AddOrEditMachineForm extends GridPane
 				machineController.createMachine(siteBox.getValue(), technicianBox.getValue(), codeField.getText(),
 						machineStatusBox.getValue(), productionStatusBox.getValue(), locationField.getText(),
 						productInfoField.getText(), futureMaintenance.getValue());
+				mainLayout.getServices().getSiteController().notifyObservers("Machine added");
 			} else
 			{
 				machineController.updateMachine(machineDTO.id(), siteBox.getValue(), technicianBox.getValue(),
 						codeField.getText(), machineStatusBox.getValue(), productionStatusBox.getValue(),
 						locationField.getText(), productInfoField.getText(), futureMaintenance.getValue());
+				mainLayout.getServices().getSiteController().notifyObservers("Machine edited");
 			}
 
 			mainLayout.showMachineScreen();

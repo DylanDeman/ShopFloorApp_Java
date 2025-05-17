@@ -83,17 +83,17 @@ public class Site implements Serializable, Subject {
 
 	public void setSiteName(String siteName) {
 		this.siteName = siteName.trim();
-		notifyObservers();
+		notifyObservers("");
 	}
 
 	public void setVerantwoordelijke(User verantwoordelijke) {
 		this.verantwoordelijke = verantwoordelijke;
-		notifyObservers();
+		notifyObservers("");
 	}
 
 	public void setStatus(Status status) {
 		this.status = status;
-		notifyObservers();
+		notifyObservers("");
 	}
 	
 	public void addMachine(Machine machine) {
@@ -114,9 +114,9 @@ public class Site implements Serializable, Subject {
 	}
 
 	@Override
-	public void notifyObservers() {
+	public void notifyObservers(String message) {
 		observers.forEach(observer -> {
-			observer.update();
+			observer.update(message);
 		});
 	}
 	

@@ -76,6 +76,7 @@ public class SiteDetailsComponent extends VBox implements Observer {
 
 		this.siteId = siteId;
 		this.site = sc.getSite(siteId);
+		this.sc.addObserver(this);
 
 		this.table = new TableView<>();
 		table.setPlaceholder(new Label("No machines available for this site"));
@@ -520,7 +521,7 @@ public class SiteDetailsComponent extends VBox implements Observer {
 	}
 
 	@Override
-	public void update() {
+	public void update(String message) {
 		Platform.runLater(() -> {
 			try {
 				SiteDTOWithMachines updatedSite = sc.getSite(siteId);

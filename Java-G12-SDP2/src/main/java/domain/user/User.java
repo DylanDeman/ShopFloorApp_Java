@@ -144,20 +144,20 @@ public class User implements Serializable, Subject
 	public void addObserver(Observer o)
 	{
 		observers.add(o);
-		notifyObservers();
+		notifyObservers("");
 	}
 
 	@Override
 	public void removeObserver(Observer o)
 	{
 		observers.remove(o);
-		notifyObservers();
+		notifyObservers("");
 	}
 
 	@Override
-	public void notifyObservers()
+	public void notifyObservers(String message)
 	{
-		observers.forEach(o -> o.update());
+		observers.forEach(o -> o.update(message));
 	}
 
 	/**

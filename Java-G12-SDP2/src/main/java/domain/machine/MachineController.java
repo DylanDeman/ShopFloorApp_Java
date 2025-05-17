@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import domain.Observer;
-import domain.Subject;
+import interfaces.Observer;
+import interfaces.Subject;
 import domain.notifications.NotificationObserver;
 import domain.site.Site;
 import domain.site.SiteController;
@@ -47,7 +47,6 @@ public class MachineController implements Subject {
 		machineRepo.startTransaction();
 		machineRepo.insert(machine);
 		machineRepo.commitTransaction();
-
 		notifyObservers("Nieuwe machine toegevoegd: " + machine.getCode());
 	}
 
@@ -125,9 +124,7 @@ public class MachineController implements Subject {
 
 	@Override
 	public void notifyObservers(String message) {
-		for (Observer observer : observers) {
-			observer.update(message);
-		}
+		observers.stream().forEach((o) -> o.update(message));
 	}
 
 	public Machine getMachineById(int machineId) {
