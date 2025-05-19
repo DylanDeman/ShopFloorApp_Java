@@ -19,7 +19,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,7 +28,6 @@ import util.RequiredElementMaintenance;
 @Entity
 @Table(name = "maintenances")
 @NoArgsConstructor
-@AllArgsConstructor
 @Getter
 @Setter
 public class Maintenance implements Serializable
