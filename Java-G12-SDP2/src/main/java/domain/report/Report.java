@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import domain.maintenance.Maintenance;
-import domain.site.Site;
-import domain.user.User;
+import domain.Maintenance;
+import domain.Site;
+import domain.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
