@@ -1,8 +1,8 @@
-package domain;
+package repository;
 
 import java.util.List;
 
-import repository.GenericDaoJpa;
+import domain.Notification;
 
 public class NotificationDaoJpa extends GenericDaoJpa<Notification> implements NotificationDao {
 

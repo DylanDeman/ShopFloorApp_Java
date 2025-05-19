@@ -3,6 +3,8 @@ package domain;
 import java.time.LocalDateTime;
 
 import interfaces.Observer;
+import repository.NotificationDao;
+import repository.NotificationDaoJpa;
 
 public class NotificationObserver implements Observer {
 	private NotificationDao notificationRepo;

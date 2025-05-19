@@ -16,10 +16,10 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import domain.FileInfo;
+import domain.FileInfoController;
 import domain.Maintenance;
 import domain.MaintenanceController;
-import domain.maintenance.FileInfo;
-import domain.maintenance.FileInfoController;
 import dto.MaintenanceDTO;
 import gui.MainLayout;
 import gui.customComponents.CustomInformationBox;

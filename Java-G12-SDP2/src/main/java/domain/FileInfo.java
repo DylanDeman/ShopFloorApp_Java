@@ -1,9 +1,8 @@
-package domain.maintenance;
+package domain;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-import domain.Maintenance;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -23,6 +22,8 @@ import lombok.Setter;
  * </p>
  */
 @Entity
+@Getter
+@Setter
 @Table(name = "maintenance_files")
 public class FileInfo implements Serializable
 {
@@ -34,43 +35,32 @@ public class FileInfo implements Serializable
 	 */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Getter
 	private int id;
 
 	/**
 	 * Name of the file (e.g., filename including extension).
 	 */
-	@Getter
-	@Setter
 	public String name;
 
 	/**
 	 * MIME type of the file (e.g., "application/pdf").
 	 */
-	@Getter
-	@Setter
 	public String type;
 
 	/**
 	 * The binary content of the file.
 	 */
 	@Lob
-	@Getter
-	@Setter
 	private byte[] content;
 
 	/**
 	 * Timestamp when the file was uploaded.
 	 */
-	@Getter
-	@Setter
 	private LocalDateTime uploadDate;
 
 	/**
 	 * Size of the file content in bytes.
 	 */
-	@Getter
-	@Setter
 	private long size;
 
 	/**
@@ -78,8 +68,6 @@ public class FileInfo implements Serializable
 	 */
 	@ManyToOne
 	@JoinColumn(name = "maintenance_id")
-	@Getter
-	@Setter
 	private Maintenance maintenance;
 
 	/**
