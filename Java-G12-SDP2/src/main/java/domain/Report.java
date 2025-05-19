@@ -20,6 +20,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import util.RequiredElementReport;
 
+/**
+ * Entity representing a maintenance report. Contains details about the
+ * maintenance activity, technician, timing, and related site.
+ */
 @Entity
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EqualsAndHashCode(of = "reportId")
