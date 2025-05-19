@@ -1,11 +1,10 @@
-package domain.user;
+package domain;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import domain.Address;
 import domain.notifications.NotificationObserver;
 import dto.UserDTO;
 import exceptions.InformationRequiredException;
@@ -14,6 +13,8 @@ import interfaces.Observer;
 import interfaces.Subject;
 import lombok.Getter;
 import lombok.Setter;
+import repository.UserDao;
+import repository.UserDaoJpa;
 import util.AuthenticationUtil;
 import util.DTOMapper;
 import util.Role;
@@ -289,22 +290,10 @@ public class UserController implements Subject
 		return DTOMapper.toUserDTO(updatedUser);
 	}
 
-	/**
-	 * Deletes a user with the specified ID.
-	 * 
-	 * @param id The ID of the user to delete
-	 */
-	public void delete(int id)
-	{
-		User user = userRepo.get(id);
-		userRepo.delete(user);
-	}
-
 	@Override
 	public void addObserver(Observer observer)
 	{
 		observers.add(observer);
-
 	}
 
 	@Override

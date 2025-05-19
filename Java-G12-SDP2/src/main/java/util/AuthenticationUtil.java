@@ -1,8 +1,8 @@
 package util;
 
-import domain.user.User;
-import domain.user.UserDao;
+import domain.User;
 import exceptions.InvalidInputException;
+import repository.UserDao;
 
 public class AuthenticationUtil {
 

@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.machine.MachineController;
+import domain.MachineController;
 import dto.MachineDTO;
 import gui.MainLayout;
 import gui.customComponents.CustomInformationBox;

@@ -5,9 +5,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import domain.Address;
-import domain.machine.Machine;
+import domain.Machine;
+import domain.User;
 import domain.site.Site;
-import domain.user.User;
 import dto.AddressDTO;
 import dto.MachineDTO;
 import dto.SiteDTO;

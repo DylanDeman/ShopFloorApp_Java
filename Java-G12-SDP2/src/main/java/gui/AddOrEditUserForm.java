@@ -2,7 +2,7 @@ package gui;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.user.UserController;
+import domain.UserController;
 import dto.AddressDTO;
 import dto.UserDTO;
 import exceptions.InformationRequiredException;

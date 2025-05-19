@@ -1,4 +1,4 @@
-package domain.machine;
+package domain;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 import domain.notifications.NotificationObserver;
 import domain.site.Site;
 import domain.site.SiteController;
-import domain.user.User;
 import dto.MachineDTO;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
@@ -78,17 +77,9 @@ public class MachineController implements Subject
 		Site site = DTOMapper.toSite(siteDTO, null);
 		User technician = DTOMapper.toUser(technicianDTO, null);
 
-		MachineBuilder builder = new MachineBuilder();
-		builder.createMachine();
-		builder.buildSite(site);
-		builder.buildTechnician(technician);
-		builder.buildCode(code);
-		builder.buildStatusses(machineStatus, productionStatus);
-		builder.buildLocation(location);
-		builder.buildProductInfo(productInfo);
-		builder.buildMaintenance(futureMaintenance);
-
-		Machine machine = builder.getMachine();
+		Machine machine = new Machine.Builder().buildSite(site).buildTechnician(technician).buildCode(code)
+				.buildMachineStatus(machineStatus).buildProductionStatus(productionStatus).buildLocation(location)
+				.buildProductInfo(productInfo).buildFutureMaintenance(futureMaintenance).build();
 
 		addNewMachine(machine);
 
@@ -99,22 +90,16 @@ public class MachineController implements Subject
 			MachineStatus machineStatus, ProductionStatus productionStatus, String location, String productInfo,
 			LocalDate futureMaintenance) throws InformationRequiredExceptionMachine
 	{
+		Machine existingMachine = machineRepo.get(id);
 
 		Site site = DTOMapper.toSite(siteDTO, null);
 		User technician = DTOMapper.toUser(technicianDTO, null);
 
-		MachineBuilder builder = new MachineBuilder();
-		builder.createMachine();
-		builder.buildId(id);
-		builder.buildSite(site);
-		builder.buildTechnician(technician);
-		builder.buildCode(code);
-		builder.buildStatusses(machineStatus, productionStatus);
-		builder.buildLocation(location);
-		builder.buildProductInfo(productInfo);
-		builder.buildMaintenance(futureMaintenance);
+		Machine machine = new Machine.Builder().buildSite(site).buildTechnician(technician).buildCode(code)
+				.buildMachineStatus(machineStatus).buildProductionStatus(productionStatus).buildLocation(location)
+				.buildProductInfo(productInfo).buildFutureMaintenance(futureMaintenance).build();
 
-		Machine machine = builder.getMachine();
+		machine.setId(existingMachine.getId());
 
 		updateMachine(machine);
 

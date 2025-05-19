@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import domain.User;
 import domain.notifications.NotificationObserver;
-import domain.user.User;
-import domain.user.UserDao;
-import domain.user.UserDaoJpa;
 import dto.SiteDTOWithMachines;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
@@ -16,6 +14,8 @@ import gui.AppServices;
 import interfaces.Observer;
 import interfaces.Subject;
 import repository.GenericDaoJpa;
+import repository.UserDao;
+import repository.UserDaoJpa;
 import util.DTOMapper;
 import util.Status;
 

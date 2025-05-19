@@ -101,14 +101,3 @@
 .date-picker .arrow-button:hover {
     -fx-background-color: #eeeeee;
 }
-
-/* Responsive styling for different screen sizes */
-@media (max-width: 700px) {
-    .form-box {
-        -fx-padding: 15.0px;
-    }
-
-    .form-label {
-        -fx-min-width: 100.0px;
-    }
-}

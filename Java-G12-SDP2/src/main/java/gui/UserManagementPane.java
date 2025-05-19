@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.user.UserController;
+import domain.UserController;
 import dto.UserDTO;
 import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;

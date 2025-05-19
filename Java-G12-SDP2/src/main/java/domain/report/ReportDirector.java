@@ -3,8 +3,8 @@ package domain.report;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import domain.User;
 import domain.site.Site;
-import domain.user.User;
 import exceptions.InformationRequiredExceptionReport;
 import util.AuthenticationUtil;
 import util.Role;

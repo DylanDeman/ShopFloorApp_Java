@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import domain.Address;
-import domain.machine.Machine;
-import domain.user.User;
+import domain.Machine;
+import domain.User;
 import interfaces.Observer;
 import interfaces.Subject;
 import jakarta.persistence.CascadeType;

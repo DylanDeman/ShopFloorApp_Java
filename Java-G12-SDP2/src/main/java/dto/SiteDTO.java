@@ -2,7 +2,7 @@ package dto;
 
 import java.util.Set;
 import domain.Address;
-import domain.user.User;
+import domain.User;
 import util.Status;
 
 public record SiteDTO(int id, String siteName, UserDTO verantwoordelijke, Set<MachineDTO> machines, Status status,

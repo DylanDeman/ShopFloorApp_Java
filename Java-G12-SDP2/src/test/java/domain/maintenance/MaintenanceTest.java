@@ -19,9 +19,9 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import domain.machine.Machine;
+import domain.Machine;
+import domain.User;
 import domain.site.Site;
-import domain.user.User;
 import dto.MachineDTO;
 import dto.MaintenanceDTO;
 import util.MaintenanceStatus;

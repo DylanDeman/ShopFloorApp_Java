@@ -24,14 +24,12 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 
-import domain.user.User;
-import domain.user.UserController;
-import domain.user.UserDao;
 import dto.AddressDTO;
 import dto.UserDTO;
 import exceptions.InformationRequiredException;
 import exceptions.InvalidInputException;
 import interfaces.Observer;
+import repository.UserDao;
 import util.AuthenticationUtil;
 import util.Role;
 import util.Status;

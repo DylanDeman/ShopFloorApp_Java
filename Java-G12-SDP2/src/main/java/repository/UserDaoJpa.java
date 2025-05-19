@@ -2,12 +2,12 @@
  * JPA implementation of the UserDao interface.
  * Provides concrete database operations for User entities using Java Persistence API.
  */
-package domain.user;
+package repository;
 
 import java.util.List;
 
+import domain.User;
 import exceptions.UserNotFoundWithEmailException;
-import repository.GenericDaoJpa;
 
 public class UserDaoJpa extends GenericDaoJpa<User> implements UserDao
 {

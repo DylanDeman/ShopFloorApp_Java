@@ -2,11 +2,11 @@
  * Data Access Object interface for User entities.
  * Extends the generic DAO interface with user-specific operations.
  */
-package domain.user;
+package repository;
 
 import java.util.List;
 
-import repository.GenericDao;
+import domain.User;
 
 public interface UserDao extends GenericDao<User>
 {
@@ -17,7 +17,7 @@ public interface UserDao extends GenericDao<User>
 	 * @return The User object with the specified email, or null if not found
 	 * @throws IllegalArgumentException if email parameter is null or empty
 	 */
-	public User getByEmail(String email);
+	User getByEmail(String email);
 
 	/**
 	 * Retrieves all users with the 'Technieker' role.

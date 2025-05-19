@@ -1,4 +1,4 @@
-package domain.user;
+package domain;
 
 import java.io.Serializable;
 import java.security.SecureRandom;
@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import domain.Address;
 import exceptions.InformationRequiredException;
 import interfaces.Observer;
 import interfaces.Subject;

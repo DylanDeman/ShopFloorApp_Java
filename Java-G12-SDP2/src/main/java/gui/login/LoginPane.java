@@ -1,6 +1,6 @@
 package gui.login;
 
-import domain.user.UserController;
+import domain.UserController;
 import exceptions.InvalidInputException;
 import gui.MainLayout;
 import javafx.geometry.Insets;

@@ -10,9 +10,9 @@ import java.util.Map;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.machine.MachineController;
+import domain.MachineController;
+import domain.UserController;
 import domain.maintenance.MaintenanceController;
-import domain.user.UserController;
 import dto.MachineDTO;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionMaintenance;

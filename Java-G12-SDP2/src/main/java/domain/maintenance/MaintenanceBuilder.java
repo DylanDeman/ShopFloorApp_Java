@@ -5,8 +5,8 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import domain.machine.Machine;
-import domain.user.User;
+import domain.Machine;
+import domain.User;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionMaintenance;
 import util.DTOMapper;

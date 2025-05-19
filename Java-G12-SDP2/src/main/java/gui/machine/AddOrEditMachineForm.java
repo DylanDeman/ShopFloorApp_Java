@@ -2,9 +2,9 @@ package gui.machine;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.machine.MachineController;
+import domain.MachineController;
+import domain.UserController;
 import domain.site.SiteController;
-import domain.user.UserController;
 import dto.MachineDTO;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;

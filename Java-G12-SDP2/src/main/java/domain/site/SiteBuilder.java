@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import domain.Address;
-import domain.user.User;
+import domain.User;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionSite;
 import util.DTOMapper;

@@ -5,10 +5,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import domain.machine.Machine;
-import domain.machine.MachineController;
-import domain.user.User;
-import domain.user.UserController;
+import domain.Machine;
+import domain.MachineController;
+import domain.User;
+import domain.UserController;
 import dto.MachineDTO;
 import dto.MaintenanceDTO;
 import dto.SiteDTOWithoutMachines;

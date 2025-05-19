@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import domain.user.User;
 import exceptions.InformationRequiredException;
 import interfaces.Observer;
 import util.Role;

@@ -5,9 +5,9 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import domain.User;
 import domain.maintenance.Maintenance;
 import domain.site.Site;
-import domain.user.User;
 import exceptions.InformationRequiredExceptionReport;
 import util.RequiredElementReport;
 
