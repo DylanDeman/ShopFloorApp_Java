@@ -18,7 +18,7 @@ import domain.Report;
 import domain.ReportController;
 import domain.Site;
 import domain.User;
-import exceptions.InformationRequiredExceptionReport;
+import exceptions.InvalidReportException;
 import repository.GenericDaoJpa;
 import util.Role;
 
@@ -70,8 +70,7 @@ public class ReportTest
 	@Test
 	public void createValidReport_success()
 	{
-		assertDoesNotThrow(() ->
-		{
+		assertDoesNotThrow(() -> {
 			var dto = reportController.createReport(validSite, validMaintenance, validTechnician, validStartDate,
 					validStartTime, validEndDate, validEndTime, validReason, validRemarks);
 			assertNotNull(dto);
