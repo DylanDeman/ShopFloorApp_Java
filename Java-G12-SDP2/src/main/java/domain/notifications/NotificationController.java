@@ -2,6 +2,8 @@ package domain.notifications;
 
 import java.util.List;
 
+import domain.Notification;
+
 public class NotificationController {
 	private NotificationDao notificationRepo;
 	private List<Notification> notificationList;

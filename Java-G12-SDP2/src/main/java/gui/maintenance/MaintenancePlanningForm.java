@@ -14,6 +14,7 @@ import domain.MachineController;
 import domain.MaintenanceController;
 import domain.UserController;
 import dto.MachineDTO;
+import dto.MaintenanceDTO;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionMaintenance;
 import gui.MainLayout;
@@ -39,6 +40,7 @@ public class MaintenancePlanningForm extends GridPane
 
 	private final MainLayout mainLayout;
 	private final MachineDTO machineDTO;
+	private final MaintenanceDTO maintenanceDTO;
 	private final MachineController mc;
 	private final MaintenanceController mntcc;
 	private final UserController uc;
@@ -62,10 +64,23 @@ public class MaintenancePlanningForm extends GridPane
 	{
 		this.mainLayout = mainLayout;
 		this.machineDTO = machineDTO;
+		this.maintenanceDTO = null;
 		this.mc = mainLayout.getServices().getMachineController();
 		this.mntcc = mainLayout.getServices().getMaintenanceController();
 		this.uc = mainLayout.getServices().getUserController();
 
+		initializeFields();
+		buildGUI();
+	}
+	
+	public MaintenancePlanningForm(MainLayout mainLayout, MaintenanceDTO maintenanceDTO, MachineDTO machineDTO)
+	{
+		this.mainLayout = mainLayout;
+		this.machineDTO = machineDTO;
+		this.mc = mainLayout.getServices().getMachineController();
+		this.mntcc = mainLayout.getServices().getMaintenanceController();
+		this.uc = mainLayout.getServices().getUserController();
+		this.maintenanceDTO = maintenanceDTO;
 		initializeFields();
 		buildGUI();
 	}
@@ -170,15 +185,13 @@ public class MaintenancePlanningForm extends GridPane
 						: null;
 
 				// Use the controller to create the maintenance
-				mntcc.createMaintenance(execDate, // execution date
-						startDateTime, // start date and time
-						endDateTime, // end date and time
-						technicianId, // technician ID
-						reasonField.getText(), // reason
-						commentsField.getText(), // comments
-						status, // status
-						machineId // machine ID
-				);
+				if (maintenanceDTO == null) {
+				    mntcc.createMaintenance(execDate, startDateTime, endDateTime, technicianId, reasonField.getText(),
+				            commentsField.getText(), status, machineId);
+				} else {
+				    mntcc.updateMaintenance(maintenanceDTO.id(), execDate, startDateTime, endDateTime, technicianId,
+				            reasonField.getText(), commentsField.getText(), status, machineId);
+				}
 
 				mainLayout.showMaintenanceList(machineDTO);
 
@@ -225,6 +238,37 @@ public class MaintenancePlanningForm extends GridPane
 
 		return formContent;
 	}
+	
+	private void populateFormFieldsForEdit()
+	{
+	    if (maintenanceDTO.executionDate() != null) {
+	        executionDatePicker.setValue(maintenanceDTO.executionDate());
+	    }
+
+	    if (maintenanceDTO.startDate() != null) {
+	        startTimeField.setValue(maintenanceDTO.startDate().toLocalTime());
+	    }
+
+	    if (maintenanceDTO.endDate() != null) {
+	        endTimeField.setValue(maintenanceDTO.endDate().toLocalTime());
+	    }
+
+	    if (maintenanceDTO.technician() != null) {
+	        technicianComboBox.setValue(maintenanceDTO.technician());
+	    }
+
+	    reasonField.setText(maintenanceDTO.reason() != null ? maintenanceDTO.reason() : "");
+	    commentsField.setText(maintenanceDTO.comments() != null ? maintenanceDTO.comments() : "");
+
+	    if (maintenanceDTO.status() != null) {
+	        statusComboBox.setValue(maintenanceDTO.status().name());
+	    }
+
+	    if (maintenanceDTO.machine() != null) {
+	        machineComboBox.setValue(maintenanceDTO.machine());
+	    }
+	}
+
 
 	private void initializeFields()
 	{
@@ -279,6 +323,10 @@ public class MaintenancePlanningForm extends GridPane
 			machineComboBox.setPromptText("Selecteer machine");
 			List<MachineDTO> machines = mc.getMachineList();
 			machineComboBox.getItems().addAll(machines);
+		}
+		
+		if(maintenanceDTO != null) {
+			populateFormFieldsForEdit();
 		}
 	}
 

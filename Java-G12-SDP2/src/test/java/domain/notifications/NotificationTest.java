@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 
 import org.junit.jupiter.api.Test;
 
+import domain.Notification;
+
 class NotificationTest {
 
     @Test

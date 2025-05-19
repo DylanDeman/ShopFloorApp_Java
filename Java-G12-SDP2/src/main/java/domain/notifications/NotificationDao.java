@@ -2,6 +2,7 @@ package domain.notifications;
 
 import java.util.List;
 
+import domain.Notification;
 import repository.GenericDao;
 
 public interface NotificationDao extends GenericDao<Notification>{
