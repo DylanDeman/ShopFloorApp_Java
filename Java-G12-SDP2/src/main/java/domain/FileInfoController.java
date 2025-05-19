@@ -1,4 +1,4 @@
-package domain.maintenance;
+package domain;
 
 import java.io.File;
 import java.io.FileInputStream;

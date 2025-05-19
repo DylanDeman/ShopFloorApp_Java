@@ -1,8 +1,8 @@
-package domain;
+package repository;
 
 import java.util.List;
 
-import repository.GenericDao;
+import domain.Notification;
 
 public interface NotificationDao extends GenericDao<Notification>{
 	public List<Notification> getAllRead();

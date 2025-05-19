@@ -1,11 +1,9 @@
 package domain;
 
 import java.io.Serializable;
-import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +28,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import util.PasswordHasher;
 import util.RequiredElement;
 import util.Role;
 import util.Status;
@@ -289,19 +286,15 @@ public class User implements Serializable, Subject
 		{
 			validateRequiredFields();
 
-			String password = generatePassword();
 			user = new User();
 			user.setFirstName(firstName);
 			user.setLastName(lastName);
 			user.setEmail(email);
 			user.setPhoneNumber(phoneNumber);
-			user.setPassword(PasswordHasher.hash(password));
 			user.setBirthdate(birthdate);
 			user.setAddress(address);
 			user.setRole(role);
 			user.setStatus(status);
-
-			System.out.println("Generated password: " + password);
 
 			return user;
 		}
@@ -371,53 +364,6 @@ public class User implements Serializable, Subject
 			}
 		}
 
-		/**
-		 * Generates a secure random password with a mix of character types. The
-		 * password will contain at least one lowercase letter, one uppercase letter,
-		 * one digit, and one special character. The total length of the password will
-		 * be between 10 and 20 characters (inclusive).
-		 * 
-		 * The password is generated using cryptographically secure random numbers and
-		 * includes characters from the following categories: - Lowercase letters (a-z)
-		 * - Uppercase letters (A-Z) - Digits (0-9) - Special characters
-		 * (!@#$%^&*()-_=+[]{}|;:'",.<>/?)
-		 * 
-		 * @return A randomly generated secure password as a String
-		 * @see SecureRandom
-		 */
-		private static String generatePassword()
-		{
-			SecureRandom random = new SecureRandom();
-			String lower = "abcdefghijklmnopqrstuvwxyz";
-			String upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-			String digits = "0123456789";
-			String special = "!@#$%^&*()-_=+[]{}|;:'\",.<>/?";
-			String allChars = lower + upper + digits + special;
-
-			int length = 10 + random.nextInt(11);
-
-			ArrayList<Character> password = new ArrayList<>();
-
-			password.add(lower.charAt(random.nextInt(lower.length())));
-			password.add(upper.charAt(random.nextInt(upper.length())));
-			password.add(digits.charAt(random.nextInt(digits.length())));
-			password.add(special.charAt(random.nextInt(special.length())));
-
-			for (int i = 4; i < length; i++)
-			{
-				password.add(allChars.charAt(random.nextInt(allChars.length())));
-			}
-
-			Collections.shuffle(password, random);
-
-			StringBuilder sb = new StringBuilder();
-			for (char c : password)
-			{
-				sb.append(c);
-			}
-
-			return sb.toString();
-		}
 	}
 
 }

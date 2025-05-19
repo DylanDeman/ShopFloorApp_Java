@@ -3,6 +3,8 @@ package domain;
 import java.util.List;
 
 import dto.NotificationDTO;
+import repository.NotificationDao;
+import repository.NotificationDaoJpa;
 
 public class NotificationController {
 	private NotificationDao notificationRepo;
