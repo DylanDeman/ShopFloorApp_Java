@@ -6,12 +6,14 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import domain.Address;
-import interfaces.Observer;
-import interfaces.Subject;
 import domain.notifications.NotificationObserver;
 import dto.UserDTO;
 import exceptions.InformationRequiredException;
 import exceptions.InvalidInputException;
+import interfaces.Observer;
+import interfaces.Subject;
+import lombok.Getter;
+import lombok.Setter;
 import util.AuthenticationUtil;
 import util.DTOMapper;
 import util.Role;
@@ -24,6 +26,8 @@ import util.Status;
  */
 public class UserController implements Subject
 {
+	@Setter
+	@Getter
 	private UserDao userRepo;
 
 	private List<Observer> observers = new ArrayList<>();
@@ -128,7 +132,7 @@ public class UserController implements Subject
 	{
 		return userRepo.getByEmail(email);
 	}
-	
+
 	/**
 	 * Retrieves a user DTO by their name.
 	 * 
@@ -137,20 +141,20 @@ public class UserController implements Subject
 	 */
 	public UserDTO getUserByName(String name)
 	{
-	    if (name == null || !name.contains(" ")) {
-	        return null; // or throw an exception
-	    }
+		if (name == null || !name.contains(" "))
+		{
+			return null; // or throw an exception
+		}
 
-	    String[] parts = name.trim().split(" ", 2);
-	    String firstname = parts[0];
-	    String lastname = parts[1]; // everything after the first space
+		String[] parts = name.trim().split(" ", 2);
+		String firstname = parts[0];
+		String lastname = parts[1]; // everything after the first space
 
-	    return getAllVerantwoordelijken().stream()
-	        .filter(v -> v.firstName().equalsIgnoreCase(firstname) && v.lastName().equalsIgnoreCase(lastname))
-	        .findFirst()
-	        .orElse(null);
+		return getAllVerantwoordelijken().stream()
+				.filter(v -> v.firstName().equalsIgnoreCase(firstname) && v.lastName().equalsIgnoreCase(lastname))
+				.findFirst().orElse(null);
 	}
-	
+
 	/**
 	 * Retrieves a user DTO by their email address.
 	 * 
