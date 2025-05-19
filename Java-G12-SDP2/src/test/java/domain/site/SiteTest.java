@@ -17,8 +17,9 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import domain.machine.Machine;
-import domain.user.User;
+import domain.Machine;
+import domain.Site;
+import domain.User;
 import exceptions.InvalidInputException;
 import util.Status;
 

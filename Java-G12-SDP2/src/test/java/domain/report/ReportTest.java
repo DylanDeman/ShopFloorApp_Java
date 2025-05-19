@@ -12,11 +12,13 @@ import java.time.LocalTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import domain.maintenance.Maintenance;
-import domain.maintenance.MaintenanceController;
-import domain.site.Site;
-import domain.user.User;
-import exceptions.InvalidReportException;
+import domain.Maintenance;
+import domain.MaintenanceController;
+import domain.Report;
+import domain.ReportController;
+import domain.Site;
+import domain.User;
+import exceptions.InformationRequiredExceptionReport;
 import repository.GenericDaoJpa;
 import util.Role;
 

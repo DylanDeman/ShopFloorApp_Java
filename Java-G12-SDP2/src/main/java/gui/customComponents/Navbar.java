@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import domain.User;
 import domain.notifications.NotificationController;
 import domain.notifications.NotificationDTO;
-import domain.user.User;
 import gui.MainLayout;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -127,7 +127,7 @@ public class Navbar extends HBox
 
 			navLinks.getChildren().addAll(maintenanceBtn, sitesBtn, machinesBtn);
 
-			if (AuthenticationUtil.hasRole(Role.ADMIN))
+			if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 			{
 				Button userBtn = createNavButton("Gebruikers", CurrentPage.USERS, activePage,
 						e -> mainLayout.showUserManagementScreen());

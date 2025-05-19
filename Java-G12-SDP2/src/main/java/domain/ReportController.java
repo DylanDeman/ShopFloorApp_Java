@@ -1,4 +1,4 @@
-package domain.report;
+package domain;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

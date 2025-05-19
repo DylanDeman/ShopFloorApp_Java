@@ -19,9 +19,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import domain.machine.Machine;
-import domain.site.Site;
-import domain.user.User;
+import domain.Machine;
+import domain.Maintenance;
+import domain.MaintenanceController;
+import domain.Site;
+import domain.User;
 import dto.MachineDTO;
 import dto.MaintenanceDTO;
 import util.MaintenanceStatus;
@@ -31,37 +33,37 @@ public class MaintenanceTest
 {
 	@Mock
 	private MaintenanceDao maintenanceDao;
-	
+
 	@Mock
 	private Machine machine;
-	
+
 	@Mock
 	private User technician;
-	
+
 	@Mock
 	private Site site;
-	
+
 	private MaintenanceController maintenanceController;
 	private Maintenance maintenance;
-	
+
 	@BeforeEach
 	void setUp()
 	{
 		maintenanceController = Mockito.spy(new MaintenanceController());
 		Mockito.doReturn(maintenanceDao).when(maintenanceController).getMaintenanceDao();
-		
+
 		when(machine.getCode()).thenReturn("TEST-001");
 		when(machine.getSite()).thenReturn(site);
 		when(site.getSiteName()).thenReturn("Test Site");
 		when(technician.getEmail()).thenReturn("test@example.com");
 		when(technician.getFirstName()).thenReturn("Test");
 		when(technician.getLastName()).thenReturn("User");
-		
+
 		LocalDateTime now = LocalDateTime.now();
-		maintenance = new Maintenance(LocalDate.now(), now, now.plusDays(1).minusHours(2), 
-				technician, "Test reason", "Test comments", MaintenanceStatus.IN_PROGRESS, machine);
+		maintenance = new Maintenance(LocalDate.now(), now, now.plusDays(1).minusHours(2), technician, "Test reason",
+				"Test comments", MaintenanceStatus.IN_UITVOERING, machine);
 	}
-	
+
 	@Test
 	void getMaintenances_ShouldReturnListOfMaintenanceDTOs()
 	{
@@ -71,7 +73,7 @@ public class MaintenanceTest
 		assertEquals(1, result.size());
 		assertEquals(maintenance.getId(), result.get(0).id());
 	}
-	
+
 	@Test
 	void getMaintenance_ShouldReturnMaintenance()
 	{
@@ -80,7 +82,7 @@ public class MaintenanceTest
 		assertNotNull(result);
 		assertEquals(maintenance.getId(), result.getId());
 	}
-	
+
 	@Test
 	void convertToMachineDTO_ShouldConvertCorrectly()
 	{
@@ -90,15 +92,13 @@ public class MaintenanceTest
 		verify(machine).getCode();
 		verify(machine).getSite();
 	}
-	
+
 	@ParameterizedTest
-	@CsvSource(
-	{ "2025-05-01T10:00,2025-05-01T09:00", "2025-05-02T15:00,2025-05-01T15:00" })
+	@CsvSource({ "2025-05-01T10:00,2025-05-01T09:00", "2025-05-02T15:00,2025-05-01T15:00" })
 	void setEndDate_wrongEndDates_throwsException(String start, String end)
 	{
-		Maintenance maintenance = new Maintenance(LocalDate.now(), LocalDateTime.parse(start),
-				LocalDateTime.parse(end), technician, "Test reason", "Test comments", 
-				MaintenanceStatus.IN_PROGRESS, machine);
+		Maintenance maintenance = new Maintenance(LocalDate.now(), LocalDateTime.parse(start), LocalDateTime.parse(end),
+				technician, "Test reason", "Test comments", MaintenanceStatus.IN_UITVOERING, machine);
 		assertThrows(IllegalStateException.class, maintenance::validateDates);
 	}
 }

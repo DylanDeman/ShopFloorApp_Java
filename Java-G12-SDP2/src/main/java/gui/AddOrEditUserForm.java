@@ -1,9 +1,8 @@
 package gui;
 
 import org.kordamp.ikonli.javafx.FontIcon;
-import domain.Address;
-import domain.user.User;
-import domain.user.UserController;
+
+import domain.UserController;
 import dto.AddressDTO;
 import dto.UserDTO;
 import exceptions.InformationRequiredException;
@@ -24,7 +23,8 @@ import util.RequiredElement;
 import util.Role;
 import util.Status;
 
-public class AddOrEditUserForm extends GridPane {
+public class AddOrEditUserForm extends GridPane
+{
 	private UserDTO user;
 
 	private final MainLayout mainLayout;
@@ -41,33 +41,34 @@ public class AddOrEditUserForm extends GridPane {
 	private Label roleError, statusError;
 
 	private boolean isNewUser;
-	
-	
-	// Niet volgens SOLID principe => Single Responsibility!
-	public AddOrEditUserForm(MainLayout mainLayout, int userId) {
+
+	public AddOrEditUserForm(MainLayout mainLayout, int userId)
+	{
 		this.mainLayout = mainLayout;
 		this.isNewUser = false;
-		
+
 		this.uc = AppServices.getInstance().getUserController();
 		this.user = uc.getUserDTOById(userId);
 
 		initializeFields();
 		buildGUI();
-		
+
 		fillUserData();
 	}
-	
-	public AddOrEditUserForm(MainLayout mainLayout) {
+
+	public AddOrEditUserForm(MainLayout mainLayout)
+	{
 		this.isNewUser = true;
 		this.mainLayout = mainLayout;
-		
+
 		this.uc = AppServices.getInstance().getUserController();
 
 		initializeFields();
 		buildGUI();
 	}
 
-	private void buildGUI() {
+	private void buildGUI()
+	{
 		this.getStylesheets().add(getClass().getResource("/css/form.css").toExternalForm());
 		this.setAlignment(Pos.CENTER);
 		this.setHgap(10);
@@ -85,7 +86,8 @@ public class AddOrEditUserForm extends GridPane {
 		this.add(mainContainer, 0, 0);
 	}
 
-	private HBox createFormContent() {
+	private HBox createFormContent()
+	{
 		HBox formContent = new HBox(30);
 		formContent.setAlignment(Pos.TOP_CENTER);
 		formContent.getStyleClass().add("form-box");
@@ -114,7 +116,8 @@ public class AddOrEditUserForm extends GridPane {
 		return formContent;
 	}
 
-	private HBox createSaveButton() {
+	private HBox createSaveButton()
+	{
 		Button saveButton = new Button("Opslaan");
 		saveButton.getStyleClass().add("save-button");
 		saveButton.setOnAction(e -> saveUser());
@@ -132,7 +135,8 @@ public class AddOrEditUserForm extends GridPane {
 		return buttonBox;
 	}
 
-	private VBox createTitleSection() {
+	private VBox createTitleSection()
+	{
 		HBox hbox = new HBox(10);
 		hbox.setAlignment(Pos.CENTER_LEFT);
 
@@ -155,7 +159,8 @@ public class AddOrEditUserForm extends GridPane {
 		return new VBox(10, hbox);
 	}
 
-	private void fillUserData() {
+	private void fillUserData()
+	{
 		firstNameField.setText(user.firstName());
 		lastNameField.setText(user.lastName());
 		emailField.setText(user.email());
@@ -163,7 +168,8 @@ public class AddOrEditUserForm extends GridPane {
 		birthdatePicker.setValue(user.birDate());
 
 		AddressDTO address = user.address();
-		if (address != null) {
+		if (address != null)
+		{
 			streetField.setText(address.street());
 			houseNumberField.setText(String.valueOf(address.number()));
 			postalCodeField.setText(String.valueOf(address.postalcode()));
@@ -174,7 +180,8 @@ public class AddOrEditUserForm extends GridPane {
 		statusBox.setValue(user.status());
 	}
 
-	private GridPane createUserFieldsSection() {
+	private GridPane createUserFieldsSection()
+	{
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -207,7 +214,8 @@ public class AddOrEditUserForm extends GridPane {
 		return pane;
 	}
 
-	private GridPane createAddressFieldsSection() {
+	private GridPane createAddressFieldsSection()
+	{
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -236,7 +244,8 @@ public class AddOrEditUserForm extends GridPane {
 		return pane;
 	}
 
-	private GridPane createRoleStatusSection() {
+	private GridPane createRoleStatusSection()
+	{
 		GridPane pane = new GridPane();
 		pane.setVgap(5);
 		pane.setHgap(10);
@@ -253,7 +262,8 @@ public class AddOrEditUserForm extends GridPane {
 		pane.add(roleBox, 1, row++);
 		pane.add(roleError, 1, row++);
 
-		if (!isNewUser) {
+		if (!isNewUser)
+		{
 			pane.add(new Label("Status:"), 0, row);
 			pane.add(statusBox, 1, row++);
 			pane.add(statusError, 1, row++);
@@ -262,67 +272,59 @@ public class AddOrEditUserForm extends GridPane {
 		return pane;
 	}
 
-	private void saveUser() {
-	    resetErrorLabels();
+	private void saveUser()
+	{
+		resetErrorLabels();
 
-	    if (!AuthenticationUtil.hasRole(Role.ADMIN)) {
-	        mainLayout.showNotAllowedAlert();
-	        return;
-	    }
+		if (!AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
+		{
+			mainLayout.showNotAllowedAlert();
+			return;
+		}
 
-	    try {
-	        if (isNewUser) {
-	            uc.createUser(
-	                firstNameField.getText(),
-	                lastNameField.getText(),
-	                emailField.getText(),
-	                phoneField.getText(),
-	                birthdatePicker.getValue(),
-	                streetField.getText(),
-	                houseNumberField.getText(),
-	                postalCodeField.getText(),
-	                cityField.getText(),
-	                roleBox.getValue()
-	            );
-	        } else {
-	            uc.updateUser(
-	                user.id(),
-	                firstNameField.getText(),
-	                lastNameField.getText(),
-	                emailField.getText(),
-	                phoneField.getText(),
-	                birthdatePicker.getValue(),
-	                streetField.getText(),
-	                houseNumberField.getText(),
-	                postalCodeField.getText(),
-	                cityField.getText(),
-	                roleBox.getValue(),
-	                statusBox.getValue()
-	            );
-	        }
+		try
+		{
+			if (isNewUser)
+			{
+				uc.createUser(firstNameField.getText(), lastNameField.getText(), emailField.getText(),
+						phoneField.getText(), birthdatePicker.getValue(), streetField.getText(),
+						houseNumberField.getText(), postalCodeField.getText(), cityField.getText(), roleBox.getValue());
+			} else
+			{
+				uc.updateUser(user.id(), firstNameField.getText(), lastNameField.getText(), emailField.getText(),
+						phoneField.getText(), birthdatePicker.getValue(), streetField.getText(),
+						houseNumberField.getText(), postalCodeField.getText(), cityField.getText(), roleBox.getValue(),
+						statusBox.getValue());
+			}
 
-	        mainLayout.showUserManagementScreen();
-	    } catch (InformationRequiredException e) {
-	        handleInformationRequiredException(e);
-	    } catch (NumberFormatException e) {
-	        showError("Huisnummer en postcode moeten numeriek zijn");
-	    } catch (Exception e) {
-	        showError("Er is een fout opgetreden: " + e.getMessage());
-	        e.printStackTrace();
-	    }
+			mainLayout.showUserManagementScreen();
+		} catch (InformationRequiredException e)
+		{
+			handleInformationRequiredException(e);
+		} catch (NumberFormatException e)
+		{
+			showError("Huisnummer en postcode moeten numeriek zijn");
+		} catch (Exception e)
+		{
+			showError("Er is een fout opgetreden: " + e.getMessage());
+			e.printStackTrace();
+		}
 	}
 
-	private Label createErrorLabel() {
+	private Label createErrorLabel()
+	{
 		Label errorLabel = new Label();
 		errorLabel.getStyleClass().add("error-label");
 		return errorLabel;
 	}
 
-	private void showError(String message) {
+	private void showError(String message)
+	{
 		errorLabel.setText(message);
 	}
 
-	private void handleInformationRequiredException(InformationRequiredException e) {
+	private void handleInformationRequiredException(InformationRequiredException e)
+	{
 		e.getInformationRequired().forEach((field, requiredElement) -> {
 			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
 			showFieldError(field, errorMessage);
@@ -330,8 +332,10 @@ public class AddOrEditUserForm extends GridPane {
 
 	}
 
-	private String getErrorMessageForRequiredElement(RequiredElement element) {
-		switch (element) {
+	private String getErrorMessageForRequiredElement(RequiredElement element)
+	{
+		switch (element)
+		{
 		case FIRST_NAME_REQUIRED:
 			return "Voornaam is verplicht";
 		case LAST_NAME_REQUIRED:
@@ -357,8 +361,10 @@ public class AddOrEditUserForm extends GridPane {
 		}
 	}
 
-	private void showFieldError(String fieldName, String message) {
-		switch (fieldName) {
+	private void showFieldError(String fieldName, String message)
+	{
+		switch (fieldName)
+		{
 		case "firstName":
 			firstNameError.setText(message);
 			break;
@@ -397,7 +403,8 @@ public class AddOrEditUserForm extends GridPane {
 		}
 	}
 
-	private void resetErrorLabels() {
+	private void resetErrorLabels()
+	{
 		errorLabel.setText("");
 		firstNameError.setText("");
 		lastNameError.setText("");
@@ -412,7 +419,8 @@ public class AddOrEditUserForm extends GridPane {
 		statusError.setText("");
 	}
 
-	private void initializeFields() {
+	private void initializeFields()
+	{
 		streetError = createErrorLabel();
 		houseNumberError = createErrorLabel();
 		postalCodeError = createErrorLabel();

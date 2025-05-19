@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.maintenance.MaintenanceController;
+import domain.MaintenanceController;
 import dto.MachineDTO;
 import dto.MaintenanceDTO;
 import gui.MainLayout;
@@ -113,11 +113,12 @@ public class MaintenanceListComponent extends VBox
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 
 		hbox.getChildren().addAll(backButton, title);
-		if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+		if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
 		{
 			CustomButton maintenancePlanBtn = new CustomButton("Onderhoud inplannen");
 			maintenancePlanBtn.setOnAction((e) -> {
-				if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+				if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR)
+						|| AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
 				{
 					mainLayout.showMaintenancePlanning(machineDTO);
 				} else
@@ -159,13 +160,13 @@ public class MaintenanceListComponent extends VBox
 			columns = new ArrayList<>(List.of(col1, col2, col3, col4, col5, col6, col7, col8));
 		}
 
-		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMIN))
+		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 		{
 			TableColumn<MaintenanceDTO, Void> col9 = createDetailsButton();
 			columns.add(col9);
 		}
 
-		if (AuthenticationUtil.hasRole(Role.TECHNIEKER) || AuthenticationUtil.hasRole(Role.ADMIN))
+		if (AuthenticationUtil.hasRole(Role.TECHNIEKER) || AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 		{
 			TableColumn<MaintenanceDTO, Void> col10 = createAddReportButton();
 			columns.add(col10);
@@ -247,7 +248,8 @@ public class MaintenanceListComponent extends VBox
 			private final CustomButton btn = new CustomButton("Details", Pos.CENTER);
 			{
 				btn.setOnAction(e -> {
-					if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+					if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR)
+							|| AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
 					{
 						MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
 						goToDetails(mainLayout, selectedMaintenance);
@@ -281,7 +283,7 @@ public class MaintenanceListComponent extends VBox
 			private final CustomButton btn = new CustomButton("Rapport toevoegen", Pos.CENTER);
 			{
 				btn.setOnAction(e -> {
-					if (AuthenticationUtil.hasRole(Role.ADMIN) || AuthenticationUtil.hasRole(Role.TECHNIEKER))
+					if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR) || AuthenticationUtil.hasRole(Role.TECHNIEKER))
 					{
 						MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
 						goToAddReport(mainLayout, selectedMaintenance);

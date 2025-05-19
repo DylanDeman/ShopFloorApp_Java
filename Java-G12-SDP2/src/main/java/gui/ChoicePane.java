@@ -36,7 +36,7 @@ public class ChoicePane extends GridPane
 		this.add(sitesButton, 2, 1);
 		this.add(machinesButton, 3, 1);
 
-		if (AuthenticationUtil.hasRole(Role.ADMIN))
+		if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 		{
 			Button userManagementButton = createButton("Overzicht gebruikers");
 			userManagementButton.setOnAction(e -> mainLayout.showUserManagementScreen());

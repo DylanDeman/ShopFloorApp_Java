@@ -1,6 +1,6 @@
 package gui.login;
 
-import domain.user.UserController;
+import domain.UserController;
 import exceptions.InvalidInputException;
 import gui.MainLayout;
 import javafx.geometry.Insets;
@@ -37,8 +37,8 @@ public class LoginPane extends VBox
 	public LoginPane(MainLayout mainLayout)
 	{
 		// TODO Tijdelijk terug wegdoen later
-		emailField.setText("piet@email.com");
-		passwordField.setText("password");
+		emailField.setText("alice.admin@example.com");
+		passwordField.setText("123456789");
 
 		this.mainLayout = mainLayout;
 		this.getStylesheets().add(getClass().getResource(CSS_PATH).toExternalForm());
