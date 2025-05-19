@@ -171,7 +171,13 @@ public class MaintenanceListComponent extends VBox
 		TableColumn<MaintenanceDTO, String> col3 = createColumn("Eindtijdstip",
 				m -> m.endDate().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")).toString());
 		TableColumn<MaintenanceDTO, String> col4 = createColumn("Naam technieker",
-				m -> m.technician() != null ? m.technician().firstName() : "Onbekend");
+				m -> {
+				    if (m.technician() == null) return "Onbekend";
+				    String first = m.technician().firstName();
+				    String last = m.technician().lastName();
+				    String formattedLast = last.substring(0, 1).toUpperCase() + last.substring(1).toLowerCase();
+				    return String.format("%s %s", first, formattedLast);
+				});
 		TableColumn<MaintenanceDTO, String> col5 = createColumn("Reden", MaintenanceDTO::reason);
 		TableColumn<MaintenanceDTO, String> col6 = createColumn("Opmerkingen", MaintenanceDTO::comments);
 		TableColumn<MaintenanceDTO, String> col7 = createColumn("Status", m -> m.status().toString());

@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -53,10 +54,12 @@ public class MaintenancePlanningForm extends GridPane
 
 	private TextArea commentsField;
 
-	private ComboBox<UserDTO> technicianComboBox;
+	private ComboBox<String> technicianComboBox;
 	private ComboBox<LocalTime> startTimeField, endTimeField;
 	private ComboBox<String> statusComboBox;
-	private ComboBox<MachineDTO> machineComboBox;
+	private ComboBox<String> machineComboBox;
+	private Map<String, UserDTO> technicianMap;
+	private Map<String, MachineDTO> machineMap;
 
 	private DatePicker executionDatePicker;
 
@@ -147,7 +150,7 @@ public class MaintenancePlanningForm extends GridPane
 		saveButton.setMaxWidth(Double.MAX_VALUE);
 
 		HBox buttonBox = new HBox(saveButton);
-		buttonBox.setAlignment(Pos.CENTER);
+		buttonBox.setAlignment(Pos.CENTER_RIGHT);
 		buttonBox.setPadding(new Insets(20, 0, 0, 0));
 
 		buttonBox.setMinWidth(800);
@@ -176,8 +179,15 @@ public class MaintenancePlanningForm extends GridPane
 						: null;
 
 				// Get IDs for technician and machine
-				int technicianId = technicianComboBox.getValue() != null ? technicianComboBox.getValue().id() : 0;
-				int machineId = machineComboBox.getValue() != null ? machineComboBox.getValue().id() : 0;
+				String selectedTechnician = technicianComboBox.getValue();
+				int technicianId = selectedTechnician != null && technicianMap.containsKey(selectedTechnician)
+				    ? technicianMap.get(selectedTechnician).id()
+				    : 0;
+				String selectedMachine = machineComboBox.getValue();
+				int machineId = selectedMachine != null && machineMap.containsKey(selectedMachine)
+				    ? machineMap.get(selectedMachine).id()
+				    : 0;
+
 
 				// Get status
 				MaintenanceStatus status = statusComboBox.getValue() != null
@@ -254,7 +264,13 @@ public class MaintenancePlanningForm extends GridPane
 	    }
 
 	    if (maintenanceDTO.technician() != null) {
-	        technicianComboBox.setValue(maintenanceDTO.technician());
+	        String key = String.format("%d %s %s",
+	            maintenanceDTO.technician().id(),
+	            maintenanceDTO.technician().firstName(),
+	            maintenanceDTO.technician().lastName());
+	        if (technicianMap.containsKey(key)) {
+	            technicianComboBox.setValue(key);
+	        }
 	    }
 
 	    reasonField.setText(maintenanceDTO.reason() != null ? maintenanceDTO.reason() : "");
@@ -265,8 +281,12 @@ public class MaintenancePlanningForm extends GridPane
 	    }
 
 	    if (maintenanceDTO.machine() != null) {
-	        machineComboBox.setValue(maintenanceDTO.machine());
+	        String key = String.format("%d Machine %s", maintenanceDTO.machine().id(), maintenanceDTO.machine().code());
+	        if (machineMap.containsKey(key)) {
+	            machineComboBox.setValue(key);
+	        }
 	    }
+
 	}
 
 
@@ -286,8 +306,19 @@ public class MaintenancePlanningForm extends GridPane
 
 		commentsField = new TextArea();
 
+		List<UserDTO> technicians = uc.getAllTechniekers();
+
+		technicianMap = technicians.stream()
+		    .collect(Collectors.toMap(
+		        t -> String.format("%d %s %s", t.id(), t.firstName(), t.lastName()),
+		        t -> t
+		    ));
+
 		technicianComboBox = new ComboBox<>();
-		technicianComboBox.getItems().addAll(uc.getAllTechniekers());
+		technicianComboBox.getItems().addAll(technicianMap.keySet());
+		technicianComboBox.setPromptText("Selecteer technieker");
+		technicianComboBox.setPrefWidth(200);
+
 		technicianComboBox.setPromptText("Selecteer technieker");
 		technicianComboBox.setPrefWidth(200);
 
@@ -310,20 +341,28 @@ public class MaintenancePlanningForm extends GridPane
 		machineComboBox = new ComboBox<>();
 		machineComboBox.setPrefWidth(200);
 
-		statusComboBox.getItems().addAll(Arrays.stream(MaintenanceStatus.values()).map(Enum::toString).toList());
+		List<String> statusses = Arrays.stream(MaintenanceStatus.values()).map(Enum::toString).toList();
+		if(AuthenticationUtil.hasRole(Role.TECHNIEKER)) {
+			statusses = Arrays.stream(MaintenanceStatus.values()).filter(s -> !s.equals(MaintenanceStatus.INGEPLAND)).map(Enum::toString).toList();
+		}
+		statusComboBox.getItems().addAll(statusses);
 		statusComboBox.setPromptText("Selecteer status");
 
-		if (machineDTO != null)
-		{
-			machineComboBox.getItems().add(machineDTO);
-			machineComboBox.setValue(machineDTO);
-			machineComboBox.setDisable(true);
-		} else
-		{
-			machineComboBox.setPromptText("Selecteer machine");
-			List<MachineDTO> machines = mc.getMachineList();
-			machineComboBox.getItems().addAll(machines);
+		List<MachineDTO> machines = mc.getMachineList();
+		machineMap = machines.stream().collect(Collectors.toMap(
+		    m -> String.format("%d Machine %s", m.id(), m.code()), m -> m
+		));
+
+		machineComboBox.getItems().addAll(machineMap.keySet());
+		machineComboBox.setPromptText("Selecteer machine");
+		machineComboBox.setPrefWidth(200);
+
+		if (machineDTO != null) {
+		    String key = String.format("%d Machine %s", machineDTO.id(), machineDTO.code());
+		    machineComboBox.setValue(key);
+		    machineComboBox.setDisable(true);
 		}
+
 		
 		if(maintenanceDTO != null) {
 			populateFormFieldsForEdit();
