@@ -14,10 +14,10 @@ import java.time.LocalTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import domain.Site;
 import domain.User;
 import domain.maintenance.Maintenance;
 import domain.maintenance.MaintenanceController;
-import domain.site.Site;
 import exceptions.InformationRequiredExceptionReport;
 import repository.GenericDaoJpa;
 import util.Role;

@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import domain.notifications.NotificationObserver;
-import domain.site.Site;
-import domain.site.SiteController;
 import dto.MachineDTO;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;

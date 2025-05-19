@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.site.SiteController;
+import domain.SiteController;
 import dto.MachineDTO;
 import dto.SiteDTOWithMachines;
 import dto.UserDTO;

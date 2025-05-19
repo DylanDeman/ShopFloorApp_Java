@@ -18,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domain.Machine;
+import domain.Site;
 import domain.User;
 import exceptions.InvalidInputException;
 import util.Status;

@@ -6,8 +6,8 @@ import java.util.stream.Collectors;
 
 import domain.Address;
 import domain.Machine;
+import domain.Site;
 import domain.User;
-import domain.site.Site;
 import dto.AddressDTO;
 import dto.MachineDTO;
 import dto.SiteDTO;

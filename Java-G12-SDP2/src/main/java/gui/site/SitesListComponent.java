@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.site.SiteController;
+import domain.SiteController;
 import dto.SiteDTOWithMachines;
 import gui.AddOrEditSiteForm;
 import gui.MainLayout;

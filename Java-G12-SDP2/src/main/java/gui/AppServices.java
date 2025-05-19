@@ -1,12 +1,12 @@
 package gui;
 
 import domain.MachineController;
+import domain.SiteController;
 import domain.UserController;
 import domain.maintenance.FileInfoController;
 import domain.maintenance.MaintenanceController;
 import domain.notifications.NotificationController;
 import domain.report.ReportController;
-import domain.site.SiteController;
 import lombok.Getter;
 
 @Getter

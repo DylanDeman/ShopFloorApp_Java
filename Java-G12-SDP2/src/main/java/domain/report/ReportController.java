@@ -4,10 +4,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import domain.Site;
 import domain.User;
 import domain.maintenance.Maintenance;
 import domain.maintenance.MaintenanceController;
-import domain.site.Site;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionReport;

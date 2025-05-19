@@ -16,8 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import domain.Machine;
+import domain.Site;
 import domain.User;
-import domain.site.Site;
 import util.MachineStatus;
 import util.ProductionStatus;
 

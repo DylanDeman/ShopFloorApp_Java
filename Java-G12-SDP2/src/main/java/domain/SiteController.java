@@ -1,10 +1,9 @@
-package domain.site;
+package domain;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import domain.User;
 import domain.notifications.NotificationObserver;
 import dto.SiteDTOWithMachines;
 import dto.SiteDTOWithoutMachines;
@@ -120,22 +119,18 @@ public class SiteController implements Subject
 		int houseNumberInt = Integer.parseInt(houseNumber);
 		int postalCodeInt = Integer.parseInt(postalCode);
 
+		Address address = new Address();
+		address.setStreet(street);
+		address.setNumber(houseNumberInt);
+		address.setPostalcode(postalCodeInt);
+		address.setCity(city);
+
 		User existingUser = userDao.getByEmail(employee.email());
 
 		User employeeObject = DTOMapper.toUser(employee, existingUser);
 
-		SiteBuilder siteBuilder = new SiteBuilder();
-		siteBuilder.createSite();
-		siteBuilder.buildName(siteName);
-		siteBuilder.createAddress();
-		siteBuilder.buildStreet(street);
-		siteBuilder.buildNumber(houseNumberInt);
-		siteBuilder.buildPostalcode(postalCodeInt);
-		siteBuilder.buildCity(city);
-		siteBuilder.buildEmployee(employeeObject);
-		siteBuilder.buildStatus(Status.ACTIEF); // New sites are active by default
-
-		Site newSite = siteBuilder.getSite();
+		Site newSite = new Site.Builder().buildSiteName(siteName).buildAddress(address)
+				.buildVerantwoordelijke(employeeObject).buildStatus(Status.ACTIEF).build();
 
 		siteRepo.startTransaction();
 		siteRepo.insert(newSite);
@@ -164,20 +159,22 @@ public class SiteController implements Subject
 		int houseNumberInt = Integer.parseInt(houseNumber);
 		int postalCodeInt = Integer.parseInt(postalCode);
 
+		Address address = new Address();
+		address.setStreet(street);
+		address.setNumber(houseNumberInt);
+		address.setPostalcode(postalCodeInt);
+		address.setCity(city);
+
+		if (existingSite.getAddress() != null)
+		{
+			address.setId(existingSite.getAddress().getId());
+		}
+
 		User employeeObject = DTOMapper.toUser(employee, null);
 
-		SiteBuilder siteBuilder = new SiteBuilder();
-		siteBuilder.createSite();
-		siteBuilder.buildName(siteName);
-		siteBuilder.createAddress();
-		siteBuilder.buildStreet(street);
-		siteBuilder.buildNumber(houseNumberInt);
-		siteBuilder.buildPostalcode(postalCodeInt);
-		siteBuilder.buildCity(city);
-		siteBuilder.buildEmployee(employeeObject);
-		siteBuilder.buildStatus(status);
+		Site updatedSite = new Site.Builder().buildSiteName(siteName).buildAddress(address)
+				.buildVerantwoordelijke(employeeObject).buildStatus(Status.ACTIEF).build();
 
-		Site updatedSite = siteBuilder.getSite();
 		updatedSite.setId(existingSite.getId());
 		updatedSite.getAddress().setId(existingSite.getAddress().getId());
 
