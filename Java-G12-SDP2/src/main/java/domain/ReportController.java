@@ -4,10 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import domain.maintenance.Maintenance;
-import domain.maintenance.MaintenanceController;
-import domain.site.Site;
-import domain.user.User;
 import dto.ReportDTO;
 import exceptions.InvalidReportException;
 import repository.GenericDaoJpa;
@@ -84,9 +80,9 @@ public class ReportController
 	{
 		try
 		{
-			Report newReport = new Report.Builder().withSite(site).withMaintenance(maintenance)
-					.withTechnician(technician).withStartDate(startDate).withStartTime(startTime).withEndDate(endDate)
-					.withEndTime(endTime).withReason(reason).withRemarks(remarks).build();
+			Report newReport = new Report.Builder().buildSite(site).buildMaintenance(maintenance)
+					.buildTechnician(technician).buildstartDate(startDate).buildStartTime(startTime)
+					.buildEndDate(endDate).buildEndTime(endTime).buildReason(reason).buildRemarks(remarks).build();
 
 			validateReport(newReport);
 
