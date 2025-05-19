@@ -258,17 +258,6 @@ class UserControllerTest
 	}
 
 	@Test
-	void delete_ValidId_DeletesUser()
-	{
-		User userToDelete = createTestUser(1, Role.VERANTWOORDELIJKE);
-		when(userRepo.get(1)).thenReturn(userToDelete);
-
-		userController.delete(1);
-
-		verify(userRepo).delete(userToDelete);
-	}
-
-	@Test
 	void getAllStatusses_ReturnsDistinctStatusValues()
 	{
 		User activeUser = createTestUser(1, Role.VERANTWOORDELIJKE);

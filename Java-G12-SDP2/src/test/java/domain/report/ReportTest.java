@@ -14,6 +14,8 @@ import java.time.LocalTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import domain.Report;
+import domain.ReportController;
 import domain.Site;
 import domain.User;
 import domain.maintenance.Maintenance;

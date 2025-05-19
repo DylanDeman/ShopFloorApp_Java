@@ -1,11 +1,9 @@
-package domain.report;
+package domain;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import domain.Site;
-import domain.User;
 import domain.maintenance.Maintenance;
 import domain.maintenance.MaintenanceController;
 import dto.SiteDTOWithoutMachines;
@@ -127,21 +125,9 @@ public class ReportController
 		User technicianEntity = DTOMapper.toUser(technician, null);
 		Site siteEntity = DTOMapper.toSite(siteDTO, null);
 
-		// Use the builder to create and validate the report
-		ReportBuilder builder = new ReportBuilder();
-		builder.createReport();
-		builder.buildMaintenance(maintenance);
-		builder.buildTechnician(technicianEntity);
-		builder.buildStartDate(startDate);
-		builder.buildStartTime(startTime);
-		builder.buildEndDate(endDate);
-		builder.buildEndTime(endTime);
-		builder.buildReason(reason);
-		builder.buildRemarks(remarks);
-		builder.buildSite(siteEntity);
-
-		// This will throw InformationRequiredExceptionReport if validation fails
-		Report report = builder.getReport();
+		Report report = new Report.Builder().buildSite(siteEntity).buildTechnician(technicianEntity)
+				.buildstartDate(startDate).buildStartTime(startTime).buildEndDate(endDate).buildEndTime(endTime)
+				.buildMaintenance(maintenance).buildReason(reason).buildRemarks(remarks).build();
 
 		try
 		{
