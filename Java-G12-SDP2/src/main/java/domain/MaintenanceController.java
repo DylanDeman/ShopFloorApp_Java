@@ -22,6 +22,11 @@ public class MaintenanceController
 	{
 		maintenanceRepo = new GenericDaoJpa<Maintenance>(Maintenance.class);
 	}
+	
+	public MaintenanceController(GenericDaoJpa<Maintenance> maintenanceRepo) {
+	    this.maintenanceRepo = maintenanceRepo;
+	}
+
 
 	public GenericDaoJpa<Maintenance> getMaintenanceDao()
 	{

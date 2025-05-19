@@ -19,31 +19,48 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domain.Machine;
+import domain.MachineController;
 import domain.Maintenance;
 import domain.MaintenanceController;
 import domain.Site;
 import domain.User;
+import domain.UserController;
 import dto.MaintenanceDTO;
 import exceptions.InformationRequiredExceptionMaintenance;
+import gui.AppServices;
+import repository.GenericDaoJpa;
 import util.MaintenanceStatus;
 
 @ExtendWith(MockitoExtension.class)
 public class MaintenanceTest
 {
     @Mock
+    private GenericDaoJpa<Maintenance> maintenanceRepo;
+	
+    @Mock
     private MaintenanceController maintenanceController;
+    
+    @Mock
+    private UserController userController;
+
+    @Mock
+    private MachineController machineController;
 
     @Mock
     private Machine machine;
 
     @Mock
     private User technician;
+    
+    @Mock
+    private AppServices appServices;
 
     @Mock
     private Site site;
 
     private Maintenance maintenance;
     private List<MaintenanceDTO> maintenances;
+
 
     @BeforeEach
     void setUp() throws InformationRequiredExceptionMaintenance
@@ -111,4 +128,5 @@ public class MaintenanceTest
 
         assertThrows(InformationRequiredExceptionMaintenance.class, builder::build);
     }
+
 }
