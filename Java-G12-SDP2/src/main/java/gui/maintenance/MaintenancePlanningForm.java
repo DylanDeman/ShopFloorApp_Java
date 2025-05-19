@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -14,6 +15,7 @@ import domain.MachineController;
 import domain.MaintenanceController;
 import domain.UserController;
 import dto.MachineDTO;
+import dto.MaintenanceDTO;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionMaintenance;
 import gui.MainLayout;
@@ -39,6 +41,7 @@ public class MaintenancePlanningForm extends GridPane
 
 	private final MainLayout mainLayout;
 	private final MachineDTO machineDTO;
+	private final MaintenanceDTO maintenanceDTO;
 	private final MachineController mc;
 	private final MaintenanceController mntcc;
 	private final UserController uc;
@@ -51,10 +54,12 @@ public class MaintenancePlanningForm extends GridPane
 
 	private TextArea commentsField;
 
-	private ComboBox<UserDTO> technicianComboBox;
+	private ComboBox<String> technicianComboBox;
 	private ComboBox<LocalTime> startTimeField, endTimeField;
 	private ComboBox<String> statusComboBox;
-	private ComboBox<MachineDTO> machineComboBox;
+	private ComboBox<String> machineComboBox;
+	private Map<String, UserDTO> technicianMap;
+	private Map<String, MachineDTO> machineMap;
 
 	private DatePicker executionDatePicker;
 
@@ -62,10 +67,23 @@ public class MaintenancePlanningForm extends GridPane
 	{
 		this.mainLayout = mainLayout;
 		this.machineDTO = machineDTO;
+		this.maintenanceDTO = null;
 		this.mc = mainLayout.getServices().getMachineController();
 		this.mntcc = mainLayout.getServices().getMaintenanceController();
 		this.uc = mainLayout.getServices().getUserController();
 
+		initializeFields();
+		buildGUI();
+	}
+	
+	public MaintenancePlanningForm(MainLayout mainLayout, MaintenanceDTO maintenanceDTO, MachineDTO machineDTO)
+	{
+		this.mainLayout = mainLayout;
+		this.machineDTO = machineDTO;
+		this.mc = mainLayout.getServices().getMachineController();
+		this.mntcc = mainLayout.getServices().getMaintenanceController();
+		this.uc = mainLayout.getServices().getUserController();
+		this.maintenanceDTO = maintenanceDTO;
 		initializeFields();
 		buildGUI();
 	}
@@ -132,7 +150,7 @@ public class MaintenancePlanningForm extends GridPane
 		saveButton.setMaxWidth(Double.MAX_VALUE);
 
 		HBox buttonBox = new HBox(saveButton);
-		buttonBox.setAlignment(Pos.CENTER);
+		buttonBox.setAlignment(Pos.CENTER_RIGHT);
 		buttonBox.setPadding(new Insets(20, 0, 0, 0));
 
 		buttonBox.setMinWidth(800);
@@ -161,8 +179,15 @@ public class MaintenancePlanningForm extends GridPane
 						: null;
 
 				// Get IDs for technician and machine
-				int technicianId = technicianComboBox.getValue() != null ? technicianComboBox.getValue().id() : 0;
-				int machineId = machineComboBox.getValue() != null ? machineComboBox.getValue().id() : 0;
+				String selectedTechnician = technicianComboBox.getValue();
+				int technicianId = selectedTechnician != null && technicianMap.containsKey(selectedTechnician)
+				    ? technicianMap.get(selectedTechnician).id()
+				    : 0;
+				String selectedMachine = machineComboBox.getValue();
+				int machineId = selectedMachine != null && machineMap.containsKey(selectedMachine)
+				    ? machineMap.get(selectedMachine).id()
+				    : 0;
+
 
 				// Get status
 				MaintenanceStatus status = statusComboBox.getValue() != null
@@ -170,15 +195,13 @@ public class MaintenancePlanningForm extends GridPane
 						: null;
 
 				// Use the controller to create the maintenance
-				mntcc.createMaintenance(execDate, // execution date
-						startDateTime, // start date and time
-						endDateTime, // end date and time
-						technicianId, // technician ID
-						reasonField.getText(), // reason
-						commentsField.getText(), // comments
-						status, // status
-						machineId // machine ID
-				);
+				if (maintenanceDTO == null) {
+				    mntcc.createMaintenance(execDate, startDateTime, endDateTime, technicianId, reasonField.getText(),
+				            commentsField.getText(), status, machineId);
+				} else {
+				    mntcc.updateMaintenance(maintenanceDTO.id(), execDate, startDateTime, endDateTime, technicianId,
+				            reasonField.getText(), commentsField.getText(), status, machineId);
+				}
 
 				mainLayout.showMaintenanceList(machineDTO);
 
@@ -225,6 +248,47 @@ public class MaintenancePlanningForm extends GridPane
 
 		return formContent;
 	}
+	
+	private void populateFormFieldsForEdit()
+	{
+	    if (maintenanceDTO.executionDate() != null) {
+	        executionDatePicker.setValue(maintenanceDTO.executionDate());
+	    }
+
+	    if (maintenanceDTO.startDate() != null) {
+	        startTimeField.setValue(maintenanceDTO.startDate().toLocalTime());
+	    }
+
+	    if (maintenanceDTO.endDate() != null) {
+	        endTimeField.setValue(maintenanceDTO.endDate().toLocalTime());
+	    }
+
+	    if (maintenanceDTO.technician() != null) {
+	        String key = String.format("%d %s %s",
+	            maintenanceDTO.technician().id(),
+	            maintenanceDTO.technician().firstName(),
+	            maintenanceDTO.technician().lastName());
+	        if (technicianMap.containsKey(key)) {
+	            technicianComboBox.setValue(key);
+	        }
+	    }
+
+	    reasonField.setText(maintenanceDTO.reason() != null ? maintenanceDTO.reason() : "");
+	    commentsField.setText(maintenanceDTO.comments() != null ? maintenanceDTO.comments() : "");
+
+	    if (maintenanceDTO.status() != null) {
+	        statusComboBox.setValue(maintenanceDTO.status().name());
+	    }
+
+	    if (maintenanceDTO.machine() != null) {
+	        String key = String.format("%d Machine %s", maintenanceDTO.machine().id(), maintenanceDTO.machine().code());
+	        if (machineMap.containsKey(key)) {
+	            machineComboBox.setValue(key);
+	        }
+	    }
+
+	}
+
 
 	private void initializeFields()
 	{
@@ -242,8 +306,19 @@ public class MaintenancePlanningForm extends GridPane
 
 		commentsField = new TextArea();
 
+		List<UserDTO> technicians = uc.getAllTechniekers();
+
+		technicianMap = technicians.stream()
+		    .collect(Collectors.toMap(
+		        t -> String.format("%d %s %s", t.id(), t.firstName(), t.lastName()),
+		        t -> t
+		    ));
+
 		technicianComboBox = new ComboBox<>();
-		technicianComboBox.getItems().addAll(uc.getAllTechniekers());
+		technicianComboBox.getItems().addAll(technicianMap.keySet());
+		technicianComboBox.setPromptText("Selecteer technieker");
+		technicianComboBox.setPrefWidth(200);
+
 		technicianComboBox.setPromptText("Selecteer technieker");
 		technicianComboBox.setPrefWidth(200);
 
@@ -266,19 +341,31 @@ public class MaintenancePlanningForm extends GridPane
 		machineComboBox = new ComboBox<>();
 		machineComboBox.setPrefWidth(200);
 
-		statusComboBox.getItems().addAll(Arrays.stream(MaintenanceStatus.values()).map(Enum::toString).toList());
+		List<String> statusses = Arrays.stream(MaintenanceStatus.values()).map(Enum::toString).toList();
+		if(AuthenticationUtil.hasRole(Role.TECHNIEKER)) {
+			statusses = Arrays.stream(MaintenanceStatus.values()).filter(s -> !s.equals(MaintenanceStatus.INGEPLAND)).map(Enum::toString).toList();
+		}
+		statusComboBox.getItems().addAll(statusses);
 		statusComboBox.setPromptText("Selecteer status");
 
-		if (machineDTO != null)
-		{
-			machineComboBox.getItems().add(machineDTO);
-			machineComboBox.setValue(machineDTO);
-			machineComboBox.setDisable(true);
-		} else
-		{
-			machineComboBox.setPromptText("Selecteer machine");
-			List<MachineDTO> machines = mc.getMachineList();
-			machineComboBox.getItems().addAll(machines);
+		List<MachineDTO> machines = mc.getMachineList();
+		machineMap = machines.stream().collect(Collectors.toMap(
+		    m -> String.format("%d Machine %s", m.id(), m.code()), m -> m
+		));
+
+		machineComboBox.getItems().addAll(machineMap.keySet());
+		machineComboBox.setPromptText("Selecteer machine");
+		machineComboBox.setPrefWidth(200);
+
+		if (machineDTO != null) {
+		    String key = String.format("%d Machine %s", machineDTO.id(), machineDTO.code());
+		    machineComboBox.setValue(key);
+		    machineComboBox.setDisable(true);
+		}
+
+		
+		if(maintenanceDTO != null) {
+			populateFormFieldsForEdit();
 		}
 	}
 

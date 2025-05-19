@@ -183,6 +183,18 @@ public class MainLayout
 			setContent(maintenancePlanningForm, true, false, CurrentPage.NONE);
 		}
 	}
+	
+	public void showEditMaintenance(MaintenanceDTO maintenanceDTO, MachineDTO machineDTO)
+	{
+		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
+		{
+			showNotAllowedAlert();
+		} else
+		{
+			MaintenancePlanningForm maintenancePlanningForm = new MaintenancePlanningForm(this, maintenanceDTO, machineDTO);
+			setContent(maintenancePlanningForm, true, false, CurrentPage.NONE);
+		}
+	}
 
 	public void setContent(Parent content, boolean showNavbar, boolean isHomeScreen, CurrentPage activePage)
 	{

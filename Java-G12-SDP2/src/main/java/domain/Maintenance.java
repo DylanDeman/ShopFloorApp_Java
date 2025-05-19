@@ -161,63 +161,36 @@ public class Maintenance implements Serializable
 			return maintenance;
 		}
 
-		private void validateRequiredFields() throws InformationRequiredExceptionMaintenance
-		{
-			Map<String, RequiredElementMaintenance> requiredElements = new HashMap<>();
+		private void validateRequiredFields() throws InformationRequiredExceptionMaintenance {
+		    Map<String, RequiredElementMaintenance> requiredElements = new HashMap<>();
 
-			if (maintenance.getExecutionDate() == null)
-			{
-				requiredElements.put("executionDate", RequiredElementMaintenance.EXECUTION_DATE_REQUIRED);
-			}
+		    if (executionDate == null)
+		        requiredElements.put("executionDate", RequiredElementMaintenance.EXECUTION_DATE_REQUIRED);
 
-			if (maintenance.getStartDate() == null)
-			{
-				requiredElements.put("startDate", RequiredElementMaintenance.START_DATE_REQUIRED);
-			}
+		    if (startDate == null)
+		        requiredElements.put("startDate", RequiredElementMaintenance.START_DATE_REQUIRED);
 
-			if (maintenance.getEndDate() == null)
-			{
-				System.out.println(maintenance.getEndDate());
-				requiredElements.put("endDate", RequiredElementMaintenance.END_DATE_REQUIRED);
-			}
+		    if (endDate == null)
+		        requiredElements.put("endDate", RequiredElementMaintenance.END_DATE_REQUIRED);
 
-			if (maintenance.getTechnician() == null)
-			{
-				requiredElements.put("technician", RequiredElementMaintenance.TECHNICIAN_REQUIRED);
-			}
+		    if (technician == null)
+		        requiredElements.put("technician", RequiredElementMaintenance.TECHNICIAN_REQUIRED);
 
-			if (maintenance.getReason() == null || maintenance.getReason().isBlank())
-			{
-				requiredElements.put("reason", RequiredElementMaintenance.REASON_REQUIRED);
-			}
+		    if (reason == null || reason.isBlank())
+		        requiredElements.put("reason", RequiredElementMaintenance.REASON_REQUIRED);
 
-			if (maintenance.getStatus() == null)
-			{
-				requiredElements.put("status", RequiredElementMaintenance.MAINTENANCESTATUS_REQUIRED);
-			}
+		    if (status == null)
+		        requiredElements.put("status", RequiredElementMaintenance.MAINTENANCESTATUS_REQUIRED);
 
-			if (maintenance.getMachine() == null)
-			{
-				requiredElements.put("machine", RequiredElementMaintenance.MACHINE_REQUIRED);
-			}
+		    if (machine == null)
+		        requiredElements.put("machine", RequiredElementMaintenance.MACHINE_REQUIRED);
 
-			if (maintenance.getEndDate() != null && maintenance.getStartDate() != null)
-			{
-				if (maintenance.getEndDate().isBefore(maintenance.getStartDate()))
-				{
-					requiredElements.put("endDate", RequiredElementMaintenance.END_DATE_BEFORE_START);
-				} else if (maintenance.getEndDate().equals(maintenance.getStartDate())
-						&& maintenance.getEndDate() != null && maintenance.getStartDate() != null
-						&& maintenance.getEndDate().isBefore(maintenance.getStartDate()))
-				{
-					requiredElements.put("endDate", RequiredElementMaintenance.END_DATE_BEFORE_START);
-				}
-			}
+		    if (startDate != null && endDate != null && endDate.isBefore(startDate))
+		        requiredElements.put("endDate", RequiredElementMaintenance.END_DATE_BEFORE_START);
 
-			if (!requiredElements.isEmpty())
-			{
-				throw new InformationRequiredExceptionMaintenance(requiredElements);
-			}
+		    if (!requiredElements.isEmpty())
+		        throw new InformationRequiredExceptionMaintenance(requiredElements);
 		}
+
 	}
 }

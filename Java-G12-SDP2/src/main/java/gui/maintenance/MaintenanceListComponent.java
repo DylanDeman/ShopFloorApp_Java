@@ -26,6 +26,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -137,6 +138,32 @@ public class MaintenanceListComponent extends VBox
 	private VBox createTableSection()
 	{
 		HBox filterBox = createTableHeaders();
+		
+		TableColumn<MaintenanceDTO, Void> editColumn = new TableColumn<>("Bewerken");
+		editColumn.setCellFactory(param -> new TableCell<MaintenanceDTO, Void>()
+		{
+			private final Button editButton = new Button();
+			{
+				FontIcon editIcon = new FontIcon("fas-pen");
+				editIcon.setIconSize(12);
+				editButton.setGraphic(editIcon);
+				editButton.setBackground(Background.EMPTY);
+				editButton.setOnAction(event -> {
+					MaintenanceDTO maintenance = getTableRow().getItem();
+					if (maintenance != null)
+					{
+						goToEditMaintenanceForm(maintenance);
+					}
+				});
+			}
+
+			@Override
+			protected void updateItem(Void item, boolean empty)
+			{
+				super.updateItem(item, empty);
+				setGraphic(empty ? null : editButton);
+			}
+		});
 
 		TableColumn<MaintenanceDTO, String> col1 = createColumn("Datum uitgevoerd", m -> m.executionDate().toString());
 		TableColumn<MaintenanceDTO, String> col2 = createColumn("Starttijdstip",
@@ -144,7 +171,13 @@ public class MaintenanceListComponent extends VBox
 		TableColumn<MaintenanceDTO, String> col3 = createColumn("Eindtijdstip",
 				m -> m.endDate().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")).toString());
 		TableColumn<MaintenanceDTO, String> col4 = createColumn("Naam technieker",
-				m -> m.technician() != null ? m.technician().firstName() : "Onbekend");
+				m -> {
+				    if (m.technician() == null) return "Onbekend";
+				    String first = m.technician().firstName();
+				    String last = m.technician().lastName();
+				    String formattedLast = last.substring(0, 1).toUpperCase() + last.substring(1).toLowerCase();
+				    return String.format("%s %s", first, formattedLast);
+				});
 		TableColumn<MaintenanceDTO, String> col5 = createColumn("Reden", MaintenanceDTO::reason);
 		TableColumn<MaintenanceDTO, String> col6 = createColumn("Opmerkingen", MaintenanceDTO::comments);
 		TableColumn<MaintenanceDTO, String> col7 = createColumn("Status", m -> m.status().toString());
@@ -154,10 +187,10 @@ public class MaintenanceListComponent extends VBox
 		List<TableColumn<MaintenanceDTO, ?>> columns;
 		if (machineDTO != null)
 		{
-			columns = new ArrayList<>(List.of(col1, col2, col3, col4, col5, col6, col7));
+			columns = new ArrayList<>(List.of(editColumn, col1, col2, col3, col4, col5, col6, col7));
 		} else
 		{
-			columns = new ArrayList<>(List.of(col1, col2, col3, col4, col5, col6, col7, col8));
+			columns = new ArrayList<>(List.of(editColumn, col1, col2, col3, col4, col5, col6, col7, col8));
 		}
 
 		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
@@ -359,6 +392,10 @@ public class MaintenanceListComponent extends VBox
 		filteredMaintenances = list;
 		updatePagination();
 		updateTableItems();
+	}
+	
+	private void goToEditMaintenanceForm(MaintenanceDTO maintenanceDTO) {
+		mainLayout.showEditMaintenance(maintenanceDTO, machineDTO);
 	}
 
 	private void goToDetails(MainLayout mainLayout, MaintenanceDTO maintenance)
