@@ -4,8 +4,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-import domain.maintenance.Maintenance;
-import domain.maintenance.MaintenanceController;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionReport;

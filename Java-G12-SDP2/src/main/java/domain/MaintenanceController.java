@@ -1,14 +1,10 @@
-package domain.maintenance;
+package domain;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import domain.Machine;
-import domain.MachineController;
-import domain.User;
-import domain.UserController;
 import dto.MachineDTO;
 import dto.MaintenanceDTO;
 import dto.SiteDTOWithoutMachines;
@@ -90,22 +86,12 @@ public class MaintenanceController
 			throws InformationRequiredExceptionMaintenance
 	{
 
-		MaintenanceBuilder builder = new MaintenanceBuilder();
-		builder.createMaintenance();
-		builder.buildExecutionDate(executionDate);
-		builder.buildStartDate(startDate);
-		builder.buildEndDate(endDate);
-
 		User technician = getUserById(technicianId);
 		Machine machine = getMachineById(machineId);
 
-		builder.buildTechnician(technician);
-		builder.buildReason(reason);
-		builder.buildComments(comments);
-		builder.buildStatus(status);
-		builder.buildMachine(machine);
-
-		Maintenance maintenance = builder.getMaintenance();
+		Maintenance maintenance = new Maintenance.Builder().buildExecutionDate(executionDate).buildStartDate(startDate)
+				.buildEndDate(endDate).buildTechnician(technician).buildReason(reason).buildComments(comments)
+				.buildMaintenanceStatus(status).buildMachine(machine).build();
 
 		createMaintenance(maintenance);
 
@@ -138,25 +124,16 @@ public class MaintenanceController
 			throw new IllegalArgumentException("Maintenance with ID " + maintenanceId + " not found");
 		}
 
-		MaintenanceBuilder builder = new MaintenanceBuilder();
-		builder.createMaintenance();
-		builder.buildExecutionDate(executionDate);
-		builder.buildStartDate(startDate);
-		builder.buildEndDate(endDate);
-
 		User technician = getUserById(technicianId);
 		Machine machine = getMachineById(machineId);
 
-		builder.buildTechnician(technician);
-		builder.buildReason(reason);
-		builder.buildComments(comments);
-		builder.buildStatus(status);
-		builder.buildMachine(machine);
+		Maintenance maintenance = new Maintenance.Builder().buildExecutionDate(executionDate).buildStartDate(startDate)
+				.buildEndDate(endDate).buildTechnician(technician).buildReason(reason).buildComments(comments)
+				.buildMaintenanceStatus(status).buildMachine(machine).build();
 
-		Maintenance updatedMaintenance = builder.getMaintenance();
-		updatedMaintenance.setId(existingMaintenance.getId());
+		maintenance.setId(existingMaintenance.getId());
 
-		updateMaintenance(updatedMaintenance);
+		updateMaintenance(maintenance);
 
 		if (status == MaintenanceStatus.VOLTOOID
 				&& (machine.getLastMaintenance() == null || executionDate.isAfter(machine.getLastMaintenance())))
@@ -166,23 +143,8 @@ public class MaintenanceController
 			updateMachine(machine);
 		}
 
-		return makeMaintenanceDTO(updatedMaintenance);
+		return makeMaintenanceDTO(maintenance);
 	}
-
-//    public List<MaintenanceDTO> getMaintenancesForMachine(int machineId) {
-//        List<Maintenance> maintenances = maintenanceRepo.findByMachine(machineId);
-//        return makeMaintenanceDTOs(maintenances);
-//    }
-//    
-//    public List<MaintenanceDTO> getMaintenancesForTechnician(int technicianId) {
-//        List<Maintenance> maintenances = maintenanceRepo.findByTechnician(technicianId);
-//        return makeMaintenanceDTOs(maintenances);
-//    }
-//    
-//    public List<MaintenanceDTO> getMaintenancesByStatus(MaintenanceStatus status) {
-//        List<Maintenance> maintenances = maintenanceRepo.findByStatus(status);
-//        return makeMaintenanceDTOs(maintenances);
-//    }
 
 	private User getUserById(int userId)
 	{

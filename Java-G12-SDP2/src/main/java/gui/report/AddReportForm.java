@@ -6,10 +6,10 @@ import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
+import domain.MaintenanceController;
 import domain.ReportController;
 import domain.SiteController;
 import domain.UserController;
-import domain.maintenance.MaintenanceController;
 import dto.MaintenanceDTO;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionReport;

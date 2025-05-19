@@ -6,7 +6,6 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import domain.maintenance.Maintenance;
 import exceptions.InformationRequiredExceptionReport;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -47,15 +46,11 @@ public class Report implements Serializable
 	private User technician;
 
 	private LocalDate startDate;
-
 	private LocalTime startTime;
-
 	private LocalDate endDate;
-
 	private LocalTime endTime;
 
 	private String reason;
-
 	private String remarks;
 
 	public Report(Maintenance selectedMaintenance, User selectedTechnician, LocalDate startDate, LocalTime startTime,

@@ -11,8 +11,8 @@ import java.util.Map;
 import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.MachineController;
+import domain.MaintenanceController;
 import domain.UserController;
-import domain.maintenance.MaintenanceController;
 import dto.MachineDTO;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionMaintenance;

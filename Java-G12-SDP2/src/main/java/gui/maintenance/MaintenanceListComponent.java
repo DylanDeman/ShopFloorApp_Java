@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
-import domain.maintenance.MaintenanceController;
+import domain.MaintenanceController;
 import dto.MachineDTO;
 import dto.MaintenanceDTO;
 import gui.MainLayout;

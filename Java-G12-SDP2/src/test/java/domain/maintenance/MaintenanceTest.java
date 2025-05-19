@@ -20,6 +20,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import domain.Machine;
+import domain.Maintenance;
+import domain.MaintenanceController;
 import domain.Site;
 import domain.User;
 import dto.MachineDTO;
