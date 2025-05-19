@@ -1,4 +1,4 @@
-package domain.notifications;
+package dto;
 
 import java.time.LocalDateTime;
 

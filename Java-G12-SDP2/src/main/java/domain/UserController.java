@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import domain.notifications.NotificationObserver;
 import dto.UserDTO;
 import exceptions.InformationRequiredException;
 import exceptions.InvalidInputException;

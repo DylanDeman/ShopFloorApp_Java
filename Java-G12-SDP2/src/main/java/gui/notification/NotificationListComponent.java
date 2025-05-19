@@ -3,8 +3,8 @@ package gui.notification;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-import domain.notifications.NotificationController;
-import domain.notifications.NotificationDTO;
+import domain.NotificationController;
+import dto.NotificationDTO;
 import gui.MainLayout;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

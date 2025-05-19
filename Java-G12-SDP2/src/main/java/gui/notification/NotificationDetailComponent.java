@@ -1,6 +1,6 @@
 package gui.notification;
 
-import domain.notifications.NotificationDTO;
+import dto.NotificationDTO;
 import gui.MainLayout;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;

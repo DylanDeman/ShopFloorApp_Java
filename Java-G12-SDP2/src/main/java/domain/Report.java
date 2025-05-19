@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import exceptions.InformationRequiredExceptionReport;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -39,6 +40,7 @@ public class Report implements Serializable
 	 */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(columnDefinition = "INT UNSIGNED")
 	private int reportId;
 
 	/**

@@ -1,8 +1,7 @@
-package domain.notifications;
+package domain;
 
 import java.time.LocalDateTime;
 
-import domain.Notification;
 import interfaces.Observer;
 
 public class NotificationObserver implements Observer {
