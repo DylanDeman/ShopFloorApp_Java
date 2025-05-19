@@ -1,10 +1,14 @@
 package gui.maintenance;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -17,9 +21,11 @@ import gui.customComponents.CustomInformationBox;
 import gui.report.AddReportForm;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
+import javafx.event.Event;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.Pagination;
 import javafx.scene.control.TableCell;
@@ -32,6 +38,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import util.AuthenticationUtil;
+import util.MaintenanceStatus;
 import util.Role;
 
 public class MaintenanceListComponent extends VBox
@@ -39,7 +46,15 @@ public class MaintenanceListComponent extends VBox
 	private final MainLayout mainLayout;
 	private MaintenanceController mc;
 	private TableView<MaintenanceDTO> table;
+	
 	private TextField searchField;
+	private DatePicker executionDatePickerFilter;
+	private ComboBox<LocalTime> startTimeFieldFilter, endTimeFieldFilter;
+	private ComboBox<String> technicianFilter;
+	private TextField reasonFilter;
+	private TextField commentsFilter;
+	private ComboBox<String> statusFilter;
+	
 	private List<MaintenanceDTO> allMaintenances;
 	private List<MaintenanceDTO> filteredMaintenances;
 	private MachineDTO machineDTO;
@@ -221,14 +236,68 @@ public class MaintenanceListComponent extends VBox
 		searchField = new TextField();
 		searchField.setPromptText("Zoeken...");
 		searchField.setMaxWidth(300);
-		searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable(newVal));
+		searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		
+		executionDatePickerFilter = new DatePicker();
+		executionDatePickerFilter.setPromptText("Uitvoeringsdatum");
+		executionDatePickerFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		
+		startTimeFieldFilter = new ComboBox<LocalTime>();
+		startTimeFieldFilter.setPromptText("Starttijdstip");
+		populateTimePicker(startTimeFieldFilter);
+		endTimeFieldFilter = new ComboBox<LocalTime>();
+		endTimeFieldFilter.setPromptText("Eindtijdstip");
+		
+		populateTimePicker(endTimeFieldFilter);
+		startTimeFieldFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		endTimeFieldFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		
+		technicianFilter = new ComboBox<String>();
+		technicianFilter.setPromptText("Kies technieker");
+		technicianFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		
+		reasonFilter = new TextField();
+		reasonFilter.setPromptText("Reden");
+		reasonFilter.textProperty().addListener((obs, oldVal, newVal) -> filterTable()); 
+		
+		commentsFilter = new TextField();
+		commentsFilter.setPromptText("Opmerkingen");
+		commentsFilter.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		
+		statusFilter = new ComboBox<String>();
+		statusFilter.setPromptText("Status");
+		Stream.of(MaintenanceStatus.values()).map((s) -> s.toString()).forEach((s) -> statusFilter.getItems().add(s));
+		statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+		
+		mainLayout.getServices().getUserController().getAllTechniekers()
+		.stream().map(u -> {
+				    String first = u.firstName();
+				    String last = u.lastName();
+				    String formattedLast = last.substring(0, 1).toUpperCase() + last.substring(1).toLowerCase();
+				    return String.format("%s %s", first, formattedLast);
+				})
+		.forEach((u) -> technicianFilter.getItems().add(u));
 
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 
 		HBox pageSelector = createPageSelector();
+		
+		CustomButton clearFiltersBtn = new CustomButton("Clear filters");
+		
+		clearFiltersBtn.setOnAction(this::clearFilters);
 
-		HBox filterBox = new HBox(10, searchField, spacer, pageSelector);
+		HBox filterBox = new HBox(10, 
+				searchField, 
+				executionDatePickerFilter, 
+				startTimeFieldFilter, 
+				endTimeFieldFilter, 
+				technicianFilter,
+				reasonFilter,
+				commentsFilter,
+				statusFilter,
+				clearFiltersBtn, 
+				spacer, pageSelector);
 		filterBox.setAlignment(Pos.CENTER_LEFT);
 		return filterBox;
 	}
@@ -252,18 +321,67 @@ public class MaintenanceListComponent extends VBox
 		updatePagination();
 		updateTableItems();
 	}
-
-	private void filterTable(String query)
-	{
-		String lowerCaseQuery = query.toLowerCase();
-		filteredMaintenances = allMaintenances.stream().filter(m -> m.reason().toLowerCase().contains(lowerCaseQuery)
-				|| m.comments().toLowerCase().contains(lowerCaseQuery)
-				|| (m.technician() != null && m.technician().firstName().toLowerCase().contains(lowerCaseQuery)))
-				.collect(Collectors.toList());
-		currentPage = 0;
-		updatePagination();
-		updateTableItems();
+	
+	private void clearFilters(Event event) {
+		searchField.clear();
+		executionDatePickerFilter.setValue(null);
+		startTimeFieldFilter.setValue(null);
+		endTimeFieldFilter.setValue(null);
+		technicianFilter.setValue(null);
+		reasonFilter.clear();
+		commentsFilter.clear();
+		statusFilter.setValue(null);
 	}
+
+	private void filterTable()
+	{
+	    String query = searchField.getText() != null ? searchField.getText().toLowerCase().trim() : "";
+	    LocalDate selectedDate = executionDatePickerFilter.getValue();
+	    LocalTime selectedStartTime = startTimeFieldFilter.getValue();
+	    LocalTime selectedEndTime = endTimeFieldFilter.getValue();
+	    String technicianString = technicianFilter.getValue();
+	    String reasonQuery = reasonFilter.getText() != null ? reasonFilter.getText().toLowerCase().trim() : "";
+	    String commentsQuery = commentsFilter.getText() != null ? commentsFilter.getText().toLowerCase().trim() : "";
+	    String statusString = statusFilter.getValue() != null ? statusFilter.getValue().toLowerCase() : "";
+	    
+	    filteredMaintenances = allMaintenances.stream()
+	        .filter(m -> {
+	            boolean matchesQuery = query.isEmpty()
+	                || (m.reason() != null && m.reason().toLowerCase().contains(query))
+	                || (m.comments() != null && m.comments().toLowerCase().contains(query))
+	                || (m.technician() != null && m.technician().firstName().toLowerCase().contains(query))
+	                || (m.technician() != null && m.technician().lastName().toLowerCase().contains(query));
+
+	            boolean matchesDate = selectedDate == null || selectedDate.equals(m.executionDate());
+	            
+	            boolean matchesStartTime = selectedStartTime == null || m.startDate() == LocalDateTime.of(m.executionDate(), selectedStartTime);
+	            boolean matchesEndTime = selectedEndTime == null || m.endDate() == LocalDateTime.of(m.executionDate(), selectedEndTime);
+	            
+	            boolean matchesTechnician = technicianString == null || 
+	            		String.format("%s %s", m.technician().firstName(), m.technician().lastName()).toLowerCase().equals(technicianString.toLowerCase());
+	            
+	            boolean matchesReason = reasonQuery.isBlank() || m.reason().toLowerCase().contains(reasonQuery);
+	            
+	            boolean matchesComment = commentsQuery.isBlank() || m.comments().toLowerCase().contains(commentsQuery);
+	            
+	            boolean matchesStatus = statusString.isBlank() || m.status().toString().toLowerCase().equals(statusString);
+
+	            return matchesQuery 
+	            		&& matchesDate 
+	            		&& matchesStartTime 
+	            		&& matchesEndTime 
+	            		&& matchesTechnician 
+	            		&& matchesReason 
+	            		&& matchesComment
+	            		&& matchesStatus;
+	        })
+	        .collect(Collectors.toList());
+
+	    currentPage = 0;
+	    updatePagination();
+	    updateTableItems();
+	}
+
 
 	private TableColumn<MaintenanceDTO, String> createColumn(String title, Function<MaintenanceDTO, String> mapper)
 	{
@@ -410,6 +528,33 @@ public class MaintenanceListComponent extends VBox
 		AddReportForm form = new AddReportForm(mainLayout, maintenance);
 		form.getStylesheets().add(getClass().getResource("/css/maintenanceDetails.css").toExternalForm());
 		mainLayout.showAddReport(maintenance);
+	}
+	
+	private void populateTimePicker(ComboBox<LocalTime> timePicker)
+	{
+		LocalTime time = LocalTime.of(0, 0);
+		while (time.isBefore(LocalTime.of(23, 45)))
+		{
+			timePicker.getItems().add(time);
+			time = time.plusMinutes(15);
+		}
+
+		timePicker.setConverter(new javafx.util.StringConverter<>()
+		{
+			private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+			@Override
+			public String toString(LocalTime time)
+			{
+				return time != null ? formatter.format(time) : "";
+			}
+
+			@Override
+			public LocalTime fromString(String string)
+			{
+				return (string != null && !string.isEmpty()) ? LocalTime.parse(string, formatter) : null;
+			}
+		});
 	}
 
 }

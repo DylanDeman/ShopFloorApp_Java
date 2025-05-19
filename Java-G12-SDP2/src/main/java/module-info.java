@@ -9,6 +9,7 @@ module be.hogent.Java_G12_SDP_22
 	requires javafx.swing;
 	requires javafx.media;
 	requires de.mkammerer.argon2.nolibs;
+	requires javafx.base;
 
 	exports domain;
 	exports main;

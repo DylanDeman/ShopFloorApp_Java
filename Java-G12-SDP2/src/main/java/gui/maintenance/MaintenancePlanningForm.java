@@ -191,8 +191,11 @@ public class MaintenancePlanningForm extends GridPane
 
 				// Get status
 				MaintenanceStatus status = statusComboBox.getValue() != null
-						? MaintenanceStatus.valueOf(statusComboBox.getValue())
-						: null;
+					    ? Arrays.stream(MaintenanceStatus.values())
+					        .filter(s -> s.toString().equals(statusComboBox.getValue()))
+					        .findFirst()
+					        .orElse(null)
+					    : null;
 
 				// Use the controller to create the maintenance
 				if (maintenanceDTO == null) {
