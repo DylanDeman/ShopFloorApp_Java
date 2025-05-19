@@ -139,7 +139,7 @@ public class MachineController implements Subject
 		return DTOMapper.toMachine(dto, machine, site);
 	}
 
-	private MachineDTO convertToMachineDTO(Machine machine)
+	public MachineDTO convertToMachineDTO(Machine machine)
 	{
 		if (machine == null)
 		{

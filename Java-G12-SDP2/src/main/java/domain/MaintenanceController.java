@@ -23,7 +23,7 @@ public class MaintenanceController
 		maintenanceRepo = new GenericDaoJpa<Maintenance>(Maintenance.class);
 	}
 
-	protected GenericDaoJpa<Maintenance> getMaintenanceDao()
+	public GenericDaoJpa<Maintenance> getMaintenanceDao()
 	{
 		return maintenanceRepo;
 	}
