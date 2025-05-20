@@ -1,7 +1,21 @@
 package util;
 
-public enum RequiredElementSite
+public enum RequiredElementSite implements RequiredElement
 {
-	SITE_NAME_REQUIRED, EMPLOYEE_REQUIRED, STREET_REQUIRED, NUMBER_REQUIRED, POSTAL_CODE_REQUIRED, CITY_REQUIRED,
-	STATUS_REQUIRED,
+	SITE_NAME_REQUIRED("Sitenaam is verplicht!"),
+	EMPLOYEE_REQUIRED("Verantwoordelijke is verplicht!"),
+	ADDRESS_REQUIRED("Adres is verplicht!"), 
+	STATUS_REQUIRED("Status is verplicht!");
+	
+	private final String message;
+
+	RequiredElementSite(String message)
+	{
+		this.message = message;
+	}
+
+	public String getMessage()
+	{
+		return message;
+	}
 }

@@ -25,16 +25,16 @@ import util.Status;
 public class SiteController implements Subject
 {
 	private GenericDaoJpa<Site> siteRepo;
-	private UserDao userDao;
 	private List<Observer> observers = new ArrayList<>();
-
+	private UserDao userRepo;
+	
 	/**
 	 * Constructs a new SiteController with default repository implementations.
 	 * Automatically adds a NotificationObserver to observe changes.
 	 */
 	public SiteController()
 	{
-		userDao = new UserDaoJpa();
+		userRepo = new UserDaoJpa();
 		siteRepo = new GenericDaoJpa<Site>(Site.class);
 		addObserver(new NotificationObserver());
 	}
@@ -59,7 +59,7 @@ public class SiteController implements Subject
 	public List<SiteDTOWithMachines> getSites()
 	{
 		List<Site> sites = siteRepo.findAll();
-		return DTOMapper.toSiteDTOsWithMachines(sites);
+		return sites.stream().map(site -> DTOMapper.toSiteDTOWithMachines(site)).toList();
 	}
 
 	/**
@@ -166,46 +166,38 @@ public class SiteController implements Subject
 		{
 			return new ArrayList<>();
 		}
-		return DTOMapper.toSiteDTOsWithoutMachines(sites);
+		return sites.stream().map(site -> DTOMapper.toSiteDTOWithoutMachines(site)).toList();
 	}
 
 	/**
 	 * Creates a new site with the specified details.
 	 * 
-	 * @param siteName         the name of the new site
-	 * @param street           the street of the site address
-	 * @param houseNumber      the house number of the site address
-	 * @param postalCode       the postal code of the site address
-	 * @param city             the city of the site address
-	 * @param employeeFullName the full name of the responsible employee
+	 * @param siteName    the name of the new site
+	 * @param street      the street of the site address
+	 * @param houseNumber the house number of the site address
+	 * @param postalCode  the postal code of the site address
+	 * @param city        the city of the site address
+	 * @param employeeId  the ID of the responsible employee
 	 * @return SiteDTOWithMachines representing the created site
 	 * @throws InformationRequiredExceptionSite if required fields are missing
 	 * @throws NumberFormatException            if houseNumber or postalCode are not
 	 *                                          valid numbers
 	 */
 	public SiteDTOWithMachines createSite(String siteName, String street, String houseNumber, String postalCode,
-			String city, String employeeFullName) throws InformationRequiredExceptionSite, NumberFormatException
+			String city, int employeeId) throws InformationRequiredExceptionSite, NumberFormatException
 	{
-
-		UserDTO employee = AppServices.getInstance().getUserController().getAllVerantwoordelijken().stream()
-				.filter(user -> (user.firstName() + " " + user.lastName()).equals(employeeFullName)).findFirst()
-				.orElse(null);
-
 		int houseNumberInt = Integer.parseInt(houseNumber);
 		int postalCodeInt = Integer.parseInt(postalCode);
 
-		Address address = new Address();
-		address.setStreet(street);
-		address.setNumber(houseNumberInt);
-		address.setPostalcode(postalCodeInt);
-		address.setCity(city);
-
-		User existingUser = userDao.getByEmail(employee.email());
-		User employeeObject = DTOMapper.toUser(employee, existingUser);
-
-		Site newSite = new Site.Builder().buildSiteName(siteName).buildAddress(address)
-				.buildVerantwoordelijke(employeeObject).buildStatus(Status.ACTIEF).build();
-
+		User employee = userRepo.get(employeeId);
+		
+		Site newSite = new Site.Builder()
+				.buildSiteName(siteName)
+				.buildAddress(street, houseNumberInt, postalCodeInt, city)
+				.buildVerantwoordelijke(employee)
+				.buildStatus(Status.ACTIEF)
+				.build();
+		
 		siteRepo.startTransaction();
 		siteRepo.insert(newSite);
 		siteRepo.commitTransaction();
@@ -218,14 +210,14 @@ public class SiteController implements Subject
 	/**
 	 * Updates an existing site with new details.
 	 * 
-	 * @param siteId           the ID of the site to update
-	 * @param siteName         the new name for the site
-	 * @param street           the new street for the address
-	 * @param houseNumber      the new house number for the address
-	 * @param postalCode       the new postal code for the address
-	 * @param city             the new city for the address
-	 * @param employeeFullName the new responsible employee
-	 * @param status           the new status for the site
+	 * @param siteId      the ID of the site to update
+	 * @param siteName    the new name for the site
+	 * @param street      the new street for the address
+	 * @param houseNumber the new house number for the address
+	 * @param postalCode  the new postal code for the address
+	 * @param city        the new city for the address
+	 * @param employeeId  the ID of the new responsible employee
+	 * @param status      the new status for the site
 	 * @return SiteDTOWithMachines representing the updated site
 	 * @throws InformationRequiredExceptionSite if required fields are missing
 	 * @throws NumberFormatException            if houseNumber or postalCode are not
@@ -233,42 +225,30 @@ public class SiteController implements Subject
 	 * @throws IllegalArgumentException         if site with given ID is not found
 	 */
 	public SiteDTOWithMachines updateSite(int siteId, String siteName, String street, String houseNumber,
-			String postalCode, String city, String employeeFullName, Status status)
+			String postalCode, String city, int employeeId, Status status)
 			throws InformationRequiredExceptionSite, NumberFormatException
 	{
-
 		Site existingSite = siteRepo.get(siteId);
 		if (existingSite == null)
 		{
 			throw new IllegalArgumentException("Site with ID " + siteId + " not found");
 		}
 
-		UserDTO employee = AppServices.getInstance().getUserController().getAllVerantwoordelijken().stream()
-				.filter(user -> (user.firstName() + " " + user.lastName()).equals(employeeFullName)).findFirst()
-				.orElse(null);
-
 		int houseNumberInt = Integer.parseInt(houseNumber);
 		int postalCodeInt = Integer.parseInt(postalCode);
 
-		Address address = new Address();
-		address.setStreet(street);
-		address.setNumber(houseNumberInt);
-		address.setPostalcode(postalCodeInt);
-		address.setCity(city);
+		User employee = userRepo.get(employeeId);
 
-		if (existingSite.getAddress() != null)
-		{
-			address.setId(existingSite.getAddress().getId());
-		}
-
-		User employeeObject = DTOMapper.toUser(employee, null);
-
-		Site updatedSite = new Site.Builder().buildSiteName(siteName).buildAddress(address)
-				.buildVerantwoordelijke(employeeObject).buildStatus(Status.ACTIEF).build();
-
+		Site updatedSite = new Site.Builder()
+				.buildSiteName(siteName)
+				.buildAddress(street, houseNumberInt, postalCodeInt, city)
+				.buildVerantwoordelijke(employee)
+				.buildStatus(status)
+				.build();
+		
 		updatedSite.setId(existingSite.getId());
 		updatedSite.getAddress().setId(existingSite.getAddress().getId());
-
+		
 		siteRepo.startTransaction();
 		siteRepo.update(updatedSite);
 		siteRepo.commitTransaction();

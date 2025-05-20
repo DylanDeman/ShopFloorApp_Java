@@ -18,6 +18,7 @@ public interface UserDao extends GenericDao<User>
 	 * @throws IllegalArgumentException if email parameter is null or empty
 	 */
 	User getByEmail(String email);
+	
 
 	/**
 	 * Retrieves all users with the 'Technieker' role.

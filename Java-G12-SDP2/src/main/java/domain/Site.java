@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import domain.User.Builder;
+import exceptions.InformationRequiredExceptionAddress;
 import exceptions.InformationRequiredExceptionSite;
 import interfaces.Observer;
 import interfaces.Subject;
@@ -22,9 +24,11 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import util.RequiredElement;
 import util.RequiredElementSite;
 import util.Status;
 
@@ -84,41 +88,13 @@ public class Site implements Serializable, Subject
 	 * the site is loaded.
 	 */
 	@OneToMany(mappedBy = "site", fetch = FetchType.EAGER)
-	private Set<Machine> machines = new HashSet<>();
+	private Set<Machine> machines;
 
 	/**
 	 * Current status of the site. Persisted as a string in the database.
 	 */
 	@Enumerated(EnumType.STRING)
 	private Status status;
-
-	/**
-	 * Constructs a new Site with basic information.
-	 *
-	 * @param siteName          the name of the site (cannot be empty)
-	 * @param verantwoordelijke the responsible user for this site (cannot be null)
-	 * @param status            the current status of the site (cannot be null)
-	 */
-	public Site(String siteName, User verantwoordelijke, Status status)
-	{
-		this.siteName = siteName;
-		this.verantwoordelijke = verantwoordelijke;
-		this.status = status;
-	}
-
-	/**
-	 * Constructs a new Site with address information.
-	 *
-	 * @param siteName          the name of the site (cannot be empty)
-	 * @param verantwoordelijke the responsible user for this site (cannot be null)
-	 * @param status            the current status of the site (cannot be null)
-	 * @param address           the physical address of the site (cannot be null)
-	 */
-	public Site(String siteName, User verantwoordelijke, Status status, Address address)
-	{
-		this(siteName, verantwoordelijke, status);
-		this.address = address;
-	}
 
 	/**
 	 * Constructs a new Site with all fields including ID (typically used when
@@ -130,10 +106,14 @@ public class Site implements Serializable, Subject
 	 * @param status            the current status of the site (cannot be null)
 	 * @param address           the physical address of the site (cannot be null)
 	 */
-	public Site(int id, String siteName, User verantwoordelijke, Status status, Address address)
+	private Site(Builder builder)
 	{
-		this(siteName, verantwoordelijke, status, address);
-		this.id = id;
+		this.siteName = builder.siteName;
+		this.address = builder.address;
+		this.verantwoordelijke = builder.verantwoordelijke;
+		this.status = builder.status;
+		this.machines = builder.machines;
+		this.address = builder.address;
 	}
 
 	/**
@@ -214,16 +194,9 @@ public class Site implements Serializable, Subject
 		private Address address;
 		private User verantwoordelijke;
 		private Status status;
+		private Set<Machine> machines = new HashSet<>();		
 
-		protected Site site;
-
-		/**
-		 * Constructs a new Builder instance.
-		 */
-		public Builder()
-		{
-		}
-
+		Map<String, RequiredElement> requiredElements = new HashMap<>();
 		/**
 		 * Sets the site name in the builder.
 		 *
@@ -242,9 +215,18 @@ public class Site implements Serializable, Subject
 		 * @param address the physical address of the site
 		 * @return the builder instance for method chaining
 		 */
-		public Builder buildAddress(Address address)
+		public Builder buildAddress(String street, int number, int postalcode, String city)
 		{
-			this.address = address;
+			try {
+				this.address = new Address.Builder()
+						.buildStreet(street)
+						.buildNumber(number)
+						.buildPostalcode(postalcode)
+						.buildCity(city)
+						.build();
+			} catch (InformationRequiredExceptionAddress ire) {
+				ire.getRequiredElements().forEach((k,v) -> requiredElements.put(k, v));
+			}
 			return this;
 		}
 
@@ -271,6 +253,11 @@ public class Site implements Serializable, Subject
 			this.status = status;
 			return this;
 		}
+		
+		public Builder buildMachines(Set<Machine> machines) {
+			this.machines = machines;
+			return this;
+		}
 
 		/**
 		 * Builds and validates the Site instance.
@@ -281,14 +268,7 @@ public class Site implements Serializable, Subject
 		public Site build() throws InformationRequiredExceptionSite
 		{
 			validateRequiredFields();
-
-			site = new Site();
-			site.setSiteName(siteName);
-			site.setAddress(address);
-			site.setVerantwoordelijke(verantwoordelijke);
-			site.setStatus(status);
-
-			return site;
+			return new Site(this);
 		}
 
 		/**
@@ -300,47 +280,22 @@ public class Site implements Serializable, Subject
 		 */
 		private void validateRequiredFields() throws InformationRequiredExceptionSite
 		{
-			Map<String, RequiredElementSite> requiredElements = new HashMap<>();
-
 			if (siteName == null || siteName.isEmpty())
-			{
 				requiredElements.put("siteName", RequiredElementSite.SITE_NAME_REQUIRED);
-			}
 
-			if (address == null || address.getStreet().isEmpty())
-			{
-				requiredElements.put("street", RequiredElementSite.STREET_REQUIRED);
-			}
+			// Verantwoordelijkheid naar de addres klasse schuiven en niet hier controlleren de velden van adres!
+			if (address == null)
+		        requiredElements.put("address", RequiredElementSite.ADDRESS_REQUIRED);
 
-			if (address == null || address.getNumber() == 0)
-			{
-				requiredElements.put("number", RequiredElementSite.NUMBER_REQUIRED);
-			}
-
-			if (address == null || address.getPostalcode() == 0)
-			{
-				requiredElements.put("postalCode", RequiredElementSite.POSTAL_CODE_REQUIRED);
-			}
-
-			if (address == null || address.getCity().isEmpty())
-			{
-				requiredElements.put("city", RequiredElementSite.CITY_REQUIRED);
-			}
-
-			if (verantwoordelijke == null)
-			{
-				requiredElements.put("employee", RequiredElementSite.EMPLOYEE_REQUIRED);
-			}
+			// Verantwoordelijkheid naar de user klasse schuiven en niet hier controleren de velden van employee!
+		    if (verantwoordelijke == null)
+		        requiredElements.put("employee", RequiredElementSite.EMPLOYEE_REQUIRED);
 
 			if (status == null)
-			{
 				requiredElements.put("status", RequiredElementSite.STATUS_REQUIRED);
-			}
 
 			if (!requiredElements.isEmpty())
-			{
 				throw new InformationRequiredExceptionSite(requiredElements);
-			}
 		}
 	}
 }

@@ -129,17 +129,18 @@ public class Machine implements Serializable, Subject
 	 * @param productionStatus  the production status
 	 * @param futureMaintenance the next maintenance date
 	 */
-	public Machine(Site site, User technician, String code, String location, String productInfo,
-			MachineStatus machineStatus, ProductionStatus productionStatus, LocalDate futureMaintenance)
+	private Machine(Builder builder)
 	{
-		setSite(site);
-		setTechnician(technician);
-		setCode(code);
-		setLocation(location);
-		setProductInfo(productInfo);
-		setMachineStatus(machineStatus);
-		setProductionStatus(productionStatus);
-		setFutureMaintenance(futureMaintenance);
+		this.site = builder.site;
+		this.technician = builder.technician;
+		this.code = builder.code;
+		this.location = builder.location;
+		this.productInfo = builder.productInfo;
+		this.machineStatus = builder.machineStatus;
+		this.productionStatus = builder.productionStatus;
+		this.futureMaintenance = builder.futureMaintenance;
+		this.lastMaintenance = LocalDate.now();
+		this.numberDaysSinceLastMaintenance = 0;
 	}
 
 	/**
@@ -207,15 +208,6 @@ public class Machine implements Serializable, Subject
 		private ProductionStatus productionStatus;
 		private LocalDate futureMaintenance;
 
-		protected Machine machine;
-
-		/**
-		 * Creates a new {@code Builder} instance.
-		 */
-		public Builder()
-		{
-		}
-
 		public Builder buildSite(Site site)
 		{
 			this.site = site;
@@ -273,18 +265,7 @@ public class Machine implements Serializable, Subject
 		public Machine build() throws InformationRequiredExceptionMachine
 		{
 			validateRequiredFields();
-
-			machine = new Machine();
-			machine.setSite(site);
-			machine.setTechnician(technician);
-			machine.setCode(code);
-			machine.setLocation(location);
-			machine.setProductInfo(productInfo);
-			machine.setMachineStatus(machineStatus);
-			machine.setProductionStatus(productionStatus);
-			machine.setFutureMaintenance(futureMaintenance);
-
-			return machine;
+			return new Machine(this);
 		}
 
 		/**
@@ -297,57 +278,32 @@ public class Machine implements Serializable, Subject
 		{
 			Map<String, RequiredElementMachine> requiredElements = new HashMap<>();
 
-			machine = new Machine();
-
-			if (machine.getLastMaintenance() == null)
-			{
-				machine.setLastMaintenance(LocalDate.now());
-			}
-
 			if (site == null)
-			{
 				requiredElements.put("site", RequiredElementMachine.SITE_REQUIRED);
-			}
 
 			if (technician == null)
-			{
 				requiredElements.put("technician", RequiredElementMachine.TECHNICIAN_REQUIRED);
-			}
 
 			if (code == null || code.isEmpty())
-			{
 				requiredElements.put("code", RequiredElementMachine.CODE_REQUIRED);
-			}
 
 			if (machineStatus == null)
-			{
 				requiredElements.put("machineStatus", RequiredElementMachine.MACHINESTATUS_REQUIRED);
-			}
 
 			if (productionStatus == null)
-			{
 				requiredElements.put("productionStatus", RequiredElementMachine.PRODUCTIONSTATUS_REQUIRED);
-			}
 
 			if (location == null || location.isEmpty())
-			{
 				requiredElements.put("location", RequiredElementMachine.LOCATION_REQUIRED);
-			}
 
 			if (productInfo == null || productInfo.isEmpty())
-			{
 				requiredElements.put("productInfo", RequiredElementMachine.PRODUCTINFO_REQUIRED);
-			}
 
 			if (futureMaintenance == null)
-			{
 				requiredElements.put("futureMaintenance", RequiredElementMachine.FUTURE_MAINTENANCE_REQUIRED);
-			}
 
 			if (!requiredElements.isEmpty())
-			{
 				throw new InformationRequiredExceptionMachine(requiredElements);
-			}
 		}
 	}
 }

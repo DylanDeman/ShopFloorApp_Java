@@ -168,7 +168,7 @@ public class MainLayout
 			showNotAllowedAlert();
 		} else
 		{
-			MaintenancePlanningForm maintenancePlanningForm = new MaintenancePlanningForm(this, machineDTO);
+			AddOrEditMaintenance maintenancePlanningForm = new AddOrEditMaintenance(this, machineDTO);
 			setContent(maintenancePlanningForm, true, false, CurrentPage.NONE);
 		}
 	}
@@ -180,7 +180,7 @@ public class MainLayout
 			showNotAllowedAlert();
 		} else
 		{
-			MaintenancePlanningForm maintenancePlanningForm = new MaintenancePlanningForm(this, maintenanceDTO, machineDTO);
+			AddOrEditMaintenance maintenancePlanningForm = new AddOrEditMaintenance(this, maintenanceDTO, machineDTO);
 			setContent(maintenancePlanningForm, true, false, CurrentPage.NONE);
 		}
 	}

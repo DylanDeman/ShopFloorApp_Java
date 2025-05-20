@@ -6,9 +6,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import dto.UserDTO;
-import exceptions.InformationRequiredException;
 import exceptions.InvalidInputException;
 import interfaces.Observer;
 import interfaces.Subject;
@@ -76,7 +74,7 @@ public class UserController implements Subject
 	public List<UserDTO> getAllTechniekers()
 	{
 		List<User> techniekers = userRepo.getAllTechniekers();
-		return DTOMapper.toUserDTOs(techniekers);
+		return techniekers.stream().map(technieker -> DTOMapper.toUserDTO(technieker)).toList();
 	}
 
 	/**
@@ -87,30 +85,7 @@ public class UserController implements Subject
 	public List<UserDTO> getAllUsers()
 	{
 		List<User> users = userRepo.findAll();
-		return DTOMapper.toUserDTOs(users);
-	}
-
-	/**
-	 * Converts a UserDTO to a User domain object.
-	 * 
-	 * @param dto The UserDTO to convert
-	 * @return The converted User object
-	 */
-	public User convertToUser(UserDTO dto)
-	{
-		User existingUser = userRepo.getByEmail(dto.email());
-		return DTOMapper.toUser(dto, existingUser);
-	}
-
-	/**
-	 * Retrieves a user by their ID.
-	 * 
-	 * @param id The ID of the user to retrieve
-	 * @return The User object with the specified ID
-	 */
-	public User getUserById(int id)
-	{
-		return userRepo.get(id);
+		return users.stream().map(user -> DTOMapper.toUserDTO(user)).toList();
 	}
 
 	/**
@@ -119,10 +94,9 @@ public class UserController implements Subject
 	 * @param id The ID of the user to retrieve
 	 * @return The UserDTO object with the specified ID
 	 */
-	public UserDTO getUserDTOById(int id)
+	public UserDTO getUserById(int id)
 	{
-		User user = getUserById(id);
-		return DTOMapper.toUserDTO(user);
+		return DTOMapper.toUserDTO(userRepo.get(id));
 	}
 
 	/**
@@ -131,6 +105,7 @@ public class UserController implements Subject
 	 * @param email The email address of the user to retrieve
 	 * @return The User object with the specified email
 	 */
+	// TODO HIER MAG NIEG USER STAAAAAN!!!!!!!!!!!!!!
 	public User getUserByEmail(String email)
 	{
 		return userRepo.getByEmail(email);
@@ -146,7 +121,7 @@ public class UserController implements Subject
 	{
 		if (name == null || !name.contains(" "))
 		{
-			return null; // or throw an exception
+			return null; // or throw an exception TODO!!!!!!!!!!!!!!!!!
 		}
 
 		String[] parts = name.trim().split(" ", 2);
@@ -177,8 +152,7 @@ public class UserController implements Subject
 	 */
 	public List<UserDTO> getAllVerantwoordelijken()
 	{
-		return getAllUsers().stream().filter(user -> user.role().equals(Role.VERANTWOORDELIJKE))
-				.collect(Collectors.toUnmodifiableList());
+		return getAllUsers().stream().filter(user -> user.role().equals(Role.VERANTWOORDELIJKE)).toList();
 	}
 
 	/**
@@ -201,21 +175,22 @@ public class UserController implements Subject
 	 */
 	public UserDTO createUser(String firstName, String lastName, String email, String phoneNumber, LocalDate birthdate,
 			String street, String houseNumber, String postalCode, String city, Role role)
-			throws InformationRequiredException, NumberFormatException
+			throws IllegalArgumentException, NumberFormatException
 	{
 
 		int houseNumberInt = Integer.parseInt(houseNumber);
 		int postalCodeInt = Integer.parseInt(postalCode);
-
-		Address address = new Address();
-		address.setStreet(street);
-		address.setNumber(houseNumberInt);
-		address.setPostalcode(postalCodeInt);
-		address.setCity(city);
-
-		User newUser = new User.Builder().withFirstName(firstName).withLastName(lastName).withEmail(email)
-				.withPhoneNumber(phoneNumber).withBirthdate(birthdate).withAddress(address).withRole(role)
-				.withStatus(Status.ACTIEF).build();
+		
+		User newUser = new User.Builder()
+		        .buildFirstName(firstName)
+		        .buildLastName(lastName)
+		        .buildEmail(email)
+		        .buildPhoneNumber(phoneNumber)
+		        .buildBirthdate(birthdate)
+		        .buildAddress(street, postalCodeInt, houseNumberInt, city)
+		        .buildRole(role)
+		        .buildStatus(Status.ACTIEF)
+		        .build();
 
 		String password = generatePassword();
 		newUser.setPassword(PasswordHasher.hash(password));
@@ -252,49 +227,48 @@ public class UserController implements Subject
 	 * @throws IllegalArgumentException     If no user exists with the specified ID
 	 */
 	public UserDTO updateUser(int userId, String firstName, String lastName, String email, String phoneNumber,
-			LocalDate birthdate, String street, String houseNumber, String postalCode, String city, Role role,
-			Status status) throws InformationRequiredException, NumberFormatException
+	        LocalDate birthdate, String street, String houseNumber, String postalCode, String city, Role role,
+	        Status status) throws IllegalArgumentException, NumberFormatException
 	{
+	    User existingUser = userRepo.get(userId);
+	    if (existingUser == null)
+	    {
+	        throw new IllegalArgumentException("User with ID " + userId + " not found");
+	    }
 
-		User existingUser = userRepo.get(userId);
-		if (existingUser == null)
-		{
-			throw new IllegalArgumentException("User with ID " + userId + " not found");
-		}
+	    int houseNumberInt = Integer.parseInt(houseNumber);
+	    int postalCodeInt = Integer.parseInt(postalCode);
 
-		int houseNumberInt = Integer.parseInt(houseNumber);
-		int postalCodeInt = Integer.parseInt(postalCode);
+	    User updatedUser = new User.Builder()
+	                .buildFirstName(firstName)
+	                .buildLastName(lastName)
+	                .buildEmail(email)
+	                .buildPhoneNumber(phoneNumber)
+	                .buildBirthdate(birthdate)
+	                .buildAddress(street, postalCodeInt, houseNumberInt, city)
+	                .buildRole(role)
+	                .buildStatus(status)
+	                .build();
 
-		Address address = new Address();
-		address.setStreet(street);
-		address.setNumber(houseNumberInt);
-		address.setPostalcode(postalCodeInt);
-		address.setCity(city);
+	    updatedUser.setId(existingUser.getId());
+	    updatedUser.setPassword(existingUser.getPassword());
+	    
+	    if (existingUser.getAddress() != null && updatedUser.getAddress() != null) {
+	        updatedUser.getAddress().setId(existingUser.getAddress().getId());
+	    }
 
-		if (existingUser.getAddress() != null)
-		{
-			address.setId(existingUser.getAddress().getId());
-		}
+	    userRepo.startTransaction();
+	    try {
+	        userRepo.update(updatedUser);
+	        userRepo.commitTransaction();
+	    } catch (Exception e) {
+	        userRepo.rollbackTransaction();
+	        throw new RuntimeException("Error updating user: " + e.getMessage(), e);
+	    }
 
-		User updatedUser = new User.Builder().withFirstName(firstName).withLastName(lastName).withEmail(email)
-				.withPhoneNumber(phoneNumber).withBirthdate(birthdate).withAddress(address).withRole(role)
-				.withStatus(status).build();
+	    notifyObservers("Gebruiker bijgewerkt: " + updatedUser.getId() + " " + updatedUser.getFullName());
 
-		updatedUser.setId(existingUser.getId());
-		updatedUser.setPassword(existingUser.getPassword());
-
-		if (existingUser.getAddress() != null && updatedUser.getAddress() != null)
-		{
-			updatedUser.getAddress().setId(existingUser.getAddress().getId());
-		}
-
-		userRepo.startTransaction();
-		userRepo.update(updatedUser);
-		userRepo.commitTransaction();
-
-		notifyObservers("Gebruiker bijgewerkt: " + updatedUser.getId() + " " + updatedUser.getFullName());
-
-		return DTOMapper.toUserDTO(updatedUser);
+	    return DTOMapper.toUserDTO(updatedUser);
 	}
 
 	/**
@@ -399,7 +373,6 @@ public class UserController implements Subject
 	public List<UserDTO> getFilteredUsers(String searchFilter, String selectedStatus, String selectedRole)
 	{
 		String lowerCaseSearchFilter = searchFilter == null ? "" : searchFilter.toLowerCase();
-
 		return getAllUsers().stream()
 				.filter(user -> selectedStatus == null || user.status().toString().equals(selectedStatus))
 				.filter(user -> selectedRole == null || user.role().toString().equals(selectedRole))

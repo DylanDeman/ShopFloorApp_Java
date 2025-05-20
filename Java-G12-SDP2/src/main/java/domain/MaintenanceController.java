@@ -8,9 +8,14 @@ import java.util.stream.Collectors;
 import dto.MachineDTO;
 import dto.MaintenanceDTO;
 import dto.SiteDTOWithoutMachines;
+import dto.UserDTO;
 import exceptions.InformationRequiredExceptionMaintenance;
 import gui.AppServices;
+import lombok.Getter;
+import lombok.Setter;
 import repository.GenericDaoJpa;
+import repository.UserDao;
+import repository.UserDaoJpa;
 import util.DTOMapper;
 import util.MaintenanceStatus;
 
@@ -21,6 +26,8 @@ import util.MaintenanceStatus;
 public class MaintenanceController
 {
 	private GenericDaoJpa<Maintenance> maintenanceRepo;
+	private GenericDaoJpa<Machine> machineRepo;
+	private UserDao userRepo;
 
 	/**
 	 * Constructs a new MaintenanceController with default repository.
@@ -28,6 +35,8 @@ public class MaintenanceController
 	public MaintenanceController()
 	{
 		maintenanceRepo = new GenericDaoJpa<Maintenance>(Maintenance.class);
+		machineRepo = new GenericDaoJpa<Machine>(Machine.class);
+		userRepo = new UserDaoJpa();
 	}
 
 	/**
@@ -39,6 +48,8 @@ public class MaintenanceController
 	public MaintenanceController(GenericDaoJpa<Maintenance> maintenanceRepo)
 	{
 		this.maintenanceRepo = maintenanceRepo;
+		machineRepo = new GenericDaoJpa<Machine>(Machine.class);
+		userRepo = new UserDaoJpa();
 	}
 
 	/**
@@ -77,6 +88,11 @@ public class MaintenanceController
 
 		return maintenances.stream().map(this::makeMaintenanceDTO).collect(Collectors.toUnmodifiableList());
 	}
+	
+	public Maintenance makeMaintenance(MaintenanceDTO maintenanceDTO)
+	{
+		return DTOMapper.toMaintenance(maintenanceDTO);
+	}
 
 	/**
 	 * Converts a Maintenance object to a MaintenanceDTO.
@@ -86,29 +102,16 @@ public class MaintenanceController
 	 */
 	public MaintenanceDTO makeMaintenanceDTO(Maintenance maintenance)
 	{
-		if (maintenance == null)
-		{
-			return null;
-		}
-
-		MachineDTO machineDTO = null;
-		if (maintenance.getMachine() != null)
-		{
-			SiteDTOWithoutMachines siteDTO = DTOMapper.toSiteDTOWithoutMachines(maintenance.getMachine().getSite());
-			machineDTO = DTOMapper.toMachineDTO(maintenance.getMachine(), siteDTO);
-		}
-
-		return new MaintenanceDTO(maintenance.getId(), maintenance.getExecutionDate(), maintenance.getStartDate(),
-				maintenance.getEndDate(), DTOMapper.toUserDTO(maintenance.getTechnician()), maintenance.getReason(),
-				maintenance.getComments(), maintenance.getStatus(), machineDTO);
+		return DTOMapper.toMaintenanceDTO(maintenance);
 	}
-
+	
 	/**
 	 * Retrieves a Maintenance by its ID.
 	 * 
 	 * @param id the ID of the maintenance record
 	 * @return the Maintenance object, or null if not found
 	 */
+	// TODO DIT MOET PRIVATE WORDEN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	public Maintenance getMaintenance(int id)
 	{
 		return maintenanceRepo.get(id);
@@ -157,13 +160,20 @@ public class MaintenanceController
 			int technicianId, String reason, String comments, MaintenanceStatus status, int machineId)
 			throws InformationRequiredExceptionMaintenance
 	{
-
-		User technician = getUserById(technicianId);
-		Machine machine = getMachineById(machineId);
-
-		Maintenance maintenance = new Maintenance.Builder().buildExecutionDate(executionDate).buildStartDate(startDate)
-				.buildEndDate(endDate).buildTechnician(technician).buildReason(reason).buildComments(comments)
-				.buildMaintenanceStatus(status).buildMachine(machine).build();
+		
+		User technician = userRepo.get(technicianId);
+		Machine machine = machineRepo.get(machineId);
+		
+		Maintenance maintenance = new Maintenance.Builder()
+				.buildExecutionDate(executionDate)
+				.buildStartDate(startDate)
+				.buildEndDate(endDate)
+				.buildTechnician(technician)
+				.buildReason(reason)
+				.buildComments(comments)
+				.buildMaintenanceStatus(status)
+				.buildMachine(machine)
+				.build();
 
 		createMaintenance(maintenance);
 
@@ -173,7 +183,7 @@ public class MaintenanceController
 			machine.setLastMaintenance(executionDate);
 			updateMachine(machine);
 		}
-
+		
 		return makeMaintenanceDTO(maintenance);
 	}
 
@@ -221,9 +231,16 @@ public class MaintenanceController
 		User technician = getUserById(technicianId);
 		Machine machine = getMachineById(machineId);
 
-		Maintenance maintenance = new Maintenance.Builder().buildExecutionDate(executionDate).buildStartDate(startDate)
-				.buildEndDate(endDate).buildTechnician(technician).buildReason(reason).buildComments(comments)
-				.buildMaintenanceStatus(status).buildMachine(machine).build();
+		Maintenance maintenance = new Maintenance.Builder()
+				.buildExecutionDate(executionDate)
+				.buildStartDate(startDate)
+				.buildEndDate(endDate)
+				.buildTechnician(technician)
+				.buildReason(reason)
+				.buildComments(comments)
+				.buildMaintenanceStatus(status)
+				.buildMachine(machine)
+				.build();
 
 		maintenance.setId(existingMaintenance.getId());
 		updateMaintenance(maintenance);
@@ -247,7 +264,8 @@ public class MaintenanceController
 	private User getUserById(int userId)
 	{
 		UserController uc = AppServices.getInstance().getUserController();
-		return uc.getUserById(userId);
+		UserDTO userDTO = uc.getUserById(userId);
+		return DTOMapper.toUser(userDTO);
 	}
 
 	/**
@@ -259,7 +277,8 @@ public class MaintenanceController
 	private Machine getMachineById(int machineId)
 	{
 		MachineController mc = AppServices.getInstance().getMachineController();
-		return mc.getMachineById(machineId);
+		MachineDTO machine = mc.getMachineById(machineId);
+		return DTOMapper.toMachine(machine);
 	}
 
 	/**

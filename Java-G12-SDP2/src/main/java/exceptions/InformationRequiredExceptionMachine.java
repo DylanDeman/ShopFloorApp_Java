@@ -3,9 +3,10 @@ package exceptions;
 import java.util.Collections;
 import java.util.Map;
 
+import util.RequiredElement;
 import util.RequiredElementMachine;
 
-public class InformationRequiredExceptionMachine extends Exception
+public class InformationRequiredExceptionMachine extends InformationRequired
 {
 
 	private static final long serialVersionUID = 1L;
@@ -20,7 +21,7 @@ public class InformationRequiredExceptionMachine extends Exception
 		informationRequired = itemsRequired;
 	}
 
-	public Map<String, RequiredElementMachine> getInformationRequired()
+	public Map<String, RequiredElement> getRequiredElements()
 	{
 		return Collections.unmodifiableMap(informationRequired);
 	}

@@ -24,7 +24,6 @@ import util.ProductionStatus;
 public class MachineController implements Subject
 {
 	private GenericDaoJpa<Machine> machineRepo;
-	private SiteController siteController;
 	private List<Observer> observers = new ArrayList<>();
 
 	/**
@@ -34,7 +33,6 @@ public class MachineController implements Subject
 	public MachineController()
 	{
 		machineRepo = new GenericDaoJpa<Machine>(Machine.class);
-		siteController = new SiteController();
 		addObserver(new NotificationObserver());
 	}
 
@@ -50,11 +48,7 @@ public class MachineController implements Subject
 		{
 			return List.of();
 		}
-
-		return machines.stream().map(machine -> {
-			SiteDTOWithoutMachines siteDTO = DTOMapper.toSiteDTOWithoutMachines(machine.getSite());
-			return DTOMapper.toMachineDTO(machine, siteDTO);
-		}).collect(Collectors.toUnmodifiableList());
+		return machines.stream().map(machine -> DTOMapper.toMachineDTO(machine)).toList();
 	}
 
 	/**
@@ -90,7 +84,7 @@ public class MachineController implements Subject
 	 */
 	public void addNewMachine(MachineDTO machineDTO)
 	{
-		Machine machine = convertDTOToMachine(machineDTO);
+		Machine machine = DTOMapper.toMachine(machineDTO);
 		addNewMachine(machine);
 	}
 
@@ -113,15 +107,15 @@ public class MachineController implements Subject
 			LocalDate futureMaintenance) throws InformationRequiredExceptionMachine
 	{
 
-		Site site = DTOMapper.toSite(siteDTO, null);
-		User technician = DTOMapper.toUser(technicianDTO, null);
+		Site site = DTOMapper.toSite(siteDTO);
+		User technician = DTOMapper.toUser(technicianDTO);
 
 		Machine machine = new Machine.Builder().buildSite(site).buildTechnician(technician).buildCode(code)
 				.buildMachineStatus(machineStatus).buildProductionStatus(productionStatus).buildLocation(location)
 				.buildProductInfo(productInfo).buildFutureMaintenance(futureMaintenance).build();
 
 		addNewMachine(machine);
-		return convertToMachineDTO(machine);
+		return DTOMapper.toMachineDTO(machine);
 	}
 
 	/**
@@ -145,8 +139,8 @@ public class MachineController implements Subject
 	{
 
 		Machine existingMachine = machineRepo.get(id);
-		Site site = DTOMapper.toSite(siteDTO, null);
-		User technician = DTOMapper.toUser(technicianDTO, null);
+		Site site = DTOMapper.toSite(siteDTO);
+		User technician = DTOMapper.toUser(technicianDTO);
 
 		Machine machine = new Machine.Builder().buildSite(site).buildTechnician(technician).buildCode(code)
 				.buildMachineStatus(machineStatus).buildProductionStatus(productionStatus).buildLocation(location)
@@ -154,7 +148,7 @@ public class MachineController implements Subject
 
 		machine.setId(existingMachine.getId());
 		updateMachine(machine);
-		return convertToMachineDTO(machine);
+		return DTOMapper.toMachineDTO(machine);
 	}
 
 	@Override
@@ -181,44 +175,8 @@ public class MachineController implements Subject
 	 * @param machineId the ID of the machine to retrieve
 	 * @return the Machine object, or null if not found
 	 */
-	public Machine getMachineById(int machineId)
-	{
-		return machineRepo.get(machineId);
-	}
-
-	/**
-	 * Converts a MachineDTO to a Machine domain object.
-	 * 
-	 * @param dto the data transfer object to convert
-	 * @return the converted Machine object
-	 */
-	public Machine convertDTOToMachine(MachineDTO dto)
-	{
-		Machine machine = machineRepo.get(dto.id());
-		Site site = null;
-
-		if (dto.site() != null)
-		{
-			site = siteController.getSiteObject(dto.site().id());
-		}
-
-		return DTOMapper.toMachine(dto, machine, site);
-	}
-
-	/**
-	 * Converts a Machine domain object to a MachineDTO.
-	 * 
-	 * @param machine the domain object to convert
-	 * @return the converted DTO, or null if input is null
-	 */
-	public MachineDTO convertToMachineDTO(Machine machine)
-	{
-		if (machine == null)
-		{
-			return null;
-		}
-
-		SiteDTOWithoutMachines siteDTO = DTOMapper.toSiteDTOWithoutMachines(machine.getSite());
-		return DTOMapper.toMachineDTO(machine, siteDTO);
+	public MachineDTO getMachineById(int machineId)
+	{	
+		return DTOMapper.toMachineDTO(machineRepo.get(machineId));
 	}
 }

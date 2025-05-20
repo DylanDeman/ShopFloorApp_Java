@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import exceptions.InformationRequired;
 import exceptions.InformationRequiredExceptionReport;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,6 +20,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import util.RequiredElement;
 import util.RequiredElementReport;
 
 /**
@@ -106,18 +108,17 @@ public class Report implements Serializable
 	 * @param remarks             additional remarks
 	 * @param site                site where maintenance took place
 	 */
-	public Report(Maintenance selectedMaintenance, User selectedTechnician, LocalDate startDate, LocalTime startTime,
-			LocalDate endDate, LocalTime endTime, String reason, String remarks, Site site)
+	private Report(Builder builder)
 	{
-
-		this.technician = selectedTechnician;
-		this.startDate = startDate;
-		this.startTime = startTime;
-		this.maintenance = selectedMaintenance;
-		this.endDate = endDate;
-		this.endTime = endTime;
-		this.reason = reason;
-		this.remarks = remarks;
+		this.site = builder.site;
+		this.technician = builder.technician;
+		this.startDate = builder.startDate;
+		this.startTime = builder.startTime;
+		this.maintenance = builder.maintenance;
+		this.endDate = builder.endDate;
+		this.endTime = builder.endTime;
+		this.reason = builder.reason;
+		this.remarks = builder.remarks;
 	}
 
 	/**
@@ -135,15 +136,6 @@ public class Report implements Serializable
 		private String reason;
 		private String remarks;
 		private Maintenance maintenance;
-
-		protected Report report;
-
-		/**
-		 * Creates a new Builder instance.
-		 */
-		public Builder()
-		{
-		}
 
 		/**
 		 * Sets the site of the report.
@@ -256,81 +248,51 @@ public class Report implements Serializable
 		public Report build() throws InformationRequiredExceptionReport
 		{
 			validateRequiredFields();
-
-			report = new Report();
-			report.setSite(site);
-			report.setTechnician(technician);
-			report.setStartDate(startDate);
-			report.setStartTime(startTime);
-			report.setEndDate(endDate);
-			report.setEndTime(endTime);
-			report.setReason(reason);
-			report.setRemarks(remarks);
-			report.setMaintenance(maintenance);
-
-			return report;
+			return new Report(this);
 		}
 
 		private void validateRequiredFields() throws InformationRequiredExceptionReport
 		{
-			Map<String, RequiredElementReport> requiredElements = new HashMap<>();
+			Map<String, RequiredElement> requiredElements = new HashMap<>();
 
-			if (report.getMaintenance() == null)
-			{
+			if (maintenance == null)
 				requiredElements.put("maintenance", RequiredElementReport.MAINTENANCE_REQUIRED);
-			}
 
-			if (report.getSite() == null)
-			{
+			if (site == null)
 				requiredElements.put("site", RequiredElementReport.SITE_REQUIRED);
-			}
 
-			if (report.getTechnician() == null)
-			{
+			if (technician == null)
 				requiredElements.put("technician", RequiredElementReport.TECHNICIAN_REQUIRED);
-			}
 
-			if (report.getStartDate() == null)
-			{
+			if (startDate == null)
 				requiredElements.put("startDate", RequiredElementReport.STARTDATE_REQUIRED);
-			}
 
-			if (report.getStartTime() == null)
-			{
+			if (startTime == null)
 				requiredElements.put("startTime", RequiredElementReport.STARTTIME_REQUIRED);
-			}
 
-			if (report.getEndDate() == null)
-			{
+			if (endDate == null)
 				requiredElements.put("endDate", RequiredElementReport.ENDDATE_REQUIRED);
-			}
 
-			if (report.getEndTime() == null)
-			{
+			if (endTime == null)
 				requiredElements.put("endTime", RequiredElementReport.ENDTIME_REQUIRED);
-			}
 
-			if (report.getReason() == null || report.getReason().isEmpty())
-			{
+			if (reason == null || reason.isEmpty())
 				requiredElements.put("reason", RequiredElementReport.REASON_REQUIRED);
-			}
 
-			if (report.getStartDate() != null && report.getEndDate() != null)
+			if (startDate != null && endDate != null)
 			{
-				if (report.getEndDate().isBefore(report.getStartDate()))
+				if (endDate.isBefore(startDate))
 				{
 					requiredElements.put("endDate", RequiredElementReport.END_DATE_BEFORE_START);
-				} else if (report.getEndDate().isEqual(report.getStartDate()) && report.getStartTime() != null
-						&& report.getEndTime() != null && report.getEndTime().isBefore(report.getStartTime()))
+				} else if (endDate.isEqual(startDate) && startTime != null
+						&& endTime != null && endTime.isBefore(startTime))
 				{
 					requiredElements.put("endTime", RequiredElementReport.END_TIME_BEFORE_START);
 				}
 			}
 
 			if (!requiredElements.isEmpty())
-			{
 				throw new InformationRequiredExceptionReport(requiredElements);
-			}
 		}
 	}
 }

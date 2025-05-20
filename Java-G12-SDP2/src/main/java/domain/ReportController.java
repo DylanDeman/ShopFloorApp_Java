@@ -4,8 +4,12 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+import dto.MaintenanceDTO;
 import dto.ReportDTO;
+import dto.SiteDTOWithoutMachines;
+import dto.UserDTO;
 import exceptions.InvalidReportException;
+import gui.AppServices;
 import repository.GenericDaoJpa;
 import util.DTOMapper;
 import util.Role;
@@ -19,8 +23,6 @@ public class ReportController
 
 	private GenericDaoJpa<User> userDao;
 	private GenericDaoJpa<Report> reportDao;
-	private GenericDaoJpa<Site> siteDao;
-	private MaintenanceController maintenanceController;
 
 	/**
 	 * Default constructor initializing DAOs for User, Report, and Site.
@@ -29,7 +31,6 @@ public class ReportController
 	{
 		this.userDao = new GenericDaoJpa<>(User.class);
 		this.reportDao = new GenericDaoJpa<>(Report.class);
-		this.siteDao = new GenericDaoJpa<>(Site.class);
 	}
 
 	/**
@@ -43,10 +44,8 @@ public class ReportController
 	public ReportController(GenericDaoJpa<Site> siteDao, GenericDaoJpa<User> userDao, GenericDaoJpa<Report> reportDao,
 			MaintenanceController maintenanceController)
 	{
-		this.siteDao = siteDao;
 		this.userDao = userDao;
 		this.reportDao = reportDao;
-		this.maintenanceController = maintenanceController;
 	}
 
 	/**
@@ -74,15 +73,27 @@ public class ReportController
 	 * @return a {@link ReportDTO} representing the saved report
 	 * @throws InvalidReportException if the report is invalid or saving fails
 	 */
-	public ReportDTO createReport(Site site, Maintenance maintenance, User technician, LocalDate startDate,
+	public ReportDTO createReport(SiteDTOWithoutMachines site, MaintenanceDTO maintenance, UserDTO technician, LocalDate startDate,
 			LocalTime startTime, LocalDate endDate, LocalTime endTime, String reason, String remarks)
 			throws InvalidReportException
 	{
 		try
 		{
-			Report newReport = new Report.Builder().buildSite(site).buildMaintenance(maintenance)
-					.buildTechnician(technician).buildstartDate(startDate).buildStartTime(startTime)
-					.buildEndDate(endDate).buildEndTime(endTime).buildReason(reason).buildRemarks(remarks).build();
+			Site siteObject = DTOMapper.toSite(site);
+			Maintenance maintenanceObject = DTOMapper.toMaintenance(maintenance);
+			User technicianObject = DTOMapper.toUser(technician);
+			
+			Report newReport = new Report.Builder()
+					.buildSite(siteObject)
+					.buildTechnician(technicianObject)
+					.buildMaintenance(maintenanceObject)
+					.buildstartDate(startDate)
+					.buildStartTime(startTime)
+					.buildEndDate(endDate)
+					.buildEndTime(endTime)
+					.buildReason(reason)
+					.buildRemarks(remarks)
+					.build();
 
 			validateReport(newReport);
 

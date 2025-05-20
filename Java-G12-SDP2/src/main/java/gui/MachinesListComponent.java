@@ -1,9 +1,7 @@
 package gui;
 
 import java.util.List;
-
 import org.kordamp.ikonli.javafx.FontIcon;
-
 import domain.MachineController;
 import dto.MachineDTO;
 import interfaces.Observer;
@@ -235,13 +233,13 @@ public class MachinesListComponent extends GridPane implements Observer
 
 	private void openAddMachineForm()
 	{
-		Parent addMachineForm = new AddOrEditMachineForm(mainLayout, null);
+		Parent addMachineForm = new AddOrEditMachineForm(mainLayout);
 		mainLayout.setContent(addMachineForm, true, false, CurrentPage.NONE);
 	}
 
 	private void openEditMachineForm(MachineDTO machine)
 	{
-		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machine);
+		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machine.id());
 		mainLayout.setContent(editMachineForm, true, false, CurrentPage.NONE);
 	}
 
