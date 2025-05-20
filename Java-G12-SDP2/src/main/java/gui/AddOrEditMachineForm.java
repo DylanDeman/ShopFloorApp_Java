@@ -1,4 +1,4 @@
-package gui.machine;
+package gui;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
@@ -9,7 +9,6 @@ import dto.MachineDTO;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionMachine;
-import gui.MainLayout;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;

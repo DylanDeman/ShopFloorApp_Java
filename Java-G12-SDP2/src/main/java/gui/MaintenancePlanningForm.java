@@ -1,4 +1,4 @@
-package gui.maintenance;
+package gui;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,7 +18,6 @@ import dto.MachineDTO;
 import dto.MaintenanceDTO;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionMaintenance;
-import gui.MainLayout;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;

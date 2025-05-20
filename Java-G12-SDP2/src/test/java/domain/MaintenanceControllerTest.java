@@ -1,4 +1,4 @@
-package domain.maintenance;
+package domain;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;

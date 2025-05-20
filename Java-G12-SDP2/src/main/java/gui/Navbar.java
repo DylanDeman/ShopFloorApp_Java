@@ -1,4 +1,4 @@
-package gui.customComponents;
+package gui;
 
 import java.util.List;
 
@@ -7,7 +7,6 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import domain.NotificationController;
 import domain.User;
 import dto.NotificationDTO;
-import gui.MainLayout;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;

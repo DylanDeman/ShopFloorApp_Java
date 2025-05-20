@@ -1,4 +1,4 @@
-package gui.customComponents;
+package gui;
 
 import org.kordamp.ikonli.javafx.FontIcon;
 
