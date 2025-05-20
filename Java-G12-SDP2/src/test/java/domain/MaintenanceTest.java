@@ -18,13 +18,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import domain.Machine;
-import domain.MachineController;
-import domain.Maintenance;
-import domain.MaintenanceController;
-import domain.Site;
-import domain.User;
-import domain.UserController;
 import dto.MaintenanceDTO;
 import exceptions.InformationRequiredExceptionMaintenance;
 import gui.AppServices;
