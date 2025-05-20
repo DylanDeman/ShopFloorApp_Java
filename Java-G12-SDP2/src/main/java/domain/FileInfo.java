@@ -17,9 +17,6 @@ import lombok.Setter;
 /**
  * Entity representing a file attached to a maintenance record. Contains
  * metadata and the binary content of the file.
- * <p>
- * Mapped to the "maintenance_files" table in the database.
- * </p>
  */
 @Entity
 @Getter
