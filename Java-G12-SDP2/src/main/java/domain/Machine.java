@@ -30,6 +30,14 @@ import util.MachineStatusConverter;
 import util.ProductionStatus;
 import util.RequiredElementMachine;
 
+/**
+ * Represents a machine in a production site.
+ * 
+ * A machine is associated with a {@link Site}, a {@link User} (technician), and
+ * contains information about its operational status, maintenance dates, and
+ * production data.
+ * 
+ */
 @Entity
 @ToString
 @NoArgsConstructor
@@ -38,6 +46,89 @@ import util.RequiredElementMachine;
 @Table(name = "machines")
 public class Machine implements Serializable, Subject
 {
+
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * The unique identifier of the machine.
+	 */
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int id;
+
+	/**
+	 * The site where the machine is located.
+	 */
+	@ManyToOne
+	@JoinColumn(name = "SITE_ID")
+	private Site site;
+
+	/**
+	 * The technician responsible for the machine.
+	 */
+	@ManyToOne
+	private User technician;
+
+	/**
+	 * The observers interested in updates about this machine (not persisted).
+	 */
+	@Transient
+	private List<Observer> observers;
+
+	/**
+	 * The unique code identifying the machine.
+	 */
+	private String code;
+
+	/**
+	 * The location of the machine within the site.
+	 */
+	private String location;
+
+	/**
+	 * Product information the machine is currently associated with.
+	 */
+	private String productInfo;
+
+	/**
+	 * The operational status of the machine.
+	 */
+	@Column(name = "MACHINESTATUS")
+	@Convert(converter = MachineStatusConverter.class)
+	private MachineStatus machineStatus;
+
+	/**
+	 * The production status of the machine.
+	 */
+	private ProductionStatus productionStatus;
+
+	/**
+	 * Date of the last maintenance operation.
+	 */
+	private LocalDate lastMaintenance;
+
+	/**
+	 * Date of the next scheduled maintenance.
+	 */
+	private LocalDate futureMaintenance;
+
+	/**
+	 * Number of days since the last maintenance.
+	 */
+	private int numberDaysSinceLastMaintenance;
+
+	/**
+	 * Constructs a new Machine with the given parameters.
+	 *
+	 * @param site              the site where the machine is located
+	 * @param technician        the responsible technician
+	 * @param code              the machine code
+	 * @param location          the location of the machine
+	 * @param productInfo       information about the product
+	 * @param machineStatus     the operational status
+	 * @param productionStatus  the production status
+	 * @param futureMaintenance the next maintenance date
+	 */
 	public Machine(Site site, User technician, String code, String location, String productInfo,
 			MachineStatus machineStatus, ProductionStatus productionStatus, LocalDate futureMaintenance)
 	{
@@ -51,44 +142,26 @@ public class Machine implements Serializable, Subject
 		setFutureMaintenance(futureMaintenance);
 	}
 
-	private static final long serialVersionUID = 1L;
-
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private int id;
-
-	@ManyToOne
-	@JoinColumn(name = "SITE_ID")
-	private Site site;
-
-	@ManyToOne
-	private User technician;
-
-	@Transient
-	private List<Observer> observers;
-
-	private String code, location, productInfo;
-
-	@Column(name = "MACHINESTATUS")
-	@Convert(converter = MachineStatusConverter.class)
-	private MachineStatus machineStatus;
-	private ProductionStatus productionStatus;
-
-	private LocalDate lastMaintenance, futureMaintenance;
-	private int numberDaysSinceLastMaintenance;
-
+	/**
+	 * Calculates the uptime of the machine since its last maintenance, in hours.
+	 *
+	 * @return the uptime in hours, or 0.0 if {@code lastMaintenance} is null
+	 */
 	public double getUpTimeInHours()
 	{
 		if (lastMaintenance == null)
 		{
 			return 0.0;
 		}
-
 		LocalDateTime maintenanceDateTime = lastMaintenance.atStartOfDay();
-		double hours = Duration.between(maintenanceDateTime, LocalDateTime.now()).toHours();
-		return hours;
+		return Duration.between(maintenanceDateTime, LocalDateTime.now()).toHours();
 	}
 
+	/**
+	 * Sets the site of the machine and updates the bidirectional relationship.
+	 *
+	 * @param site the site to set
+	 */
 	public void setSite(Site site)
 	{
 		if (this.site != null)
@@ -120,6 +193,9 @@ public class Machine implements Serializable, Subject
 		observers.stream().forEach((o) -> o.update(message));
 	}
 
+	/**
+	 * Builder class for constructing {@link Machine} instances.
+	 */
 	public static class Builder
 	{
 		private Site site;
@@ -133,9 +209,11 @@ public class Machine implements Serializable, Subject
 
 		protected Machine machine;
 
+		/**
+		 * Creates a new {@code Builder} instance.
+		 */
 		public Builder()
 		{
-
 		}
 
 		public Builder buildSite(Site site)
@@ -186,6 +264,12 @@ public class Machine implements Serializable, Subject
 			return this;
 		}
 
+		/**
+		 * Builds a {@link Machine} object with the configured values.
+		 *
+		 * @return the constructed {@code Machine} instance
+		 * @throws InformationRequiredExceptionMachine if required fields are missing
+		 */
 		public Machine build() throws InformationRequiredExceptionMachine
 		{
 			validateRequiredFields();
@@ -203,51 +287,59 @@ public class Machine implements Serializable, Subject
 			return machine;
 		}
 
+		/**
+		 * Validates that all required fields for building a machine are provided.
+		 *
+		 * @throws InformationRequiredExceptionMachine if one or more required fields
+		 *                                             are missing
+		 */
 		private void validateRequiredFields() throws InformationRequiredExceptionMachine
 		{
 			Map<String, RequiredElementMachine> requiredElements = new HashMap<>();
+
+			machine = new Machine();
 
 			if (machine.getLastMaintenance() == null)
 			{
 				machine.setLastMaintenance(LocalDate.now());
 			}
 
-			if (machine.getSite() == null)
+			if (site == null)
 			{
 				requiredElements.put("site", RequiredElementMachine.SITE_REQUIRED);
 			}
 
-			if (machine.getTechnician() == null)
+			if (technician == null)
 			{
 				requiredElements.put("technician", RequiredElementMachine.TECHNICIAN_REQUIRED);
 			}
 
-			if (machine.getCode().isEmpty())
+			if (code == null || code.isEmpty())
 			{
 				requiredElements.put("code", RequiredElementMachine.CODE_REQUIRED);
 			}
 
-			if (machine.getMachineStatus() == null)
+			if (machineStatus == null)
 			{
 				requiredElements.put("machineStatus", RequiredElementMachine.MACHINESTATUS_REQUIRED);
 			}
 
-			if (machine.getProductionStatus() == null)
+			if (productionStatus == null)
 			{
 				requiredElements.put("productionStatus", RequiredElementMachine.PRODUCTIONSTATUS_REQUIRED);
 			}
 
-			if (machine.getLocation().isEmpty())
+			if (location == null || location.isEmpty())
 			{
 				requiredElements.put("location", RequiredElementMachine.LOCATION_REQUIRED);
 			}
 
-			if (machine.getProductInfo().isEmpty())
+			if (productInfo == null || productInfo.isEmpty())
 			{
 				requiredElements.put("productInfo", RequiredElementMachine.PRODUCTINFO_REQUIRED);
 			}
 
-			if (machine.getFutureMaintenance() == null)
+			if (futureMaintenance == null)
 			{
 				requiredElements.put("futureMaintenance", RequiredElementMachine.FUTURE_MAINTENANCE_REQUIRED);
 			}
@@ -256,7 +348,6 @@ public class Machine implements Serializable, Subject
 			{
 				throw new InformationRequiredExceptionMachine(requiredElements);
 			}
-
 		}
 	}
 }
