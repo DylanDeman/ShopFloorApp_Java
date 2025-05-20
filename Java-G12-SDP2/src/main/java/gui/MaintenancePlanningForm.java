@@ -279,7 +279,7 @@ public class MaintenancePlanningForm extends GridPane
 	    commentsField.setText(maintenanceDTO.comments() != null ? maintenanceDTO.comments() : "");
 
 	    if (maintenanceDTO.status() != null) {
-	        statusComboBox.setValue(maintenanceDTO.status().name());
+	        statusComboBox.setValue(maintenanceDTO.status().toString());
 	    }
 
 	    if (maintenanceDTO.machine() != null) {
