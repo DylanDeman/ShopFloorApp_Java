@@ -74,7 +74,7 @@ public class MaintenancePlanningForm extends GridPane
 		initializeFields();
 		buildGUI();
 	}
-	
+
 	public MaintenancePlanningForm(MainLayout mainLayout, MaintenanceDTO maintenanceDTO, MachineDTO machineDTO)
 	{
 		this.mainLayout = mainLayout;
@@ -134,7 +134,8 @@ public class MaintenancePlanningForm extends GridPane
 	{
 		Button saveButton = new Button("Opslaan");
 		saveButton.getStyleClass().add("save-button");
-		saveButton.setOnAction(e -> {
+		saveButton.setOnAction(e ->
+		{
 
 			if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
 			{
@@ -170,39 +171,34 @@ public class MaintenancePlanningForm extends GridPane
 				LocalTime startTime = startTimeField.getValue();
 				LocalTime endTime = endTimeField.getValue();
 
-				// Convert to LocalDateTime
 				LocalDateTime startDateTime = (execDate != null && startTime != null)
 						? LocalDateTime.of(execDate, startTime)
 						: null;
 				LocalDateTime endDateTime = (execDate != null && endTime != null) ? LocalDateTime.of(execDate, endTime)
 						: null;
 
-				// Get IDs for technician and machine
 				String selectedTechnician = technicianComboBox.getValue();
 				int technicianId = selectedTechnician != null && technicianMap.containsKey(selectedTechnician)
-				    ? technicianMap.get(selectedTechnician).id()
-				    : 0;
+						? technicianMap.get(selectedTechnician).id()
+						: 0;
 				String selectedMachine = machineComboBox.getValue();
 				int machineId = selectedMachine != null && machineMap.containsKey(selectedMachine)
-				    ? machineMap.get(selectedMachine).id()
-				    : 0;
+						? machineMap.get(selectedMachine).id()
+						: 0;
 
-
-				// Get status
 				MaintenanceStatus status = statusComboBox.getValue() != null
-					    ? Arrays.stream(MaintenanceStatus.values())
-					        .filter(s -> s.toString().equals(statusComboBox.getValue()))
-					        .findFirst()
-					        .orElse(null)
-					    : null;
+						? Arrays.stream(MaintenanceStatus.values())
+								.filter(s -> s.toString().equals(statusComboBox.getValue())).findFirst().orElse(null)
+						: null;
 
-				// Use the controller to create the maintenance
-				if (maintenanceDTO == null) {
-				    mntcc.createMaintenance(execDate, startDateTime, endDateTime, technicianId, reasonField.getText(),
-				            commentsField.getText(), status, machineId);
-				} else {
-				    mntcc.updateMaintenance(maintenanceDTO.id(), execDate, startDateTime, endDateTime, technicianId,
-				            reasonField.getText(), commentsField.getText(), status, machineId);
+				if (maintenanceDTO == null)
+				{
+					mntcc.createMaintenance(execDate, startDateTime, endDateTime, technicianId, reasonField.getText(),
+							commentsField.getText(), status, machineId);
+				} else
+				{
+					mntcc.updateMaintenance(maintenanceDTO.id(), execDate, startDateTime, endDateTime, technicianId,
+							reasonField.getText(), commentsField.getText(), status, machineId);
 				}
 
 				mainLayout.showMaintenanceList(machineDTO);
@@ -250,47 +246,52 @@ public class MaintenancePlanningForm extends GridPane
 
 		return formContent;
 	}
-	
+
 	private void populateFormFieldsForEdit()
 	{
-	    if (maintenanceDTO.executionDate() != null) {
-	        executionDatePicker.setValue(maintenanceDTO.executionDate());
-	    }
+		if (maintenanceDTO.executionDate() != null)
+		{
+			executionDatePicker.setValue(maintenanceDTO.executionDate());
+		}
 
-	    if (maintenanceDTO.startDate() != null) {
-	        startTimeField.setValue(maintenanceDTO.startDate().toLocalTime());
-	    }
+		if (maintenanceDTO.startDate() != null)
+		{
+			startTimeField.setValue(maintenanceDTO.startDate().toLocalTime());
+		}
 
-	    if (maintenanceDTO.endDate() != null) {
-	        endTimeField.setValue(maintenanceDTO.endDate().toLocalTime());
-	    }
+		if (maintenanceDTO.endDate() != null)
+		{
+			endTimeField.setValue(maintenanceDTO.endDate().toLocalTime());
+		}
 
-	    if (maintenanceDTO.technician() != null) {
-	        String key = String.format("%d %s %s",
-	            maintenanceDTO.technician().id(),
-	            maintenanceDTO.technician().firstName(),
-	            maintenanceDTO.technician().lastName());
-	        if (technicianMap.containsKey(key)) {
-	            technicianComboBox.setValue(key);
-	        }
-	    }
+		if (maintenanceDTO.technician() != null)
+		{
+			String key = String.format("%d %s %s", maintenanceDTO.technician().id(),
+					maintenanceDTO.technician().firstName(), maintenanceDTO.technician().lastName());
+			if (technicianMap.containsKey(key))
+			{
+				technicianComboBox.setValue(key);
+			}
+		}
 
-	    reasonField.setText(maintenanceDTO.reason() != null ? maintenanceDTO.reason() : "");
-	    commentsField.setText(maintenanceDTO.comments() != null ? maintenanceDTO.comments() : "");
+		reasonField.setText(maintenanceDTO.reason() != null ? maintenanceDTO.reason() : "");
+		commentsField.setText(maintenanceDTO.comments() != null ? maintenanceDTO.comments() : "");
 
-	    if (maintenanceDTO.status() != null) {
-	        statusComboBox.setValue(maintenanceDTO.status().name());
-	    }
+		if (maintenanceDTO.status() != null)
+		{
+			statusComboBox.setValue(maintenanceDTO.status().name());
+		}
 
-	    if (maintenanceDTO.machine() != null) {
-	        String key = String.format("%d Machine %s", maintenanceDTO.machine().id(), maintenanceDTO.machine().code());
-	        if (machineMap.containsKey(key)) {
-	            machineComboBox.setValue(key);
-	        }
-	    }
+		if (maintenanceDTO.machine() != null)
+		{
+			String key = String.format("%d Machine %s", maintenanceDTO.machine().id(), maintenanceDTO.machine().code());
+			if (machineMap.containsKey(key))
+			{
+				machineComboBox.setValue(key);
+			}
+		}
 
 	}
-
 
 	private void initializeFields()
 	{
@@ -311,10 +312,7 @@ public class MaintenancePlanningForm extends GridPane
 		List<UserDTO> technicians = uc.getAllTechniekers();
 
 		technicianMap = technicians.stream()
-		    .collect(Collectors.toMap(
-		        t -> String.format("%d %s %s", t.id(), t.firstName(), t.lastName()),
-		        t -> t
-		    ));
+				.collect(Collectors.toMap(t -> String.format("%d %s %s", t.id(), t.firstName(), t.lastName()), t -> t));
 
 		technicianComboBox = new ComboBox<>();
 		technicianComboBox.getItems().addAll(technicianMap.keySet());
@@ -344,29 +342,31 @@ public class MaintenancePlanningForm extends GridPane
 		machineComboBox.setPrefWidth(200);
 
 		List<String> statusses = Arrays.stream(MaintenanceStatus.values()).map(Enum::toString).toList();
-		if(AuthenticationUtil.hasRole(Role.TECHNIEKER)) {
-			statusses = Arrays.stream(MaintenanceStatus.values()).filter(s -> !s.equals(MaintenanceStatus.INGEPLAND)).map(Enum::toString).toList();
+		if (AuthenticationUtil.hasRole(Role.TECHNIEKER))
+		{
+			statusses = Arrays.stream(MaintenanceStatus.values()).filter(s -> !s.equals(MaintenanceStatus.INGEPLAND))
+					.map(Enum::toString).toList();
 		}
 		statusComboBox.getItems().addAll(statusses);
 		statusComboBox.setPromptText("Selecteer status");
 
 		List<MachineDTO> machines = mc.getMachineList();
-		machineMap = machines.stream().collect(Collectors.toMap(
-		    m -> String.format("%d Machine %s", m.id(), m.code()), m -> m
-		));
+		machineMap = machines.stream()
+				.collect(Collectors.toMap(m -> String.format("%d Machine %s", m.id(), m.code()), m -> m));
 
 		machineComboBox.getItems().addAll(machineMap.keySet());
 		machineComboBox.setPromptText("Selecteer machine");
 		machineComboBox.setPrefWidth(200);
 
-		if (machineDTO != null) {
-		    String key = String.format("%d Machine %s", machineDTO.id(), machineDTO.code());
-		    machineComboBox.setValue(key);
-		    machineComboBox.setDisable(true);
+		if (machineDTO != null)
+		{
+			String key = String.format("%d Machine %s", machineDTO.id(), machineDTO.code());
+			machineComboBox.setValue(key);
+			machineComboBox.setDisable(true);
 		}
 
-		
-		if(maintenanceDTO != null) {
+		if (maintenanceDTO != null)
+		{
 			populateFormFieldsForEdit();
 		}
 	}
@@ -444,7 +444,8 @@ public class MaintenancePlanningForm extends GridPane
 				startDateErrorLabel, "endDate", endDateErrorLabel, "machine", machineErrorLabel, "status",
 				statusErrorLabel, "reason", reasonErrorLabel, "technician", technicianErrorLabel);
 
-		e.getInformationRequired().forEach((field, requiredElement) -> {
+		e.getInformationRequired().forEach((field, requiredElement) ->
+		{
 			String message = switch (requiredElement)
 			{
 			case EXECUTION_DATE_REQUIRED -> "Uitvoeringsdatum is verplicht";

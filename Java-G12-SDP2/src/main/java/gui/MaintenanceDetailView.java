@@ -77,16 +77,13 @@ public class MaintenanceDetailView extends BorderPane
 		this.fileInfoController = mainLayout.getServices().getFileInfoController();
 		this.primaryStage = (Stage) mainLayout.getMainScene().getWindow();
 
-		// Load maintenance data
 		if (maintenance != null)
 		{
 			this.currentMaintenance = maintenance;
 		}
 
-		// Get files from database for this maintenance
 		this.currentFiles = getFilesFromDatabase();
 
-		// Load CSS
 		getStylesheets().add(getClass().getResource("/css/maintenanceDetails.css").toExternalForm());
 		getStyleClass().add("maintenance-details");
 
@@ -100,7 +97,6 @@ public class MaintenanceDetailView extends BorderPane
 			return new ArrayList<>();
 		}
 
-		// Get files from controller
 		return fileInfoController.getFilesForMaintenance(currentMaintenance.id());
 	}
 
@@ -111,10 +107,8 @@ public class MaintenanceDetailView extends BorderPane
 		setStyle("-fx-background-color: #f5f5f5;");
 		setPadding(new Insets(10, 30, 10, 30));
 
-		// Create header with back button and title
 		createHeaderSection();
 
-		// Create maintenance info section first
 		createMaintenanceInfoSection();
 
 		// Create files section if files exist
@@ -126,7 +120,7 @@ public class MaintenanceDetailView extends BorderPane
 
 	private void createHeaderSection()
 	{
-		// Back button and title
+
 		Button backButton = new Button();
 		FontIcon backIcon = new FontIcon("fas-arrow-left");
 		backIcon.setIconSize(20);
@@ -143,7 +137,6 @@ public class MaintenanceDetailView extends BorderPane
 		{
 			titleLabel.setText("Onderhoud #" + currentMaintenance.id());
 
-			// Add machine info if available
 			if (currentMaintenance.machine() != null)
 			{
 				machineInfoLabel = new Label("Machine: " + currentMaintenance.machine().code());
@@ -161,15 +154,6 @@ public class MaintenanceDetailView extends BorderPane
 		HBox titleBox = new HBox(10);
 		titleBox.setAlignment(Pos.CENTER_LEFT);
 		titleBox.getChildren().addAll(backButton, titleVBox);
-
-		/*
-		 * // Action buttons Button reportButton = new Button("Rapport aanmaken");
-		 * FontIcon reportIcon = new FontIcon("fas-file-alt");
-		 * reportIcon.setIconSize(16); reportIcon.setIconColor(Color.WHITE);
-		 * reportButton.setGraphic(reportIcon);
-		 * reportButton.getStyleClass().add("action-button"); reportButton.setOnAction(e
-		 * -> { goToAddRapport(mainLayout, currentMaintenance); });
-		 */
 
 		Button uploadButton = new Button("Bestanden toevoegen");
 		FontIcon uploadIcon = new FontIcon("fas-upload");
@@ -192,21 +176,12 @@ public class MaintenanceDetailView extends BorderPane
 		setTop(headerPane);
 	}
 
-	/*
-	 * private void goToAddRapport(MainLayout mainLayout, MaintenanceDTO
-	 * maintenance) { AddReportForm form = new AddReportForm(mainLayout,
-	 * maintenance);
-	 * form.getStylesheets().add(getClass().getResource("/css/AddRapport.css").
-	 * toExternalForm()); mainLayout.showAddReport(maintenance); }
-	 */
-
 	private void createMaintenanceInfoSection()
 	{
-		// Info message
+
 		HBox infoBox = new CustomInformationBox("Hieronder vindt u de details van dit onderhoud");
 		VBox.setMargin(infoBox, new Insets(20, 0, 5, 0));
 
-		// Create message label
 		messageLabel = new Label();
 		messageLabel.getStyleClass().add("message-label");
 		messageLabel.setWrapText(true);
@@ -214,13 +189,11 @@ public class MaintenanceDetailView extends BorderPane
 		messageLabel.setMaxWidth(Double.MAX_VALUE);
 		VBox.setMargin(messageLabel, new Insets(0, 0, 5, 0));
 
-		// Table for maintenance details
 		GridPane table = createMaintenanceTable();
 
 		VBox contentBox = new VBox(5);
 		contentBox.getChildren().addAll(infoBox, messageLabel, table);
 
-		// Always set the maintenance info in the center
 		setCenter(contentBox);
 	}
 
@@ -229,12 +202,10 @@ public class MaintenanceDetailView extends BorderPane
 		GridPane table = new GridPane();
 		table.getStyleClass().add("maintenance-table");
 
-		// Column headers
 		String[] headers =
 		{ "Onderhoudsnummer", "Uitvoeringsdatum", "Starttijd", "Eindtijd", "Technieker", "Reden", "Opmerkingen",
 				"Status" };
 
-		// Create header cells
 		for (int i = 0; i < headers.length; i++)
 		{
 			Label headerLabel = new Label(headers[i]);
@@ -251,10 +222,9 @@ public class MaintenanceDetailView extends BorderPane
 		separator.setMaxWidth(Double.MAX_VALUE);
 		table.add(separator, 0, 1, headers.length, 1);
 
-		// Add data row if maintenance data exists
 		if (currentMaintenance != null)
 		{
-			// Add data cells for each column
+
 			Label idLabel = new Label(String.valueOf(currentMaintenance.id()));
 			idLabel.getStyleClass().add("table-cell");
 			table.add(idLabel, 0, 2);
@@ -303,42 +273,33 @@ public class MaintenanceDetailView extends BorderPane
 		filesSection = new VBox(10);
 		filesSection.getStyleClass().add("files-section");
 
-		// Files header
 		Label filesHeader = new Label("Bestanden");
 		filesHeader.getStyleClass().add("files-header");
 
-		// Create filter and sort controls
 		HBox controlsBox = createFilterControls();
 		controlsBox.getStyleClass().add("filter-controls");
 
-		// File container
 		filesContainer = new FlowPane();
 		filesContainer.getStyleClass().add("files-container");
 
-		// Add files to container
 		refreshFilesDisplay();
 
-		// Wrap FlowPane in a ScrollPane to enable scrolling
 		ScrollPane scrollPane = new ScrollPane(filesContainer);
 		scrollPane.setFitToWidth(true);
 		scrollPane.setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
 		scrollPane.setHbarPolicy(ScrollBarPolicy.NEVER);
 		scrollPane.getStyleClass().add("files-scroll-pane");
 
-		// Make the ScrollPane fill the available space
 		VBox.setVgrow(scrollPane, Priority.ALWAYS);
 		scrollPane.setPrefViewportHeight(Integer.MAX_VALUE);
 		scrollPane.setMaxHeight(Double.MAX_VALUE);
-		scrollPane.setMinHeight(400); // Minimum height to ensure it's always visible
+		scrollPane.setMinHeight(400);
 
-		// Add components to files section
 		filesSection.getChildren().addAll(filesHeader, controlsBox, scrollPane);
 
-		// Create a container for both maintenance info and files
 		VBox mainContent = new VBox(20);
 		mainContent.getChildren().addAll((VBox) getCenter(), filesSection);
 
-		// Set the combined content as the center
 		setCenter(mainContent);
 	}
 
@@ -347,7 +308,6 @@ public class MaintenanceDetailView extends BorderPane
 		HBox controlsBox = new HBox(10);
 		controlsBox.setAlignment(Pos.CENTER_LEFT);
 
-		// File type filter
 		Label filterLabel = new Label("Filter op type:");
 		fileTypeFilter = new ComboBox<>();
 		fileTypeFilter.getItems().addAll("Alle", "PDF", "Foto");
@@ -358,7 +318,6 @@ public class MaintenanceDetailView extends BorderPane
 			refreshFilesDisplay();
 		});
 
-		// Sort order
 		Label sortLabel = new Label("Sorteer op:");
 		sortOrder = new ComboBox<>();
 		sortOrder.getItems().addAll("Datum (Nieuwste)", "Datum (Oudste)", "Grootte (Grootste)", "Grootte (Kleinste)",
@@ -378,7 +337,6 @@ public class MaintenanceDetailView extends BorderPane
 	{
 		filesContainer.getChildren().clear();
 
-		// Filter files
 		List<FileInfo> filteredFiles = currentFiles.stream().filter(file ->
 		{
 			if (currentFilter.equals("Alle"))
@@ -397,7 +355,6 @@ public class MaintenanceDetailView extends BorderPane
 			}
 		}).collect(Collectors.toList());
 
-		// Sort files
 		filteredFiles.sort((f1, f2) ->
 		{
 			switch (currentSort)
@@ -419,7 +376,6 @@ public class MaintenanceDetailView extends BorderPane
 			}
 		});
 
-		// Add sorted and filtered files to container
 		for (FileInfo file : filteredFiles)
 		{
 			filesContainer.getChildren().add(createFileBox(file));
@@ -430,7 +386,6 @@ public class MaintenanceDetailView extends BorderPane
 	{
 		refreshFilesDisplay();
 
-		// If no files left, remove the entire files section
 		if (currentFiles.isEmpty())
 		{
 			VBox mainContent = (VBox) getCenter();
@@ -460,7 +415,6 @@ public class MaintenanceDetailView extends BorderPane
 					PDDocument document = Loader.loadPDF(pdfContent);
 					PDFRenderer pdfRenderer = new PDFRenderer(document);
 
-					// Get the first page
 					BufferedImage image = pdfRenderer.renderImageWithDPI(0, 150); // Increased DPI for better quality
 
 					// Convert to JavaFX Image
@@ -478,16 +432,12 @@ public class MaintenanceDetailView extends BorderPane
 					pdfImageView.setPreserveRatio(true);
 					pdfImageView.setSmooth(true);
 
-					// Center the image in the container
 					StackPane.setAlignment(pdfImageView, Pos.CENTER);
 
-					// Add the image to the container
 					imageContainer.getChildren().add(pdfImageView);
 
-					// Add the container to the preview
 					previewContainer.getChildren().add(imageContainer);
 
-					// Clean up
 					document.close();
 				} else
 				{
@@ -511,41 +461,7 @@ public class MaintenanceDetailView extends BorderPane
 				pdfPreview.getChildren().addAll(pdfIcon, pdfName);
 				previewContainer.getChildren().add(pdfPreview);
 			}
-		} /*
-			 * else if (fileType.equals("video")) { try { byte[] videoContent =
-			 * fileInfoController.getFileContent(fileInfo); if (videoContent != null) { //
-			 * Create a temporary file to store the video File tempFile =
-			 * File.createTempFile("preview", ".mp4"); try (FileOutputStream fos = new
-			 * FileOutputStream(tempFile)) { fos.write(videoContent); }
-			 * 
-			 * // Create media player Media media = new Media(tempFile.toURI().toString());
-			 * MediaPlayer mediaPlayer = new MediaPlayer(media); MediaView mediaView = new
-			 * MediaView(mediaPlayer);
-			 * 
-			 * // Set dimensions mediaView.setFitWidth(217); mediaView.setFitHeight(160);
-			 * mediaView.setPreserveRatio(true);
-			 * 
-			 * // Add to container previewContainer.getChildren().add(mediaView);
-			 * 
-			 * // Start playing mediaPlayer.setAutoPlay(true); mediaPlayer.setMute(true);
-			 * mediaPlayer.setCycleCount(MediaPlayer.INDEFINITE);
-			 * 
-			 * // Clean up temp file when done mediaPlayer.setOnEndOfMedia(() -> {
-			 * tempFile.delete(); }); } else { throw new
-			 * IOException("No video content available"); } } catch (Exception e) { //
-			 * Fallback to icon if preview fails VBox videoPreview = new VBox(10);
-			 * videoPreview.setAlignment(Pos.CENTER);
-			 * 
-			 * FontIcon videoIcon = new FontIcon("fas-video"); videoIcon.setIconSize(60);
-			 * videoIcon.setIconColor(Color.web("#333333"));
-			 * 
-			 * Label videoName = new Label(fileInfo.getName());
-			 * videoName.setStyle("-fx-font-size: 14px; -fx-text-fill: #333;");
-			 * videoName.setMaxWidth(200); videoName.setWrapText(true);
-			 * 
-			 * videoPreview.getChildren().addAll(videoIcon, videoName);
-			 * previewContainer.getChildren().add(videoPreview); } }
-			 */ else if (fileType.equals("image"))
+		} else if (fileType.equals("image"))
 		{
 			try
 			{
@@ -555,13 +471,11 @@ public class MaintenanceDetailView extends BorderPane
 					Image image = new Image(new ByteArrayInputStream(imageContent));
 					ImageView imageView = new ImageView(image);
 
-					// Set max dimensions but preserve aspect ratio
 					imageView.setFitWidth(217);
 					imageView.setFitHeight(160);
 					imageView.setPreserveRatio(true);
 					imageView.setSmooth(true);
 
-					// Center the image in the container
 					StackPane.setAlignment(imageView, Pos.CENTER);
 
 					previewContainer.getChildren().add(imageView);
@@ -571,7 +485,7 @@ public class MaintenanceDetailView extends BorderPane
 				}
 			} catch (Exception e)
 			{
-				// If image loading fails, show placeholder
+
 				VBox imagePreview = new VBox(10);
 				imagePreview.setAlignment(Pos.CENTER);
 
@@ -589,7 +503,7 @@ public class MaintenanceDetailView extends BorderPane
 			}
 		} else
 		{
-			// Generic file preview
+
 			VBox genericPreview = new VBox(10);
 			genericPreview.setAlignment(Pos.CENTER);
 
@@ -606,7 +520,6 @@ public class MaintenanceDetailView extends BorderPane
 			previewContainer.getChildren().add(genericPreview);
 		}
 
-		// File name and actions area
 		HBox fileActions = new HBox();
 		fileActions.getStyleClass().add("file-actions");
 		fileActions.setAlignment(Pos.CENTER_LEFT);
@@ -668,19 +581,15 @@ public class MaintenanceDetailView extends BorderPane
 		FileChooser.ExtensionFilter pdfFilter = new FileChooser.ExtensionFilter("PDF Bestanden", "*.pdf");
 		FileChooser.ExtensionFilter imageFilter = new FileChooser.ExtensionFilter("Foto Bestanden", "*.jpg", "*.jpeg",
 				"*.png", "*.gif");
-		/*
-		 * FileChooser.ExtensionFilter videoFilter = new
-		 * FileChooser.ExtensionFilter("Video Bestanden", "*.mp4", "*.mov", "*.avi");
-		 */
 
-		fileChooser.getExtensionFilters().addAll(allSupportedFilter, pdfFilter, imageFilter /* ,videoFilter */);
-		fileChooser.setSelectedExtensionFilter(allSupportedFilter); // Set default filter
+		fileChooser.getExtensionFilters().addAll(allSupportedFilter, pdfFilter, imageFilter);
+		fileChooser.setSelectedExtensionFilter(allSupportedFilter);
 
 		List<File> selectedFiles = fileChooser.showOpenMultipleDialog(getStage());
 
 		if (selectedFiles != null && !selectedFiles.isEmpty())
 		{
-			// Get maintenance entity for database relationship
+
 			Maintenance maintenance = maintenanceController.getMaintenance(currentMaintenance.id());
 			if (maintenance == null)
 			{
@@ -693,16 +602,14 @@ public class MaintenanceDetailView extends BorderPane
 				return;
 			}
 
-			// Track failed uploads
 			List<String> failedUploads = new ArrayList<>();
 			List<FileInfo> successfulUploads = new ArrayList<>();
 
-			// Try to upload each file
 			for (File file : selectedFiles)
 			{
 				try
 				{
-					// Validate file type
+
 					String fileType = getFileType(file.getName());
 					if (!isValidFileType(fileType))
 					{
@@ -712,13 +619,10 @@ public class MaintenanceDetailView extends BorderPane
 						continue;
 					}
 
-					// Create FileInfo entity
 					FileInfo newFile = new FileInfo(file.getName(), fileType, null, maintenance);
 
-					// Try to save file content to database
 					fileInfoController.saveFileContent(file, newFile);
 
-					// If successful, add to successful uploads
 					successfulUploads.add(newFile);
 
 				} catch (Exception e)
@@ -732,23 +636,20 @@ public class MaintenanceDetailView extends BorderPane
 				}
 			}
 
-			// If we have successful uploads, create the files section and add the files
 			if (!successfulUploads.isEmpty())
 			{
-				// If files section doesn't exist yet, create it
+
 				if (filesSection == null)
 				{
-					// Initialize files list if needed
+
 					if (currentFiles == null)
 					{
 						currentFiles = new ArrayList<>();
 					}
 
-					// Create the files section
 					createFilesSection();
 				}
 
-				// Add successful uploads to UI and list
 				for (FileInfo file : successfulUploads)
 				{
 					currentFiles.add(file);
@@ -756,7 +657,6 @@ public class MaintenanceDetailView extends BorderPane
 				}
 			}
 
-			// Show summary of failed uploads if any
 			if (!failedUploads.isEmpty())
 			{
 				StringBuilder errorMessage = new StringBuilder(
@@ -764,7 +664,6 @@ public class MaintenanceDetailView extends BorderPane
 				errorMessage.append(String.join("\n", failedUploads));
 				errorMessage.append("\n\nControleer of de bestanden het juiste type zijn en niet te groot zijn.");
 
-				// Show the alert on the JavaFX Application Thread
 				Platform.runLater(() ->
 				{
 					try
@@ -793,9 +692,7 @@ public class MaintenanceDetailView extends BorderPane
 		} else if (lowerCaseName.matches(".*\\.(jpg|jpeg|png|gif)$"))
 		{
 			return "image";
-		} /*
-			 * else if (lowerCaseName.matches(".*\\.(mp4|mov|avi)$")) { return "video"; }
-			 */
+		}
 		return "other";
 	}
 
@@ -806,7 +703,7 @@ public class MaintenanceDetailView extends BorderPane
 
 	private void downloadFile(FileInfo fileInfo)
 	{
-		// Choose the download location
+
 		DirectoryChooser directoryChooser = new DirectoryChooser();
 		directoryChooser.setTitle("Selecteer download locatie");
 		File selectedDirectory = directoryChooser.showDialog(getStage());
@@ -815,7 +712,7 @@ public class MaintenanceDetailView extends BorderPane
 		{
 			try
 			{
-				// Get file content from database
+
 				byte[] content = fileInfoController.getFileContent(fileInfo);
 				if (content == null)
 				{
@@ -828,10 +725,8 @@ public class MaintenanceDetailView extends BorderPane
 					return;
 				}
 
-				// Create target file
 				File targetFile = new File(selectedDirectory.getAbsolutePath() + File.separator + fileInfo.getName());
 
-				// Write content to file
 				try (FileOutputStream fos = new FileOutputStream(targetFile))
 				{
 					fos.write(content);
@@ -858,7 +753,7 @@ public class MaintenanceDetailView extends BorderPane
 
 	private void deleteFile(FileInfo fileInfo)
 	{
-		// Confirm deletion
+
 		Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
 		confirmAlert.setTitle("Bevestig verwijderen");
 		confirmAlert.setHeaderText("Weet u zeker dat u dit bestand wilt verwijderen?");
@@ -870,10 +765,9 @@ public class MaintenanceDetailView extends BorderPane
 		{
 			try
 			{
-				// Delete from database
+
 				fileInfoController.deleteFile(fileInfo);
 
-				// Remove from current list and UI
 				currentFiles.remove(fileInfo);
 				refreshFilesSection();
 

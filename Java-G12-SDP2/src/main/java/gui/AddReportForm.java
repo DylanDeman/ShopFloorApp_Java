@@ -361,28 +361,17 @@ public class AddReportForm extends GridPane
 						.orElse(null);
 			}
 
-			// Get the site object from the selected maintenance
 			SiteDTOWithoutMachines siteWoMachines = selectedMaintenanceDTO.machine().site();
 
 			Site site = DTOMapper.toSite(siteWoMachines, null);
 
-			// Get the maintenance object
 			Maintenance maintenance = mc.getMaintenance(selectedMaintenanceDTO.id());
 
-			// Convert DTO to domain object if needed (depending on your implementation)
 			User technician = selectedTechnician != null ? uc.getUserById(selectedTechnician.id()) : null;
 
-			// Call the updated createReport method with parameters in the correct order
-			rc.createReport(site, // Site (using original Site object, not DTO)
-					maintenance, // Maintenance
-					technician, // User technician
-					startDatePicker.getValue(), // LocalDate startDate
-					startTimeField.getValue(), // LocalTime startTime
-					endDatePicker.getValue(), // LocalDate endDate
-					endTimeField.getValue(), // LocalTime endTime
-					reasonField.getText().trim(), // String reason
-					commentsArea.getText().trim() // String remarks/comments
-			);
+			rc.createReport(site, maintenance, technician, startDatePicker.getValue(), startTimeField.getValue(),
+					endDatePicker.getValue(), endTimeField.getValue(), reasonField.getText().trim(),
+					commentsArea.getText().trim());
 
 			mainLayout.showMaintenanceDetails(selectedMaintenanceDTO);
 		} catch (InformationRequiredExceptionReport e)
@@ -397,7 +386,8 @@ public class AddReportForm extends GridPane
 
 	private void handleInformationRequiredException(InformationRequiredExceptionReport e)
 	{
-		e.getMissingElements().forEach((field, requiredElement) -> {
+		e.getMissingElements().forEach((field, requiredElement) ->
+		{
 			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
 			showFieldError(field, errorMessage);
 		});

@@ -16,7 +16,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.Rectangle;
 
-// TODO 
 public class LoginPane extends VBox
 {
 
@@ -35,7 +34,7 @@ public class LoginPane extends VBox
 
 	public LoginPane(MainLayout mainLayout)
 	{
-		// TODO Tijdelijk terug wegdoen later
+
 		emailField.setText("alice.admin@example.com");
 		passwordField.setText("123456789");
 
@@ -91,42 +90,34 @@ public class LoginPane extends VBox
 		form.getStyleClass().add("login-form");
 		form.setFillWidth(true);
 
-		// Welcome header
 		Label welcomeLabel = new Label("Welkom!");
 		welcomeLabel.getStyleClass().add("welcome-label");
 		welcomeLabel.setMaxWidth(Double.MAX_VALUE);
 		welcomeLabel.setAlignment(Pos.CENTER);
 
-		// infoBox
 		VBox infoBox = createInfoBox();
 
-		// Error label
 		errorLabel.getStyleClass().add("error-label");
 
-		// Email input
 		Label emailLabel = new Label("E-mail:");
 		emailLabel.getStyleClass().add("login-label");
 		emailField.setPromptText("Example@delaware.com");
 		emailField.getStyleClass().add("login-field");
 
-		// Validation labels
 		emailValidationLabel.getStyleClass().add("validation-label");
 		emailValidationLabel.setStyle("-fx-text-fill: red; -fx-font-size: 12px;");
 		emailValidationLabel.setVisible(false);
 
-		// Password input
 		Label passwordLabel = new Label("Wachtwoord:");
 		passwordLabel.getStyleClass().add("login-label");
 		passwordField.setPromptText("●●●●●●●●●●●");
 		passwordField.getStyleClass().add("login-field");
 
-		// Password validation label
 		passwordValidationLabel.getStyleClass().add("validation-label");
 		passwordValidationLabel.setStyle("-fx-text-fill: red; -fx-font-size: 12px;");
 		passwordValidationLabel.setVisible(false);
 		passwordValidationLabel.setText("verplicht");
 
-		// Login button
 		Button loginButton = new Button("AANMELDEN");
 		loginButton.getStyleClass().add("login-button");
 		loginButton.setOnAction(e -> handleLogin());
@@ -188,7 +179,6 @@ public class LoginPane extends VBox
 		emailValidationLabel.setVisible(false);
 		passwordValidationLabel.setVisible(false);
 
-		// TODO beter in domein laag zetten:
 		boolean isValid = true;
 
 		if (email.isEmpty())
@@ -209,7 +199,6 @@ public class LoginPane extends VBox
 			isValid = false;
 		}
 
-		// Als alle velden zijn ingevuld, authenticatie doen:
 		if (isValid)
 		{
 			try
