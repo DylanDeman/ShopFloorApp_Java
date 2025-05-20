@@ -1,4 +1,4 @@
-package gui.maintenance;
+package gui;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -15,10 +15,6 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import domain.MaintenanceController;
 import dto.MachineDTO;
 import dto.MaintenanceDTO;
-import gui.MainLayout;
-import gui.customComponents.CustomButton;
-import gui.customComponents.CustomInformationBox;
-import gui.report.AddReportForm;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.event.Event;

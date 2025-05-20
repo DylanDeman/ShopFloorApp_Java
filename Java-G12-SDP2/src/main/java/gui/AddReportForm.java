@@ -1,4 +1,4 @@
-package gui.report;
+package gui;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -17,7 +17,6 @@ import dto.MaintenanceDTO;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionReport;
-import gui.MainLayout;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;

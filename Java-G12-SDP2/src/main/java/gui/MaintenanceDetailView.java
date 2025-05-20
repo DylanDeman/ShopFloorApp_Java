@@ -1,4 +1,4 @@
-package gui.maintenance;
+package gui;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -21,8 +21,6 @@ import domain.FileInfoController;
 import domain.Maintenance;
 import domain.MaintenanceController;
 import dto.MaintenanceDTO;
-import gui.MainLayout;
-import gui.customComponents.CustomInformationBox;
 import javafx.application.Platform;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Insets;

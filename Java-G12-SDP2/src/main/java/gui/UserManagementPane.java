@@ -7,7 +7,6 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.UserController;
 import dto.UserDTO;
-import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;

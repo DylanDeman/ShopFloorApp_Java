@@ -1,8 +1,7 @@
-package gui.login;
+package gui;
 
 import domain.UserController;
 import exceptions.InvalidInputException;
-import gui.MainLayout;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;

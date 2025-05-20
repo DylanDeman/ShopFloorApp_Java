@@ -1,4 +1,4 @@
-package gui.site;
+package gui;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +10,6 @@ import domain.SiteController;
 import dto.MachineDTO;
 import dto.SiteDTOWithMachines;
 import dto.UserDTO;
-import gui.MainLayout;
-import gui.customComponents.CustomInformationBox;
-import gui.machine.AddOrEditMachineForm;
 import interfaces.Observer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleIntegerProperty;

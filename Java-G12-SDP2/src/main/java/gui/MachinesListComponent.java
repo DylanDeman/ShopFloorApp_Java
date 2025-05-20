@@ -1,4 +1,4 @@
-package gui.machine;
+package gui;
 
 import java.util.List;
 
@@ -6,8 +6,6 @@ import org.kordamp.ikonli.javafx.FontIcon;
 
 import domain.MachineController;
 import dto.MachineDTO;
-import gui.MainLayout;
-import gui.customComponents.CustomInformationBox;
 import interfaces.Observer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
