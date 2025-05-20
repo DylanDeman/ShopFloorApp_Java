@@ -42,7 +42,7 @@ public class MaintenanceListComponent extends VBox
 	private final MainLayout mainLayout;
 	private MaintenanceController mc;
 	private TableView<MaintenanceDTO> table;
-	
+
 	private TextField searchField;
 	private DatePicker executionDatePickerFilter;
 	private ComboBox<LocalTime> startTimeFieldFilter, endTimeFieldFilter;
@@ -50,7 +50,7 @@ public class MaintenanceListComponent extends VBox
 	private TextField reasonFilter;
 	private TextField commentsFilter;
 	private ComboBox<String> statusFilter;
-	
+
 	private List<MaintenanceDTO> allMaintenances;
 	private List<MaintenanceDTO> filteredMaintenances;
 	private MachineDTO machineDTO;
@@ -149,7 +149,7 @@ public class MaintenanceListComponent extends VBox
 	private VBox createTableSection()
 	{
 		HBox filterBox = createTableHeaders();
-		
+
 		TableColumn<MaintenanceDTO, Void> editColumn = new TableColumn<>("Bewerken");
 		editColumn.setCellFactory(param -> new TableCell<MaintenanceDTO, Void>()
 		{
@@ -181,14 +181,14 @@ public class MaintenanceListComponent extends VBox
 				m -> m.startDate().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")).toString());
 		TableColumn<MaintenanceDTO, String> col3 = createColumn("Eindtijdstip",
 				m -> m.endDate().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")).toString());
-		TableColumn<MaintenanceDTO, String> col4 = createColumn("Naam technieker",
-				m -> {
-				    if (m.technician() == null) return "Onbekend";
-				    String first = m.technician().firstName();
-				    String last = m.technician().lastName();
-				    String formattedLast = last.substring(0, 1).toUpperCase() + last.substring(1).toLowerCase();
-				    return String.format("%s %s", first, formattedLast);
-				});
+		TableColumn<MaintenanceDTO, String> col4 = createColumn("Naam technieker", m -> {
+			if (m.technician() == null)
+				return "Onbekend";
+			String first = m.technician().firstName();
+			String last = m.technician().lastName();
+			String formattedLast = last.substring(0, 1).toUpperCase() + last.substring(1).toLowerCase();
+			return String.format("%s %s", first, formattedLast);
+		});
 		TableColumn<MaintenanceDTO, String> col5 = createColumn("Reden", MaintenanceDTO::reason);
 		TableColumn<MaintenanceDTO, String> col6 = createColumn("Opmerkingen", MaintenanceDTO::comments);
 		TableColumn<MaintenanceDTO, String> col7 = createColumn("Status", m -> m.status().toString());
@@ -198,16 +198,23 @@ public class MaintenanceListComponent extends VBox
 		List<TableColumn<MaintenanceDTO, ?>> columns;
 		if (machineDTO != null)
 		{
-			columns = new ArrayList<>(List.of(editColumn, col1, col2, col3, col4, col5, col6, col7));
+			columns = new ArrayList<>(List.of(col1, col2, col3, col4, col5, col6, col7));
 		} else
 		{
-			columns = new ArrayList<>(List.of(editColumn, col1, col2, col3, col4, col5, col6, col7, col8));
+			columns = new ArrayList<>(List.of(col1, col2, col3, col4, col5, col6, col7, col8));
+		}
+
+		if (AuthenticationUtil.hasRole(Role.TECHNIEKER) || AuthenticationUtil.hasRole(Role.ADMINISTRATOR)
+				|| AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
+		{
+			columns.add(editColumn);
 		}
 
 		if (AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) || AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
 		{
 			TableColumn<MaintenanceDTO, Void> col9 = createDetailsButton();
 			columns.add(col9);
+
 		}
 
 		if (AuthenticationUtil.hasRole(Role.TECHNIEKER) || AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
@@ -233,67 +240,56 @@ public class MaintenanceListComponent extends VBox
 		searchField.setPromptText("Zoeken...");
 		searchField.setMaxWidth(300);
 		searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
-		
+
 		executionDatePickerFilter = new DatePicker();
 		executionDatePickerFilter.setPromptText("Uitvoeringsdatum");
 		executionDatePickerFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
-		
+
 		startTimeFieldFilter = new ComboBox<LocalTime>();
 		startTimeFieldFilter.setPromptText("Starttijdstip");
 		populateTimePicker(startTimeFieldFilter);
 		endTimeFieldFilter = new ComboBox<LocalTime>();
 		endTimeFieldFilter.setPromptText("Eindtijdstip");
-		
+
 		populateTimePicker(endTimeFieldFilter);
 		startTimeFieldFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 		endTimeFieldFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
-		
+
 		technicianFilter = new ComboBox<String>();
 		technicianFilter.setPromptText("Kies technieker");
 		technicianFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
-		
+
 		reasonFilter = new TextField();
 		reasonFilter.setPromptText("Reden");
-		reasonFilter.textProperty().addListener((obs, oldVal, newVal) -> filterTable()); 
-		
+		reasonFilter.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
+
 		commentsFilter = new TextField();
 		commentsFilter.setPromptText("Opmerkingen");
 		commentsFilter.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
-		
+
 		statusFilter = new ComboBox<String>();
 		statusFilter.setPromptText("Status");
 		Stream.of(MaintenanceStatus.values()).map((s) -> s.toString()).forEach((s) -> statusFilter.getItems().add(s));
 		statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
-		
-		mainLayout.getServices().getUserController().getAllTechniekers()
-		.stream().map(u -> {
-				    String first = u.firstName();
-				    String last = u.lastName();
-				    String formattedLast = last.substring(0, 1).toUpperCase() + last.substring(1).toLowerCase();
-				    return String.format("%s %s", first, formattedLast);
-				})
-		.forEach((u) -> technicianFilter.getItems().add(u));
+
+		mainLayout.getServices().getUserController().getAllTechniekers().stream().map(u -> {
+			String first = u.firstName();
+			String last = u.lastName();
+			String formattedLast = last.substring(0, 1).toUpperCase() + last.substring(1).toLowerCase();
+			return String.format("%s %s", first, formattedLast);
+		}).forEach((u) -> technicianFilter.getItems().add(u));
 
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 
 		HBox pageSelector = createPageSelector();
-		
+
 		CustomButton clearFiltersBtn = new CustomButton("Clear filters");
-		
+
 		clearFiltersBtn.setOnAction(this::clearFilters);
 
-		HBox filterBox = new HBox(10, 
-				searchField, 
-				executionDatePickerFilter, 
-				startTimeFieldFilter, 
-				endTimeFieldFilter, 
-				technicianFilter,
-				reasonFilter,
-				commentsFilter,
-				statusFilter,
-				clearFiltersBtn, 
-				spacer, pageSelector);
+		HBox filterBox = new HBox(10, searchField, executionDatePickerFilter, startTimeFieldFilter, endTimeFieldFilter,
+				technicianFilter, reasonFilter, commentsFilter, statusFilter, clearFiltersBtn, spacer, pageSelector);
 		filterBox.setAlignment(Pos.CENTER_LEFT);
 		return filterBox;
 	}
@@ -317,8 +313,9 @@ public class MaintenanceListComponent extends VBox
 		updatePagination();
 		updateTableItems();
 	}
-	
-	private void clearFilters(Event event) {
+
+	private void clearFilters(Event event)
+	{
 		searchField.clear();
 		executionDatePickerFilter.setValue(null);
 		startTimeFieldFilter.setValue(null);
@@ -331,53 +328,46 @@ public class MaintenanceListComponent extends VBox
 
 	private void filterTable()
 	{
-	    String query = searchField.getText() != null ? searchField.getText().toLowerCase().trim() : "";
-	    LocalDate selectedDate = executionDatePickerFilter.getValue();
-	    LocalTime selectedStartTime = startTimeFieldFilter.getValue();
-	    LocalTime selectedEndTime = endTimeFieldFilter.getValue();
-	    String technicianString = technicianFilter.getValue();
-	    String reasonQuery = reasonFilter.getText() != null ? reasonFilter.getText().toLowerCase().trim() : "";
-	    String commentsQuery = commentsFilter.getText() != null ? commentsFilter.getText().toLowerCase().trim() : "";
-	    String statusString = statusFilter.getValue() != null ? statusFilter.getValue().toLowerCase() : "";
-	    
-	    filteredMaintenances = allMaintenances.stream()
-	        .filter(m -> {
-	            boolean matchesQuery = query.isEmpty()
-	                || (m.reason() != null && m.reason().toLowerCase().contains(query))
-	                || (m.comments() != null && m.comments().toLowerCase().contains(query))
-	                || (m.technician() != null && m.technician().firstName().toLowerCase().contains(query))
-	                || (m.technician() != null && m.technician().lastName().toLowerCase().contains(query));
+		String query = searchField.getText() != null ? searchField.getText().toLowerCase().trim() : "";
+		LocalDate selectedDate = executionDatePickerFilter.getValue();
+		LocalTime selectedStartTime = startTimeFieldFilter.getValue();
+		LocalTime selectedEndTime = endTimeFieldFilter.getValue();
+		String technicianString = technicianFilter.getValue();
+		String reasonQuery = reasonFilter.getText() != null ? reasonFilter.getText().toLowerCase().trim() : "";
+		String commentsQuery = commentsFilter.getText() != null ? commentsFilter.getText().toLowerCase().trim() : "";
+		String statusString = statusFilter.getValue() != null ? statusFilter.getValue().toLowerCase() : "";
 
-	            boolean matchesDate = selectedDate == null || selectedDate.equals(m.executionDate());
-	            
-	            boolean matchesStartTime = selectedStartTime == null || m.startDate() == LocalDateTime.of(m.executionDate(), selectedStartTime);
-	            boolean matchesEndTime = selectedEndTime == null || m.endDate() == LocalDateTime.of(m.executionDate(), selectedEndTime);
-	            
-	            boolean matchesTechnician = technicianString == null || 
-	            		String.format("%s %s", m.technician().firstName(), m.technician().lastName()).toLowerCase().equals(technicianString.toLowerCase());
-	            
-	            boolean matchesReason = reasonQuery.isBlank() || m.reason().toLowerCase().contains(reasonQuery);
-	            
-	            boolean matchesComment = commentsQuery.isBlank() || m.comments().toLowerCase().contains(commentsQuery);
-	            
-	            boolean matchesStatus = statusString.isBlank() || m.status().toString().toLowerCase().equals(statusString);
+		filteredMaintenances = allMaintenances.stream().filter(m -> {
+			boolean matchesQuery = query.isEmpty() || (m.reason() != null && m.reason().toLowerCase().contains(query))
+					|| (m.comments() != null && m.comments().toLowerCase().contains(query))
+					|| (m.technician() != null && m.technician().firstName().toLowerCase().contains(query))
+					|| (m.technician() != null && m.technician().lastName().toLowerCase().contains(query));
 
-	            return matchesQuery 
-	            		&& matchesDate 
-	            		&& matchesStartTime 
-	            		&& matchesEndTime 
-	            		&& matchesTechnician 
-	            		&& matchesReason 
-	            		&& matchesComment
-	            		&& matchesStatus;
-	        })
-	        .collect(Collectors.toList());
+			boolean matchesDate = selectedDate == null || selectedDate.equals(m.executionDate());
 
-	    currentPage = 0;
-	    updatePagination();
-	    updateTableItems();
+			boolean matchesStartTime = selectedStartTime == null
+					|| m.startDate() == LocalDateTime.of(m.executionDate(), selectedStartTime);
+			boolean matchesEndTime = selectedEndTime == null
+					|| m.endDate() == LocalDateTime.of(m.executionDate(), selectedEndTime);
+
+			boolean matchesTechnician = technicianString == null
+					|| String.format("%s %s", m.technician().firstName(), m.technician().lastName()).toLowerCase()
+							.equals(technicianString.toLowerCase());
+
+			boolean matchesReason = reasonQuery.isBlank() || m.reason().toLowerCase().contains(reasonQuery);
+
+			boolean matchesComment = commentsQuery.isBlank() || m.comments().toLowerCase().contains(commentsQuery);
+
+			boolean matchesStatus = statusString.isBlank() || m.status().toString().toLowerCase().equals(statusString);
+
+			return matchesQuery && matchesDate && matchesStartTime && matchesEndTime && matchesTechnician
+					&& matchesReason && matchesComment && matchesStatus;
+		}).collect(Collectors.toList());
+
+		currentPage = 0;
+		updatePagination();
+		updateTableItems();
 	}
-
 
 	private TableColumn<MaintenanceDTO, String> createColumn(String title, Function<MaintenanceDTO, String> mapper)
 	{
@@ -507,8 +497,9 @@ public class MaintenanceListComponent extends VBox
 		updatePagination();
 		updateTableItems();
 	}
-	
-	private void goToEditMaintenanceForm(MaintenanceDTO maintenanceDTO) {
+
+	private void goToEditMaintenanceForm(MaintenanceDTO maintenanceDTO)
+	{
 		mainLayout.showEditMaintenance(maintenanceDTO, machineDTO);
 	}
 
@@ -525,7 +516,7 @@ public class MaintenanceListComponent extends VBox
 		form.getStylesheets().add(getClass().getResource("/css/maintenanceDetails.css").toExternalForm());
 		mainLayout.showAddReport(maintenance);
 	}
-	
+
 	private void populateTimePicker(ComboBox<LocalTime> timePicker)
 	{
 		LocalTime time = LocalTime.of(0, 0);
