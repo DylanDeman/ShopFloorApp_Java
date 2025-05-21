@@ -9,7 +9,6 @@ import dto.ReportDTO;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
 import exceptions.InvalidReportException;
-import gui.AppServices;
 import repository.GenericDaoJpa;
 import util.DTOMapper;
 import util.Role;
@@ -73,27 +72,19 @@ public class ReportController
 	 * @return a {@link ReportDTO} representing the saved report
 	 * @throws InvalidReportException if the report is invalid or saving fails
 	 */
-	public ReportDTO createReport(SiteDTOWithoutMachines site, MaintenanceDTO maintenance, UserDTO technician, LocalDate startDate,
-			LocalTime startTime, LocalDate endDate, LocalTime endTime, String reason, String remarks)
-			throws InvalidReportException
+	public ReportDTO createReport(SiteDTOWithoutMachines site, MaintenanceDTO maintenance, UserDTO technician,
+			LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime, String reason,
+			String remarks) throws InvalidReportException
 	{
 		try
 		{
 			Site siteObject = DTOMapper.toSite(site);
 			Maintenance maintenanceObject = DTOMapper.toMaintenance(maintenance);
 			User technicianObject = DTOMapper.toUser(technician);
-			
-			Report newReport = new Report.Builder()
-					.buildSite(siteObject)
-					.buildTechnician(technicianObject)
-					.buildMaintenance(maintenanceObject)
-					.buildstartDate(startDate)
-					.buildStartTime(startTime)
-					.buildEndDate(endDate)
-					.buildEndTime(endTime)
-					.buildReason(reason)
-					.buildRemarks(remarks)
-					.build();
+
+			Report newReport = new Report.Builder().buildSite(siteObject).buildTechnician(technicianObject)
+					.buildMaintenance(maintenanceObject).buildstartDate(startDate).buildStartTime(startTime)
+					.buildEndDate(endDate).buildEndTime(endTime).buildReason(reason).buildRemarks(remarks).build();
 
 			validateReport(newReport);
 
@@ -119,7 +110,7 @@ public class ReportController
 	 * @param report the report to validate
 	 * @throws InvalidReportException if any critical fields are missing
 	 */
-	private void validateReport(Report report) throws InvalidReportException
+	public void validateReport(Report report) throws InvalidReportException
 	{
 		if (report == null)
 		{

@@ -111,7 +111,6 @@ public class MaintenanceController
 	 * @param id the ID of the maintenance record
 	 * @return the Maintenance object, or null if not found
 	 */
-	// TODO DIT MOET PRIVATE WORDEN!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	public Maintenance getMaintenance(int id)
 	{
 		return maintenanceRepo.get(id);

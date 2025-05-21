@@ -1,6 +1,5 @@
-package domain.needsRefactoring;
+package domain;
 
-import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -41,16 +40,6 @@ class SiteTest
 	void setUp()
 	{
 		site = new Site();
-	}
-
-	@Test
-	void constructor_validParameters_createsSite()
-	{
-		site = new Site(VALID_SITE_NAME, mockUser, VALID_STATUS);
-
-		assertAll(() -> assertEquals(VALID_SITE_NAME, site.getSiteName()),
-				() -> assertEquals(mockUser, site.getVerantwoordelijke()),
-				() -> assertEquals(VALID_STATUS, site.getStatus()));
 	}
 
 	@ParameterizedTest
@@ -98,7 +87,8 @@ class SiteTest
 	@Test
 	void addMachine_validMachine_addsMachineToSet()
 	{
-		site = new Site(VALID_SITE_NAME, mockUser, VALID_STATUS);
+		site = new Site.Builder().buildSiteName(VALID_SITE_NAME).buildAddress("Street", 1, 1234, "City")
+				.buildVerantwoordelijke(mockUser).buildStatus(VALID_STATUS).build();
 
 		site.addMachine(mockMachine);
 
@@ -109,7 +99,8 @@ class SiteTest
 	@Test
 	void getMachines_returnsUnmodifiableSet()
 	{
-		site = new Site(VALID_SITE_NAME, mockUser, VALID_STATUS);
+		site = new Site.Builder().buildSiteName(VALID_SITE_NAME).buildAddress("Street", 1, 1234, "City")
+				.buildVerantwoordelijke(mockUser).buildStatus(VALID_STATUS).build();
 		site.addMachine(mockMachine);
 
 		Set<Machine> machines = site.getMachines();
