@@ -88,7 +88,7 @@ public class Site implements Serializable, Subject
 	 * the site is loaded.
 	 */
 	@OneToMany(mappedBy = "site", fetch = FetchType.EAGER)
-	private Set<Machine> machines;
+	private Set<Machine> machines = new HashSet<>();
 
 	/**
 	 * Current status of the site. Persisted as a string in the database.
