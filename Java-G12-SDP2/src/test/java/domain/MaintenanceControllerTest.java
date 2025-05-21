@@ -1,4 +1,4 @@
-package domain.needsRefactoring;
+package domain;
 
 import domain.Machine;
 import domain.Maintenance;
