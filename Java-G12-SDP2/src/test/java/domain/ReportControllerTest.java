@@ -1,4 +1,4 @@
-package domain.needsRefactoring;
+package domain;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
