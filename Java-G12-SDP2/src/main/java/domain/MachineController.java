@@ -2,6 +2,7 @@ package domain;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -176,7 +177,55 @@ public class MachineController implements Subject
 	 * @return the Machine object, or null if not found
 	 */
 	public MachineDTO getMachineById(int machineId)
-	{	
+	{
 		return DTOMapper.toMachineDTO(machineRepo.get(machineId));
+	}
+
+	/**
+	 * Retrieves all distinct production status values from sites.
+	 * 
+	 * @return List of unique status strings
+	 */
+	public Collection<? extends String> getAllProductionStatusses()
+	{
+		List<MachineDTO> allMachines = getMachineList();
+		return allMachines.stream().map(m -> m.productionStatus().toString()).distinct().sorted()
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Retrieves all distinct machine status values from sites.
+	 * 
+	 * @return List of unique status strings
+	 */
+	public Collection<? extends String> getAllMachineStatusses()
+	{
+		List<MachineDTO> allMachines = getMachineList();
+		return allMachines.stream().map(m -> m.machineStatus().toString()).distinct().sorted()
+				.collect(Collectors.toList());
+	}
+
+	/**
+	 * Retrieves filtered machines based on multiple criteria.
+	 * 
+	 * @param searchFilter     general search term to filter by
+	 * @param selectedProdStat productionstatus to filter by
+	 * @param selectedMachStat machinestatus to filter by
+	 * @return List of filtered MachineDTOs
+	 */
+	public List<MachineDTO> getFilteredMachines(String searchFilter, String selectedProdStat, String selectedMachStat)
+	{
+		String lowerCaseSearchFilter = searchFilter == null ? "" : searchFilter.toLowerCase();
+
+		return getMachineList().stream()
+				.filter(machine -> selectedProdStat == null
+						|| machine.productionStatus().toString().equals(selectedProdStat))
+				.filter(machine -> selectedMachStat == null
+						|| machine.machineStatus().toString().equals(selectedMachStat))
+				.filter(machine -> machine.code().toLowerCase().contains(lowerCaseSearchFilter)
+						|| machine.location().toLowerCase().contains(lowerCaseSearchFilter)
+						|| machine.site().siteName().toLowerCase().contains(lowerCaseSearchFilter)
+						|| machine.productInfo().toLowerCase().contains(lowerCaseSearchFilter))
+				.collect(Collectors.toList());
 	}
 }
