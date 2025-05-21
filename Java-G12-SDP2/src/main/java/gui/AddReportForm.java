@@ -9,6 +9,7 @@ import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
 import exceptions.InformationRequired;
 import exceptions.InformationRequiredExceptionReport;
+import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.ComboBox;
@@ -35,7 +36,7 @@ public class AddReportForm extends AddOrEditAbstract
 
 	public AddReportForm(MainLayout mainLayout, MaintenanceDTO maintenanceDTO)
 	{
-		super(mainLayout, true);
+		super(mainLayout, false);
 		this.maintenanceDTO = maintenanceDTO;
 
 		if (maintenanceDTO == null)
@@ -48,19 +49,16 @@ public class AddReportForm extends AddOrEditAbstract
 	@Override
 	protected void initializeFields()
 	{
-		siteNameLabel = new Label(maintenanceDTO != null ? maintenanceDTO.machine().site().siteName() : "");
+		siteNameLabel = new Label("Laden...");
 		siteNameLabel.getStyleClass().add("info-value");
 
-		responsiblePersonLabel = new Label(maintenanceDTO != null ? maintenanceDTO.technician().firstName() : "");
+		responsiblePersonLabel = new Label("Laden...");
 		responsiblePersonLabel.getStyleClass().add("info-value");
 
-		maintenanceNumberLabel = new Label(maintenanceDTO != null ? "" + maintenanceDTO.id() : "");
+		maintenanceNumberLabel = new Label("Laden...");
 		maintenanceNumberLabel.getStyleClass().add("info-value");
 
-		technicianComboBox = new ComboBox<>();
-		technicianComboBox.setPromptText("Selecteer een technieker");
-		technicianComboBox.getItems().addAll(userController.getAllTechniekers().stream()
-				.map(user -> user.firstName() + " " + user.lastName()).collect(Collectors.toList()));
+		technicianComboBox = new ComboBox<String>();
 
 		startDatePicker = new DatePicker();
 		startDatePicker.setPromptText("Kies startdatum");
@@ -252,6 +250,25 @@ public class AddReportForm extends AddOrEditAbstract
 	{
 		// Rapporten hebben geen bestaande gegevens om te vullen
 		// Deze methode is leeg omdat rapporten altijd nieuw zijn
+
+		Platform.runLater(() ->
+		{
+			siteNameLabel.setText(maintenanceDTO.machine().site().siteName());
+			siteNameLabel.getStyleClass().add("info-value");
+
+			responsiblePersonLabel
+					.setText(maintenanceDTO.technician().firstName() + " " + maintenanceDTO.technician().lastName());
+
+			responsiblePersonLabel.getStyleClass().add("info-value");
+
+			maintenanceNumberLabel.setText("" + maintenanceDTO.id());
+			maintenanceNumberLabel.getStyleClass().add("info-value");
+
+			technicianComboBox.setPromptText("Selecteer een technieker");
+			technicianComboBox.getItems().addAll(userController.getAllTechniekers().stream()
+					.map(user -> user.firstName() + " " + user.lastName()).collect(Collectors.toList()));
+		});
+
 	}
 
 	@Override
