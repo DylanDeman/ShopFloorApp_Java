@@ -354,15 +354,210 @@ public class AddReportForm extends AddOrEditAbstract
         }
     }
 
-    @Override
-    protected void resetErrorLabels()
-    {
-        super.resetErrorLabels();
-        technicianErrorLabel.setText("");
-        startDateErrorLabel.setText("");
-        startTimeErrorLabel.setText("");
-        endDateErrorLabel.setText("");
-        endTimeErrorLabel.setText("");
-        reasonErrorLabel.setText("");
-    }
+		endDatePicker = new DatePicker();
+		endDatePicker.setPromptText("Kies einddatum");
+
+		endTimeField = new ComboBox<>();
+		endTimeField.setPromptText("Kies eindtijd");
+		populateTimePicker(endTimeField);
+
+		reasonField = new TextField();
+		reasonField.setPromptText("Voer reden in");
+
+		commentsArea = new TextArea();
+		commentsArea.setPrefRowCount(5);
+		commentsArea.setWrapText(true);
+		commentsArea.setPromptText("Voer eventuele opmerkingen in");
+
+		errorLabel = createErrorLabel();
+		technicianErrorLabel = createErrorLabel();
+		startDateErrorLabel = createErrorLabel();
+		startTimeErrorLabel = createErrorLabel();
+		endDateErrorLabel = createErrorLabel();
+		endTimeErrorLabel = createErrorLabel();
+		reasonErrorLabel = createErrorLabel();
+	}
+
+	private VBox createTitleSection()
+	{
+		HBox hbox = new HBox(10);
+		hbox.setAlignment(Pos.CENTER_LEFT);
+
+		FontIcon icon = new FontIcon("fas-arrow-left");
+		icon.setIconSize(20);
+		Button backButton = new Button();
+		backButton.setGraphic(icon);
+		backButton.getStyleClass().add("back-button");
+		backButton.setOnAction(e -> mainLayout.showMaintenanceList());
+		this.add(backButton, 0, 0, 2, 1);
+
+		Label title = new Label("Rapport aanmaken");
+		title.getStyleClass().add("title-label");
+
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+
+		hbox.getChildren().addAll(backButton, title, spacer);
+
+		return new VBox(10, hbox);
+	}
+
+	private void populateTimePicker(ComboBox<LocalTime> timePicker)
+	{
+		LocalTime time = LocalTime.of(0, 0);
+		while (time.isBefore(LocalTime.of(23, 45)))
+		{
+			timePicker.getItems().add(time);
+			time = time.plusMinutes(15);
+		}
+
+		timePicker.setConverter(new javafx.util.StringConverter<>()
+		{
+			private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+
+			@Override
+			public String toString(LocalTime time)
+			{
+				if (time != null)
+				{
+					return formatter.format(time);
+				}
+				return "";
+			}
+
+			@Override
+			public LocalTime fromString(String string)
+			{
+				if (string != null && !string.isEmpty())
+				{
+					return LocalTime.parse(string, formatter);
+				}
+				return null;
+			}
+		});
+	}
+
+	private void createReport()
+	{
+		resetErrorLabels();
+		try
+		{
+			UserDTO selectedTechnician = null;
+			if (technicianComboBox.getValue() != null)
+			{
+				selectedTechnician = uc.getAllTechniekers().stream()
+						.filter(user -> user.firstName().equals(technicianComboBox.getValue())).findFirst()
+						.orElse(null);
+			}
+
+			SiteDTOWithoutMachines siteWoMachines = selectedMaintenanceDTO.machine().site();
+
+			Site site = DTOMapper.toSite(siteWoMachines, null);
+
+			Maintenance maintenance = mc.getMaintenance(selectedMaintenanceDTO.id());
+
+			User technician = selectedTechnician != null ? uc.getUserById(selectedTechnician.id()) : null;
+
+			rc.createReport(site, maintenance, technician, startDatePicker.getValue(), startTimeField.getValue(),
+					endDatePicker.getValue(), endTimeField.getValue(), reasonField.getText().trim(),
+					commentsArea.getText().trim());
+
+			mainLayout.showMaintenanceDetails(selectedMaintenanceDTO);
+		} catch (InformationRequiredExceptionReport e)
+		{
+			handleInformationRequiredException(e);
+		} catch (Exception e)
+		{
+			e.printStackTrace();
+			showError("Er is een fout opgetreden: " + e.getMessage());
+		}
+	}
+
+	private void handleInformationRequiredException(InformationRequiredExceptionReport e)
+	{
+		e.getMissingElements().forEach((field, requiredElement) ->
+		{
+			String errorMessage = getErrorMessageForRequiredElement(requiredElement);
+			showFieldError(field, errorMessage);
+		});
+	}
+
+	private String getErrorMessageForRequiredElement(RequiredElementReport element)
+	{
+		switch (element)
+		{
+		case MAINTENANCE_REQUIRED:
+			return "Onderhoud is verplicht";
+		case TECHNICIAN_REQUIRED:
+			return "Technieker is verplicht";
+		case STARTDATE_REQUIRED:
+			return "Startdatum is verplicht";
+		case STARTTIME_REQUIRED:
+			return "Starttijd is verplicht";
+		case ENDDATE_REQUIRED:
+			return "Einddatum is verplicht";
+		case ENDTIME_REQUIRED:
+			return "Eindtijd is verplicht";
+		case REASON_REQUIRED:
+			return "Reden is verplicht";
+		case SITE_REQUIRED:
+			return "Site is verplicht";
+		case END_DATE_BEFORE_START:
+			return "Einddatum mag niet voor startdatum liggen";
+		case END_TIME_BEFORE_START:
+			return "Eindtijd mag niet voor starttijd liggen";
+		default:
+			return "Verplicht veld";
+		}
+	}
+
+	private void showFieldError(String fieldName, String message)
+	{
+		switch (fieldName)
+		{
+		case "technician":
+			technicianErrorLabel.setText(message);
+			break;
+		case "startDate":
+			startDateErrorLabel.setText(message);
+			break;
+		case "startTime":
+			startTimeErrorLabel.setText(message);
+			break;
+		case "endDate":
+			endDateErrorLabel.setText(message);
+			break;
+		case "endTime":
+			endTimeErrorLabel.setText(message);
+			break;
+		case "reason":
+			reasonErrorLabel.setText(message);
+			break;
+		default:
+			errorLabel.setText(message);
+		}
+	}
+
+	private void showError(String message)
+	{
+		errorLabel.setText(message);
+	}
+
+	private void resetErrorLabels()
+	{
+		errorLabel.setText("");
+		technicianErrorLabel.setText("");
+		startDateErrorLabel.setText("");
+		startTimeErrorLabel.setText("");
+		endDateErrorLabel.setText("");
+		endTimeErrorLabel.setText("");
+		reasonErrorLabel.setText("");
+	}
+
+	private Label createErrorLabel()
+	{
+		Label errorLabel = new Label();
+		errorLabel.getStyleClass().add("error-label");
+		return errorLabel;
+	}
 }

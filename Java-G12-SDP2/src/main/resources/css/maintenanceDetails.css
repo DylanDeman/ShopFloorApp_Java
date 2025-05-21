@@ -57,7 +57,7 @@
     -fx-padding: 10px;
 }
 
-/* File box styling with fixed dimensions */
+
 .file-box {
     -fx-background-color: white;
     -fx-border-color: #e0e0e0;
@@ -68,7 +68,7 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 4, 0, 0, 1);
 }
 
-/* Fixed height for preview area */
+
 .file-preview {
     -fx-background-color: #f9f9f9;
     -fx-min-height: 160px;
@@ -77,12 +77,12 @@
     -fx-alignment: center;
 }
 
-/* Center content in preview areas */
+
 .file-box VBox {
     -fx-alignment: center;
 }
 
-/* Style for image previews to ensure uniform size */
+
 .file-box .image-container {
     -fx-background-color: #f9f9f9;
     -fx-alignment: center;
@@ -94,15 +94,13 @@
     -fx-pref-width: 217px;
 }
 
-/* ImageView styling cannot be directly set via CSS, must be done in Java code */
 
-/* Style for icons in file previews */
 .file-box .ikonli-font-icon {
     -fx-icon-size: 60px;
     -fx-icon-color: #333333;
 }
 
-/* File information area */
+
 .file-actions {
     -fx-background-color: #f44336;
     -fx-padding: 8px;
@@ -119,7 +117,7 @@
     -fx-max-width: 140px;
 }
 
-/* Action icons in file box */
+
 .action-button-small {
     -fx-background-color: transparent;
     -fx-padding: 4px;
@@ -136,7 +134,7 @@
     -fx-icon-color: white;
 }
 
-/* ScrollPane styling for files section */
+
 .files-scroll-pane {
     -fx-background-color: transparent;
     -fx-border-color: #e0e0e0;

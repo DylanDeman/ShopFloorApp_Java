@@ -212,7 +212,6 @@ public class SiteDetailsComponent extends VBox implements Observer
 
 		table.setPrefHeight(400);
 
-		// Create pagination control
 		pagination = createPagination();
 		VBox tableWithPagination = new VBox(10, table, pagination);
 		VBox.setVgrow(table, Priority.ALWAYS);
@@ -222,7 +221,7 @@ public class SiteDetailsComponent extends VBox implements Observer
 
 	private void createTableColumns()
 	{
-		// Edit column with button
+
 		editColumn = new TableColumn<>("");
 		editColumn.setCellFactory(param -> new TableCell<MachineDTO, Void>()
 		{
@@ -232,7 +231,8 @@ public class SiteDetailsComponent extends VBox implements Observer
 				editIcon.setIconSize(12);
 				editButton.setGraphic(editIcon);
 				editButton.setBackground(Background.EMPTY);
-				editButton.setOnAction(event -> {
+				editButton.setOnAction(event ->
+				{
 					MachineDTO machine = getTableRow().getItem();
 					if (machine != null)
 					{
@@ -255,26 +255,22 @@ public class SiteDetailsComponent extends VBox implements Observer
 			}
 		});
 
-		// ID column
 		idColumn = new TableColumn<>("Nr.");
 		idColumn.setCellValueFactory(data -> new SimpleIntegerProperty(data.getValue().id()));
 
-		// Location column
 		locationColumn = new TableColumn<>("Locatie");
 		locationColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().location()));
 
-		// Status column
 		statusColumn = new TableColumn<>("Status");
 		statusColumn.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().machineStatus().toString()));
 
-		// Production status column
 		productionStatusColumn = new TableColumn<>("Productiestatus");
 		productionStatusColumn
 				.setCellValueFactory(data -> new SimpleStringProperty(data.getValue().productionStatus().toString()));
 
-		// Technician column
 		technicianColumn = new TableColumn<>("Technieker");
-		technicianColumn.setCellValueFactory(data -> {
+		technicianColumn.setCellValueFactory(data ->
+		{
 			UserDTO technician = data.getValue().technician();
 			return new SimpleStringProperty(technician != null ? technician.firstName() : "");
 		});
@@ -284,7 +280,8 @@ public class SiteDetailsComponent extends VBox implements Observer
 		{
 			private final Button viewButton = new Button("Bekijk");
 			{
-				viewButton.setOnAction(event -> {
+				viewButton.setOnAction(event ->
+				{
 					MachineDTO machine = getTableRow().getItem();
 					if (machine != null)
 					{
@@ -321,7 +318,8 @@ public class SiteDetailsComponent extends VBox implements Observer
 		updateTotalPages();
 		Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
 		pagination.setPageFactory(this::createPage);
-		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) ->
+		{
 			currentPage = newIndex.intValue();
 			updateTableItems();
 		});
@@ -357,25 +355,21 @@ public class SiteDetailsComponent extends VBox implements Observer
 		searchField.setMaxWidth(300);
 		searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-		// Location filter
 		locationFilter = new ComboBox<>();
 		locationFilter.setPromptText("Locatie");
 		locationFilter.setPrefWidth(150);
 		locationFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-		// Status filter
 		statusFilter = new ComboBox<>();
 		statusFilter.setPromptText("Status");
 		statusFilter.setPrefWidth(150);
 		statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-		// Production status filter
 		productionStatusFilter = new ComboBox<>();
 		productionStatusFilter.setPromptText("Productiestatus");
 		productionStatusFilter.setPrefWidth(150);
 		productionStatusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-		// Technician filter
 		technicianFilter = new ComboBox<>();
 		technicianFilter.setPromptText("Technieker");
 		technicianFilter.setPrefWidth(200);
@@ -384,7 +378,6 @@ public class SiteDetailsComponent extends VBox implements Observer
 		Region spacer = new Region();
 		HBox.setHgrow(spacer, Priority.ALWAYS);
 
-		// Page selector component
 		HBox pageSelector = createPageSelector();
 
 		HBox filterBox = new HBox(10, searchField, locationFilter, statusFilter, productionStatusFilter,
@@ -395,30 +388,27 @@ public class SiteDetailsComponent extends VBox implements Observer
 
 	private void updateFilterOptions()
 	{
-		// Location filter options
+
 		List<String> locations = new ArrayList<>();
-		locations.add(null); // Add null option for "All"
+		locations.add(null); // null option for "All"
 		locations.addAll(allMachines.stream().map(MachineDTO::location).filter(loc -> loc != null && !loc.isEmpty())
 				.distinct().sorted().collect(Collectors.toList()));
 		locationFilter.setItems(FXCollections.observableArrayList(locations));
 
-		// Status filter options
 		List<String> statuses = new ArrayList<>();
-		statuses.add(null); // Add null option for "All"
+		statuses.add(null); // null option for "All"
 		statuses.addAll(allMachines.stream().map(m -> m.machineStatus().toString()).distinct().sorted()
 				.collect(Collectors.toList()));
 		statusFilter.setItems(FXCollections.observableArrayList(statuses));
 
-		// Production status filter options
 		List<String> productionStatuses = new ArrayList<>();
-		productionStatuses.add(null); // Add null option for "All"
+		productionStatuses.add(null); // null option for "All"
 		productionStatuses.addAll(allMachines.stream().map(m -> m.productionStatus().toString()).distinct().sorted()
 				.collect(Collectors.toList()));
 		productionStatusFilter.setItems(FXCollections.observableArrayList(productionStatuses));
 
-		// Technician filter options
 		List<String> technicians = new ArrayList<>();
-		technicians.add(null); // Add null option for "All"
+		technicians.add(null); // null option for "All"
 		technicians.addAll(allMachines.stream().map(m -> m.technician().firstName())
 				.filter(name -> name != null && !name.isEmpty()).distinct().sorted().collect(Collectors.toList()));
 		technicianFilter.setItems(FXCollections.observableArrayList(technicians));
@@ -430,8 +420,9 @@ public class SiteDetailsComponent extends VBox implements Observer
 
 		ComboBox<Integer> comboItemsPerPage = new ComboBox<>(FXCollections.observableArrayList(10, 20, 50, 100));
 
-		comboItemsPerPage.setValue(itemsPerPage); // Default value
-		comboItemsPerPage.setOnAction(e -> {
+		comboItemsPerPage.setValue(itemsPerPage);
+		comboItemsPerPage.setOnAction(e ->
+		{
 			int selectedValue = comboItemsPerPage.getValue();
 			updateItemsPerPage(selectedValue);
 		});
@@ -444,14 +435,14 @@ public class SiteDetailsComponent extends VBox implements Observer
 	private void updateItemsPerPage(int itemsPerPage)
 	{
 		this.itemsPerPage = itemsPerPage;
-		this.currentPage = 0; // Reset to first page when changing items per page
+		this.currentPage = 0;
 		updatePagination();
 		updateTableItems();
 	}
 
 	private void updateTable(List<MachineDTO> machines)
 	{
-		filteredMachines = new ArrayList<>(machines); // Create a new list to avoid reference issues
+		filteredMachines = new ArrayList<>(machines);
 		currentPage = 0;
 		updatePagination();
 		updateTableItems();
@@ -469,8 +460,9 @@ public class SiteDetailsComponent extends VBox implements Observer
 				+ "', " + "status='" + selectedStatus + "', " + "prodStatus='" + selectedProductionStatus + "', "
 				+ "tech='" + selectedTechnician + "'");
 
-		List<MachineDTO> newFilteredList = allMachines.stream().filter(machine -> {
-			// Create individual filter results for debugging
+		List<MachineDTO> newFilteredList = allMachines.stream().filter(machine ->
+		{
+
 			boolean matchesSearch = searchQuery.isEmpty() || machine.location().toLowerCase().contains(searchQuery)
 					|| machine.machineStatus().toString().toLowerCase().contains(searchQuery)
 					|| machine.productionStatus().toString().toLowerCase().contains(searchQuery)
@@ -510,7 +502,7 @@ public class SiteDetailsComponent extends VBox implements Observer
 			System.out.println("No machines to display");
 		} else
 		{
-			// Ensure valid subList range
+
 			List<MachineDTO> currentPageItems;
 			if (fromIndex < toIndex)
 			{
@@ -562,7 +554,8 @@ public class SiteDetailsComponent extends VBox implements Observer
 	@Override
 	public void update(String message)
 	{
-		Platform.runLater(() -> {
+		Platform.runLater(() ->
+		{
 			try
 			{
 				SiteDTOWithMachines updatedSite = sc.getSite(siteId);

@@ -142,7 +142,8 @@ public class SitesListComponent extends VBox implements Observer
 				editIcon.setIconSize(12);
 				editButton.setGraphic(editIcon);
 				editButton.setBackground(Background.EMPTY);
-				editButton.setOnAction(event -> {
+				editButton.setOnAction(event ->
+				{
 					SiteDTOWithMachines site = getTableRow().getItem();
 					if (site != null)
 					{
@@ -187,7 +188,8 @@ public class SitesListComponent extends VBox implements Observer
 		{
 			private final Button viewButton = new Button("Details");
 			{
-				viewButton.setOnAction(event -> {
+				viewButton.setOnAction(event ->
+				{
 					SiteDTOWithMachines site = getTableRow().getItem();
 					if (site != null)
 					{
@@ -249,7 +251,8 @@ public class SitesListComponent extends VBox implements Observer
 		minMachinesField = new TextField();
 		minMachinesField.setPromptText("Min Machines");
 		minMachinesField.setMaxWidth(100);
-		minMachinesField.textProperty().addListener((obs, oldVal, newVal) -> {
+		minMachinesField.textProperty().addListener((obs, oldVal, newVal) ->
+		{
 			if (!newVal.matches("\\d*"))
 			{
 				minMachinesField.setText(newVal.replaceAll("[^\\d]", ""));
@@ -260,7 +263,8 @@ public class SitesListComponent extends VBox implements Observer
 		maxMachinesField = new TextField();
 		maxMachinesField.setPromptText("Max Machines");
 		maxMachinesField.setMaxWidth(100);
-		maxMachinesField.textProperty().addListener((obs, oldVal, newVal) -> {
+		maxMachinesField.textProperty().addListener((obs, oldVal, newVal) ->
+		{
 			if (!newVal.matches("\\d*"))
 			{
 				maxMachinesField.setText(newVal.replaceAll("[^\\d]", ""));
@@ -285,7 +289,8 @@ public class SitesListComponent extends VBox implements Observer
 
 		ComboBox<Integer> comboItemsPerPage = new ComboBox<>(FXCollections.observableArrayList(10, 20, 50, 100));
 		comboItemsPerPage.setValue(itemsPerPage);
-		comboItemsPerPage.setOnAction(e -> {
+		comboItemsPerPage.setOnAction(e ->
+		{
 			int selectedValue = comboItemsPerPage.getValue();
 			updateItemsPerPage(selectedValue);
 		});
@@ -358,7 +363,8 @@ public class SitesListComponent extends VBox implements Observer
 		updateTotalPages();
 		Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
 		pagination.setPageFactory(this::createPage);
-		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) ->
+		{
 			currentPage = newIndex.intValue();
 			updateTableItems();
 		});
@@ -427,7 +433,8 @@ public class SitesListComponent extends VBox implements Observer
 	@Override
 	public void update(String message)
 	{
-		Platform.runLater(() -> {
+		Platform.runLater(() ->
+		{
 			allSites = sc.getSites();
 			filteredSites = new ArrayList<>(allSites);
 			updateFilterOptions();

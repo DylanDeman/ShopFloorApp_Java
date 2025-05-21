@@ -42,21 +42,21 @@ public class Report implements Serializable
 	 */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(columnDefinition = "INT UNSIGNED")
+	@Column(name = "REPORTID", columnDefinition = "INT UNSIGNED")
 	private int reportId;
 
 	/**
 	 * The site where the maintenance took place.
 	 */
 	@ManyToOne
-	@JoinColumn(name = "site_id")
+	@JoinColumn(name = "site_id", columnDefinition = "INT UNSIGNED")
 	private Site site;
 
 	/**
-	 * The maintenance activity associated with this report.
+	 * The maintenance activity associated with this report. 
 	 */
 	@ManyToOne
-	@JoinColumn(name = "maintenance_id")
+	@JoinColumn(name = "maintenance_id", columnDefinition = "INT UNSIGNED")
 	private Maintenance maintenance;
 
 	/**

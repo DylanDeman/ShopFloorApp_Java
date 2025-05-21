@@ -14,7 +14,7 @@ public class ProductionStatusConverter implements AttributeConverter<ProductionS
 		{
 			return null;
 		}
-		return status.name(); // Slaat op als "DRAAIT", "STOPPED", etc.
+		return status.name(); // Saves as "DRAAIT", "STOPPED", etc.
 	}
 
 	@Override
@@ -24,6 +24,6 @@ public class ProductionStatusConverter implements AttributeConverter<ProductionS
 		{
 			return null;
 		}
-		return ProductionStatus.valueOf(dbData); // Converteer "DRAAIT" naar MachineStatus.DRAAIT
+		return ProductionStatus.valueOf(dbData); // converts "DRAAIT" to MachineStatus.DRAAIT
 	}
 }
