@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import dto.MachineDTO;
 import dto.SiteDTOWithMachines;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
 import exceptions.InformationRequiredExceptionSite;
-import gui.AppServices;
 import interfaces.Observer;
 import interfaces.Subject;
 import repository.GenericDaoJpa;
@@ -119,6 +119,49 @@ public class SiteController implements Subject
 	}
 
 	/**
+	 * Filters machines for a specific site based on search criteria and filters.
+	 * 
+	 * @param siteId                  the ID of the site to filter machines for
+	 * @param searchQuery             general search query to filter by
+	 * @param locationFilter          location to filter by
+	 * @param statusFilter            machine status to filter by
+	 * @param productionStatusFilter  production status to filter by
+	 * @param technicianFilter        technician name to filter by
+	 * @return List of filtered MachineDTO objects
+	 */
+	public List<MachineDTO> getFilteredMachines(int siteId, String searchQuery, String locationFilter, 
+											String statusFilter, String productionStatusFilter, 
+											String technicianFilter) {
+		SiteDTOWithMachines site = getSite(siteId);
+		List<MachineDTO> allMachines = site.machines().stream().toList();
+		
+		String searchQueryLower = searchQuery != null ? searchQuery.toLowerCase().trim() : "";
+		
+		return allMachines.stream()
+				.filter(machine -> { 
+					boolean matchesSearch = searchQueryLower.isEmpty() 
+					|| machine.location().toLowerCase().contains(searchQueryLower)
+					|| machine.machineStatus().toString().toLowerCase().contains(searchQueryLower)
+					|| machine.productionStatus().toString().toLowerCase().contains(searchQueryLower)
+					|| (machine.technician() != null && machine.technician().firstName() != null
+							&& machine.technician().firstName().toLowerCase().contains(searchQueryLower));
+
+			boolean matchesLocation = locationFilter == null || machine.location().equals(locationFilter);
+
+			boolean matchesStatus = statusFilter == null || machine.machineStatus().toString().equals(statusFilter);
+
+			boolean matchesProductionStatus = productionStatusFilter == null
+					|| machine.productionStatus().toString().equals(productionStatusFilter);
+
+			boolean matchesTechnician = technicianFilter == null
+					|| (machine.technician() != null && machine.technician().firstName() != null
+							&& machine.technician().firstName().equals(technicianFilter));
+
+			return matchesSearch && matchesLocation && matchesStatus && matchesProductionStatus && matchesTechnician;
+		}).collect(Collectors.toList());
+	}
+
+	/**
 	 * Retrieves all distinct status values from sites.
 	 * 
 	 * @return List of unique status strings
@@ -152,6 +195,69 @@ public class SiteController implements Subject
 		return allSites.stream().filter(s -> s.verantwoordelijke() != null)
 				.map(s -> s.verantwoordelijke().firstName() + " " + s.verantwoordelijke().lastName()).distinct()
 				.sorted().collect(Collectors.toList());
+	}
+	
+	/**
+	 * Retrieves all distinct locations from machines for a specific site.
+	 * 
+	 * @param siteId the ID of the site
+	 * @return List of unique location strings
+	 */
+	public List<String> getMachineLocations(int siteId) {
+		SiteDTOWithMachines site = getSite(siteId);
+		return site.machines().stream()
+				.map(MachineDTO::location)
+				.filter(loc -> loc != null && !loc.isEmpty())
+				.distinct()
+				.sorted()
+				.collect(Collectors.toList());
+	}
+	
+	/**
+	 * Retrieves all distinct machine statuses for a specific site.
+	 * 
+	 * @param siteId the ID of the site
+	 * @return List of unique machine status strings
+	 */
+	public List<String> getMachineStatuses(int siteId) {
+		SiteDTOWithMachines site = getSite(siteId);
+		return site.machines().stream()
+				.map(m -> m.machineStatus().toString())
+				.distinct()
+				.sorted()
+				.collect(Collectors.toList());
+	}
+	
+	/**
+	 * Retrieves all distinct production statuses for a specific site.
+	 * 
+	 * @param siteId the ID of the site
+	 * @return List of unique production status strings
+	 */
+	public List<String> getProductionStatuses(int siteId) {
+		SiteDTOWithMachines site = getSite(siteId);
+		return site.machines().stream()
+				.map(m -> m.productionStatus().toString())
+				.distinct()
+				.sorted()
+				.collect(Collectors.toList());
+	}
+	
+	/**
+	 * Retrieves all distinct technician names for a specific site.
+	 * 
+	 * @param siteId the ID of the site
+	 * @return List of unique technician first names
+	 */
+	public List<String> getTechnicianNames(int siteId) {
+		SiteDTOWithMachines site = getSite(siteId);
+		return site.machines().stream()
+				.map(m -> m.technician())
+				.filter(t -> t != null && t.firstName() != null && !t.firstName().isEmpty())
+				.map(UserDTO::firstName)
+				.distinct()
+				.sorted()
+				.collect(Collectors.toList());
 	}
 
 	/**

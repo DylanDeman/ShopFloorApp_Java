@@ -3,9 +3,7 @@ package gui;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.kordamp.ikonli.javafx.FontIcon;
-
 import domain.SiteController;
 import dto.MachineDTO;
 import dto.SiteDTOWithMachines;
@@ -78,11 +76,11 @@ public class SiteDetailsComponent extends VBox implements Observer
 		this.sc.addObserver(this);
 
 		this.table = new TableView<>();
-		table.setPlaceholder(new Label("No machines available for this site"));
+		table.setPlaceholder(new Label("Geen machines beschikbaar voor deze site!"));
 		table.setEditable(false);
 
 		table.getStyleClass().add("machine-table");
-
+		
 		initializeGUI();
 		loadMachines();
 
@@ -93,22 +91,7 @@ public class SiteDetailsComponent extends VBox implements Observer
 		try
 		{
 			SiteDTOWithMachines currentSite = sc.getSite(this.siteId);
-			System.out.println("Loading machines for site: " + currentSite.siteName());
-
 			allMachines = currentSite.machines().stream().toList();
-			System.out.println("Retrieved " + allMachines.size() + " machines");
-
-			if (allMachines.isEmpty())
-			{
-				System.out.println("WARNING: No machines found for this site!");
-			} else
-			{
-				for (MachineDTO machine : allMachines)
-				{
-					System.out.println("Found machine: ID=" + machine.id() + ", Location=" + machine.location());
-				}
-			}
-
 			filteredMachines = new ArrayList<>(allMachines);
 			updateFilterOptions();
 			updateTable(filteredMachines);
@@ -456,34 +439,7 @@ public class SiteDetailsComponent extends VBox implements Observer
 		String selectedProductionStatus = productionStatusFilter.getValue();
 		String selectedTechnician = technicianFilter.getValue();
 
-		System.out.println("Filtering with: " + "query='" + searchQuery + "', " + "location='" + selectedLocation
-				+ "', " + "status='" + selectedStatus + "', " + "prodStatus='" + selectedProductionStatus + "', "
-				+ "tech='" + selectedTechnician + "'");
-
-		List<MachineDTO> newFilteredList = allMachines.stream().filter(machine ->
-		{
-
-			boolean matchesSearch = searchQuery.isEmpty() || machine.location().toLowerCase().contains(searchQuery)
-					|| machine.machineStatus().toString().toLowerCase().contains(searchQuery)
-					|| machine.productionStatus().toString().toLowerCase().contains(searchQuery)
-					|| (machine.technician() != null && machine.technician().firstName() != null
-							&& machine.technician().firstName().toLowerCase().contains(searchQuery));
-
-			boolean matchesLocation = selectedLocation == null || machine.location().equals(selectedLocation);
-
-			boolean matchesStatus = selectedStatus == null || machine.machineStatus().toString().equals(selectedStatus);
-
-			boolean matchesProductionStatus = selectedProductionStatus == null
-					|| machine.productionStatus().toString().equals(selectedProductionStatus);
-
-			boolean matchesTechnician = selectedTechnician == null
-					|| (machine.technician() != null && machine.technician().firstName() != null
-							&& machine.technician().firstName().equals(selectedTechnician));
-
-			return matchesSearch && matchesLocation && matchesStatus && matchesProductionStatus && matchesTechnician;
-		}).collect(Collectors.toList());
-
-		System.out.println("Filter result: " + newFilteredList.size() + " machines match criteria");
+		List<MachineDTO> newFilteredList = sc.getFilteredMachines(siteId, searchQuery, selectedLocation, selectedStatus, selectedProductionStatus, selectedTechnician);
 
 		filteredMachines = newFilteredList;
 		currentPage = 0;
@@ -502,7 +458,6 @@ public class SiteDetailsComponent extends VBox implements Observer
 			System.out.println("No machines to display");
 		} else
 		{
-
 			List<MachineDTO> currentPageItems;
 			if (fromIndex < toIndex)
 			{
@@ -510,12 +465,6 @@ public class SiteDetailsComponent extends VBox implements Observer
 			} else
 			{
 				currentPageItems = List.of();
-			}
-
-			System.out.println("Showing " + currentPageItems.size() + " machines on page " + (currentPage + 1));
-			for (MachineDTO machine : currentPageItems)
-			{
-				System.out.println(" - Machine #" + machine.id() + ": " + machine.location());
 			}
 
 			ObservableList<MachineDTO> items = FXCollections.observableArrayList(currentPageItems);
@@ -556,17 +505,11 @@ public class SiteDetailsComponent extends VBox implements Observer
 	{
 		Platform.runLater(() ->
 		{
-			try
-			{
 				SiteDTOWithMachines updatedSite = sc.getSite(siteId);
 				allMachines = updatedSite.machines().stream().toList();
 				filteredMachines = new ArrayList<>(allMachines);
 				updateFilterOptions();
 				updateTable(filteredMachines);
-			} catch (Exception e)
-			{
-				e.printStackTrace();
-			}
 		});
 	}
 }

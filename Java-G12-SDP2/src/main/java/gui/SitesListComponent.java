@@ -86,6 +86,16 @@ public class SitesListComponent extends VBox implements Observer
 
 		updateFilterOptions();
 		updateTable(filteredSites);
+		configureTableLayout();
+	}
+
+	private void configureTableLayout()
+	{
+		table.setMinHeight(300);
+		table.setPrefHeight(500);
+		table.setMaxHeight(Double.MAX_VALUE);
+
+		VBox.setVgrow(table, Priority.ALWAYS);
 	}
 
 	private VBox createTitleSection()
