@@ -280,6 +280,10 @@ public class AddOrEditUserForm extends AddOrEditAbstract
                 showFieldError(field, errorMessage);
             });
         }
+        if (e instanceof IllegalArgumentException) {
+        	String errorMessage = e.getMessage();
+        	showFieldError("email", errorMessage);
+        }
     }
 
     @Override

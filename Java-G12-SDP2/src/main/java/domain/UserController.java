@@ -177,6 +177,14 @@ public class UserController implements Subject
 			String street, String houseNumber, String postalCode, String city, Role role)
 			throws IllegalArgumentException, NumberFormatException
 	{
+	    User existingUserWithEmail = 
+	    		userRepo.findAll().stream()
+	    		.filter((u) -> u.getEmail().equals(email))
+	    		.findFirst()
+	    		.orElse(null);
+	    if(existingUserWithEmail != null) {
+	    	throw new IllegalArgumentException(String.format("User with email %s already exists", email));
+	    }
 
 		int houseNumberInt = Integer.parseInt(houseNumber);
 		int postalCodeInt = Integer.parseInt(postalCode);
@@ -234,6 +242,15 @@ public class UserController implements Subject
 	    if (existingUser == null)
 	    {
 	        throw new IllegalArgumentException("User with ID " + userId + " not found");
+	    }
+	    
+	    User existingUserWithEmail = 
+	    		userRepo.findAll().stream()
+	    		.filter((u) -> u.getEmail().equals(email) && u.getId() != userId)
+	    		.findFirst()
+	    		.orElse(null);
+	    if(existingUserWithEmail != null) {
+	    	throw new IllegalArgumentException(String.format("User with email %s already exists", email));
 	    }
 
 	    int houseNumberInt = Integer.parseInt(houseNumber);
