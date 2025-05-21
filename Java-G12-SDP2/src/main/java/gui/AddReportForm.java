@@ -256,8 +256,7 @@ public class AddReportForm extends AddOrEditAbstract
 	@Override
 	protected void fillData()
 	{
-		Platform.runLater(() ->
-		{
+		Platform.runLater(() -> {
 			siteNameLabel.setText(maintenanceDTO.machine().site().siteName());
 			siteNameLabel.getStyleClass().add("info-value");
 
@@ -370,7 +369,7 @@ public class AddReportForm extends AddOrEditAbstract
 	@Override
 	protected void navigateBack()
 	{
-		mainLayout.showMaintenanceDetails(maintenanceDTO);
+		mainLayout.showMaintenanceList();
 	}
 
 	@Override
@@ -386,8 +385,7 @@ public class AddReportForm extends AddOrEditAbstract
 		if (e instanceof InformationRequired)
 		{
 			InformationRequired exception = (InformationRequired) e;
-			exception.getRequiredElements().forEach((field, requiredElement) ->
-			{
+			exception.getRequiredElements().forEach((field, requiredElement) -> {
 				String errorMessage = requiredElement.getMessage();
 				showFieldError(field, errorMessage);
 			});

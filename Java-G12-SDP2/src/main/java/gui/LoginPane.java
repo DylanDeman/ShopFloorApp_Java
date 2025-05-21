@@ -34,10 +34,6 @@ public class LoginPane extends VBox
 
 	public LoginPane(MainLayout mainLayout)
 	{
-
-		emailField.setText("alice.admin@example.com");
-		passwordField.setText("123456789");
-
 		this.mainLayout = mainLayout;
 		this.getStylesheets().add(getClass().getResource(CSS_PATH).toExternalForm());
 		this.getStyleClass().add("login-pane");

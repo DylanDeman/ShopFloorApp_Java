@@ -172,7 +172,7 @@ public class MainLayout
 			setContent(maintenancePlanningForm, true, false, CurrentPage.NONE);
 		}
 	}
-	
+
 	public void showEditMaintenance(MaintenanceDTO maintenanceDTO, MachineDTO machineDTO)
 	{
 		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
