@@ -5,10 +5,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-import domain.User.Builder;
 import exceptions.InformationRequiredExceptionAddress;
 import exceptions.InformationRequiredExceptionSite;
+import exceptions.InvalidInputException;
 import interfaces.Observer;
 import interfaces.Subject;
 import jakarta.persistence.CascadeType;
@@ -24,7 +25,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -120,9 +120,14 @@ public class Site implements Serializable, Subject
 	 * Sets the name of the site and notifies observers of the change.
 	 *
 	 * @param siteName the new name for the site (will be trimmed)
+	 * @throws InvalidInputException if siteName is null or empty
 	 */
-	public void setSiteName(String siteName)
+	public void setSiteName(String siteName) throws InvalidInputException
 	{
+		if (siteName == null || siteName.trim().isEmpty())
+		{
+			throw new InvalidInputException("Site name cannot be null or empty");
+		}
 		this.siteName = siteName.trim();
 		notifyObservers("");
 	}
@@ -131,10 +136,17 @@ public class Site implements Serializable, Subject
 	 * Sets the responsible user for this site and notifies observers.
 	 *
 	 * @param verantwoordelijke the new responsible user (cannot be null)
+	 * @throws InvalidInputException if verantwoordelijke is null
 	 */
 	public void setVerantwoordelijke(User verantwoordelijke)
 	{
-		this.verantwoordelijke = verantwoordelijke;
+		if (verantwoordelijke == null)
+		{
+			throw new InvalidInputException("Site verantwoordelijke can not be null!");
+		} else
+		{
+			this.verantwoordelijke = verantwoordelijke;
+		}
 		notifyObservers("");
 	}
 
@@ -142,11 +154,23 @@ public class Site implements Serializable, Subject
 	 * Sets the status of the site and notifies observers.
 	 *
 	 * @param status the new status for the site (cannot be null)
+	 * @throws InvalidInputException if status is null
 	 */
 	public void setStatus(Status status)
 	{
-		this.status = status;
+		if (status == null)
+		{
+			throw new InvalidInputException("Site status can not be null!");
+		} else
+		{
+			this.status = status;
+		}
 		notifyObservers("");
+	}
+
+	public Set<Machine> getMachines()
+	{
+		return this.machines.stream().collect(Collectors.toUnmodifiableSet());
 	}
 
 	/**
@@ -194,9 +218,10 @@ public class Site implements Serializable, Subject
 		private Address address;
 		private User verantwoordelijke;
 		private Status status;
-		private Set<Machine> machines = new HashSet<>();		
+		private Set<Machine> machines = new HashSet<>();
 
 		Map<String, RequiredElement> requiredElements = new HashMap<>();
+
 		/**
 		 * Sets the site name in the builder.
 		 *
@@ -217,15 +242,13 @@ public class Site implements Serializable, Subject
 		 */
 		public Builder buildAddress(String street, int number, int postalcode, String city)
 		{
-			try {
-				this.address = new Address.Builder()
-						.buildStreet(street)
-						.buildNumber(number)
-						.buildPostalcode(postalcode)
-						.buildCity(city)
-						.build();
-			} catch (InformationRequiredExceptionAddress ire) {
-				ire.getRequiredElements().forEach((k,v) -> requiredElements.put(k, v));
+			try
+			{
+				this.address = new Address.Builder().buildStreet(street).buildNumber(number).buildPostalcode(postalcode)
+						.buildCity(city).build();
+			} catch (InformationRequiredExceptionAddress ire)
+			{
+				ire.getRequiredElements().forEach((k, v) -> requiredElements.put(k, v));
 			}
 			return this;
 		}
@@ -253,8 +276,9 @@ public class Site implements Serializable, Subject
 			this.status = status;
 			return this;
 		}
-		
-		public Builder buildMachines(Set<Machine> machines) {
+
+		public Builder buildMachines(Set<Machine> machines)
+		{
 			this.machines = machines;
 			return this;
 		}
@@ -283,13 +307,15 @@ public class Site implements Serializable, Subject
 			if (siteName == null || siteName.isEmpty())
 				requiredElements.put("siteName", RequiredElementSite.SITE_NAME_REQUIRED);
 
-			// Verantwoordelijkheid naar de addres klasse schuiven en niet hier controlleren de velden van adres!
+			// Verantwoordelijkheid naar de addres klasse schuiven en niet hier controlleren
+			// de velden van adres!
 			if (address == null)
-		        requiredElements.put("address", RequiredElementSite.ADDRESS_REQUIRED);
+				requiredElements.put("address", RequiredElementSite.ADDRESS_REQUIRED);
 
-			// Verantwoordelijkheid naar de user klasse schuiven en niet hier controleren de velden van employee!
-		    if (verantwoordelijke == null)
-		        requiredElements.put("employee", RequiredElementSite.EMPLOYEE_REQUIRED);
+			// Verantwoordelijkheid naar de user klasse schuiven en niet hier controleren de
+			// velden van employee!
+			if (verantwoordelijke == null)
+				requiredElements.put("employee", RequiredElementSite.EMPLOYEE_REQUIRED);
 
 			if (status == null)
 				requiredElements.put("status", RequiredElementSite.STATUS_REQUIRED);
