@@ -1,4 +1,4 @@
-package domain.site;
+package domain.needsRefactoring;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -24,7 +24,8 @@ import exceptions.InvalidInputException;
 import util.Status;
 
 @ExtendWith(MockitoExtension.class)
-class SiteTest {
+class SiteTest
+{
 	private static final String VALID_SITE_NAME = "Headquarters";
 	private static final Status VALID_STATUS = Status.ACTIEF;
 
@@ -37,12 +38,14 @@ class SiteTest {
 	private Site site;
 
 	@BeforeEach
-	void setUp() {
+	void setUp()
+	{
 		site = new Site();
 	}
 
 	@Test
-	void constructor_validParameters_createsSite() {
+	void constructor_validParameters_createsSite()
+	{
 		site = new Site(VALID_SITE_NAME, mockUser, VALID_STATUS);
 
 		assertAll(() -> assertEquals(VALID_SITE_NAME, site.getSiteName()),
@@ -53,41 +56,48 @@ class SiteTest {
 	@ParameterizedTest
 	@NullAndEmptySource
 	@ValueSource(strings = { " ", "\t", "\n" })
-	void setSiteName_invalidValues_throwsException(String invalidName) {
+	void setSiteName_invalidValues_throwsException(String invalidName)
+	{
 		assertThrows(InvalidInputException.class, () -> site.setSiteName(invalidName));
 	}
 
 	@Test
-	void setSiteName_validName_setsNameAndTrims() {
+	void setSiteName_validName_setsNameAndTrims()
+	{
 		String nameWithSpaces = "  Site Name  ";
 		site.setSiteName(nameWithSpaces);
 		assertEquals("Site Name", site.getSiteName());
 	}
 
 	@Test
-	void setVerantwoordelijke_null_throwsException() {
+	void setVerantwoordelijke_null_throwsException()
+	{
 		assertThrows(InvalidInputException.class, () -> site.setVerantwoordelijke(null));
 	}
 
 	@Test
-	void setVerantwoordelijke_validUser_setsUser() {
+	void setVerantwoordelijke_validUser_setsUser()
+	{
 		site.setVerantwoordelijke(mockUser);
 		assertEquals(mockUser, site.getVerantwoordelijke());
 	}
 
 	@Test
-	void setStatus_null_throwsException() {
+	void setStatus_null_throwsException()
+	{
 		assertThrows(InvalidInputException.class, () -> site.setStatus(null));
 	}
 
 	@Test
-	void setStatus_validStatus_setsStatus() {
+	void setStatus_validStatus_setsStatus()
+	{
 		site.setStatus(Status.INACTIEF);
 		assertEquals(Status.INACTIEF, site.getStatus());
 	}
 
 	@Test
-	void addMachine_validMachine_addsMachineToSet() {
+	void addMachine_validMachine_addsMachineToSet()
+	{
 		site = new Site(VALID_SITE_NAME, mockUser, VALID_STATUS);
 
 		site.addMachine(mockMachine);
@@ -97,7 +107,8 @@ class SiteTest {
 	}
 
 	@Test
-	void getMachines_returnsUnmodifiableSet() {
+	void getMachines_returnsUnmodifiableSet()
+	{
 		site = new Site(VALID_SITE_NAME, mockUser, VALID_STATUS);
 		site.addMachine(mockMachine);
 

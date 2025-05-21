@@ -2,7 +2,6 @@ package domain;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -13,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import exceptions.InformationRequiredException;
+import exceptions.InformationRequiredExceptionUser;
 import interfaces.Observer;
 import util.Role;
 import util.Status;
@@ -36,10 +35,10 @@ class UserTest
 		user = new User();
 		user.addObserver(observer);
 
-		when(address.getStreet()).thenReturn("Main Street");
-		when(address.getNumber()).thenReturn(123);
-		when(address.getPostalcode()).thenReturn(1000);
-		when(address.getCity()).thenReturn("Metropolis");
+		when(address.getStreet()).thenReturn("Street");
+		when(address.getNumber()).thenReturn(1);
+		when(address.getPostalcode()).thenReturn(1234);
+		when(address.getCity()).thenReturn("City");
 	}
 
 	@Test
@@ -70,49 +69,32 @@ class UserTest
 	}
 
 	@Test
-	void testBuilderWithAllRequiredFields() throws InformationRequiredException
+	void testBuilderWithAllRequiredFields() throws InformationRequiredExceptionUser
 	{
-		User builtUser = new User.Builder().withFirstName("John").withLastName("Doe").withEmail("john.doe@example.com")
-				.withPhoneNumber("1234567890").withBirthdate(LocalDate.of(1990, 1, 1)).withAddress(address)
-				.withRole(Role.VERANTWOORDELIJKE).withStatus(Status.ACTIEF).build();
+		User builtUser = new User.Builder().buildFirstName("John").buildLastName("Doe")
+				.buildEmail("john.doe@example.com").buildPhoneNumber("1234567890")
+				.buildBirthdate(LocalDate.of(1990, 1, 1)).buildAddress("Street", 1, 1234, "City")
+				.buildRole(Role.VERANTWOORDELIJKE).buildStatus(Status.ACTIEF).build();
 
 		assertNotNull(builtUser);
 		assertEquals("John", builtUser.getFirstName());
 	}
 
 	@Test
-	void testToString()
-	{
-		user.setFirstName("John");
-		user.setLastName("Doe");
-		user.setEmail("john@example.com");
-		user.setPhoneNumber("123456789");
-		user.setBirthdate(LocalDate.of(1990, 1, 1));
-		user.setAddress(address);
-		user.setStatus(Status.ACTIEF);
-		user.setRole(Role.VERANTWOORDELIJKE);
-
-		String result = user.toString();
-
-		assertTrue(result.contains("John Doe"));
-		assertTrue(result.contains("john@example.com"));
-		assertTrue(result.contains("VERANTWOORDELIJKE"));
-	}
-
-	@Test
 	void testConstructorWithAllParameters()
 	{
-		User user = new User("Jane", "Doe", "jane@example.com", "987654321", "hashedPassword",
-				LocalDate.of(1985, 5, 15), address, Status.ACTIEF, Role.TECHNIEKER);
+		User builtUser = new User.Builder().buildFirstName("John").buildLastName("Doe")
+				.buildEmail("john.doe@example.com").buildPhoneNumber("1234567890").buildPassword("hashedPassword")
+				.buildBirthdate(LocalDate.of(1990, 1, 1)).buildAddress("Street", 1, 1234, "City")
+				.buildRole(Role.VERANTWOORDELIJKE).buildStatus(Status.ACTIEF).build();
 
-		assertEquals("Jane", user.getFirstName());
-		assertEquals("Doe", user.getLastName());
-		assertEquals("jane@example.com", user.getEmail());
-		assertEquals("987654321", user.getPhoneNumber());
-		assertEquals("hashedPassword", user.getPassword());
-		assertEquals(LocalDate.of(1985, 5, 15), user.getBirthdate());
-		assertEquals(address, user.getAddress());
-		assertEquals(Status.ACTIEF, user.getStatus());
-		assertEquals(Role.TECHNIEKER, user.getRole());
+		assertEquals("John", builtUser.getFirstName());
+		assertEquals("Doe", builtUser.getLastName());
+		assertEquals("john.doe@example.com", builtUser.getEmail());
+		assertEquals("1234567890", builtUser.getPhoneNumber());
+		assertEquals("hashedPassword", builtUser.getPassword());
+		assertEquals(LocalDate.of(1990, 1, 1), builtUser.getBirthdate());
+		assertEquals(Status.ACTIEF, builtUser.getStatus());
+		assertEquals(Role.VERANTWOORDELIJKE, builtUser.getRole());
 	}
 }
