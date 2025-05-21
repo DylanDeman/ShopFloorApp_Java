@@ -6,10 +6,10 @@ import java.util.Objects;
 import util.MachineStatus;
 import util.ProductionStatus;
 
-public record MachineDTO(int id, SiteDTOWithoutMachines site, // Om voor te zorgen dat we geen deadlock hebben
-		UserDTO technician, String code, MachineStatus machineStatus, ProductionStatus productionStatus,
-		String location, String productInfo, LocalDate lastMaintenance, LocalDate futureMaintenance,
-		int numberDaysSinceLastMaintenance, double upTimeInHours)
+public record MachineDTO(int id, SiteDTOWithoutMachines site, UserDTO technician, String code,
+		MachineStatus machineStatus, ProductionStatus productionStatus, String location, String productInfo,
+		LocalDate lastMaintenance, LocalDate futureMaintenance, int numberDaysSinceLastMaintenance,
+		double upTimeInHours)
 {
 	@Override
 	public boolean equals(Object o)
