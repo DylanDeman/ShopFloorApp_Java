@@ -89,6 +89,14 @@ public class AddReportForm extends AddOrEditAbstract
 		endDateErrorLabel = createErrorLabel();
 		endTimeErrorLabel = createErrorLabel();
 		reasonErrorLabel = createErrorLabel();
+
+		String errorStyle = "-fx-text-fill: red; -fx-font-weight: bold;";
+		technicianErrorLabel.setStyle(errorStyle);
+		startDateErrorLabel.setStyle(errorStyle);
+		startTimeErrorLabel.setStyle(errorStyle);
+		endTimeErrorLabel.setStyle(errorStyle);
+		reasonErrorLabel.setStyle(errorStyle);
+		errorLabel.setStyle(errorStyle);
 	}
 
 	private void populateTimePicker(ComboBox<LocalTime> timePicker)
@@ -248,9 +256,6 @@ public class AddReportForm extends AddOrEditAbstract
 	@Override
 	protected void fillData()
 	{
-		// Rapporten hebben geen bestaande gegevens om te vullen
-		// Deze methode is leeg omdat rapporten altijd nieuw zijn
-
 		Platform.runLater(() ->
 		{
 			siteNameLabel.setText(maintenanceDTO.machine().site().siteName());
@@ -272,16 +277,73 @@ public class AddReportForm extends AddOrEditAbstract
 	}
 
 	@Override
+	protected void resetErrorLabels()
+	{
+		errorLabel.setText("");
+		technicianErrorLabel.setText("");
+		startDateErrorLabel.setText("");
+		startTimeErrorLabel.setText("");
+		endDateErrorLabel.setText("");
+		endTimeErrorLabel.setText("");
+		reasonErrorLabel.setText("");
+	}
+
+	@Override
 	protected void save()
 	{
 		resetErrorLabels();
 		try
 		{
+
+			boolean hasErrors = false;
+
+			if (technicianComboBox.getValue() == null)
+			{
+				showFieldError("technician", "Selecteer een technieker");
+				hasErrors = true;
+			}
+
+			if (startDatePicker.getValue() == null)
+			{
+				showFieldError("startDate", "Selecteer een startdatum");
+				hasErrors = true;
+			}
+
+			if (startTimeField.getValue() == null)
+			{
+				showFieldError("startTime", "Selecteer een starttijd");
+				hasErrors = true;
+			}
+
+			if (endDatePicker.getValue() == null)
+			{
+				showFieldError("endDate", "Selecteer een einddatum");
+				hasErrors = true;
+			}
+
+			if (endTimeField.getValue() == null)
+			{
+				showFieldError("endTime", "Selecteer een eindtijd");
+				hasErrors = true;
+			}
+
+			if (reasonField.getText() == null || reasonField.getText().trim().isEmpty())
+			{
+				showFieldError("reason", "Voer een reden in");
+				hasErrors = true;
+			}
+
+			if (hasErrors)
+			{
+				return;
+			}
+
 			UserDTO selectedTechnician = null;
 			if (technicianComboBox.getValue() != null)
 			{
+				String selectedName = technicianComboBox.getValue();
 				selectedTechnician = userController.getAllTechniekers().stream()
-						.filter(user -> user.firstName().equals(technicianComboBox.getValue())).findFirst()
+						.filter(user -> (user.firstName() + " " + user.lastName()).equals(selectedName)).findFirst()
 						.orElse(null);
 			}
 
@@ -320,6 +382,7 @@ public class AddReportForm extends AddOrEditAbstract
 	@Override
 	protected void handleInformationRequiredException(Exception e)
 	{
+
 		if (e instanceof InformationRequired)
 		{
 			InformationRequired exception = (InformationRequired) e;
@@ -328,6 +391,9 @@ public class AddReportForm extends AddOrEditAbstract
 				String errorMessage = requiredElement.getMessage();
 				showFieldError(field, errorMessage);
 			});
+		} else
+		{
+			showError("Onverwachte fout: " + e.getMessage());
 		}
 	}
 
@@ -358,5 +424,4 @@ public class AddReportForm extends AddOrEditAbstract
 			errorLabel.setText(message);
 		}
 	}
-
 }

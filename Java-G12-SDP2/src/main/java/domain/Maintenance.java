@@ -9,6 +9,7 @@ import java.util.Map;
 import exceptions.InformationRequired;
 import exceptions.InformationRequiredExceptionMaintenance;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -44,6 +45,7 @@ public class Maintenance implements Serializable
 	/** Unique identifier for the maintenance record. */
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(columnDefinition = "INT UNSIGNED")
 	private int id;
 
 	/** The date the maintenance was executed. */
@@ -56,7 +58,8 @@ public class Maintenance implements Serializable
 	private LocalDateTime endDate;
 
 	/** The technician responsible for performing the maintenance. */
-	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@ManyToOne(cascade =
+	{ CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinColumn(name = "technician_id")
 	private User technician;
 
@@ -71,7 +74,8 @@ public class Maintenance implements Serializable
 	private MaintenanceStatus status;
 
 	/** The machine on which the maintenance is being performed. */
-	@ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@ManyToOne(cascade =
+	{ CascadeType.PERSIST, CascadeType.MERGE })
 	@JoinColumn(name = "machine_id")
 	private Machine machine;
 
