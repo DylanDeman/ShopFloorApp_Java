@@ -17,6 +17,7 @@ import domain.UserController;
 import dto.MachineDTO;
 import dto.MaintenanceDTO;
 import dto.UserDTO;
+import exceptions.InformationRequired;
 import exceptions.InformationRequiredExceptionMaintenance;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -134,8 +135,7 @@ public class MaintenancePlanningForm extends GridPane
 	{
 		Button saveButton = new Button("Opslaan");
 		saveButton.getStyleClass().add("save-button");
-		saveButton.setOnAction(e ->
-		{
+		saveButton.setOnAction(e -> {
 
 			if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
 			{
@@ -171,12 +171,14 @@ public class MaintenancePlanningForm extends GridPane
 				LocalTime startTime = startTimeField.getValue();
 				LocalTime endTime = endTimeField.getValue();
 
+				// Convert to LocalDateTime
 				LocalDateTime startDateTime = (execDate != null && startTime != null)
 						? LocalDateTime.of(execDate, startTime)
 						: null;
 				LocalDateTime endDateTime = (execDate != null && endTime != null) ? LocalDateTime.of(execDate, endTime)
 						: null;
 
+				// Get IDs for technician and machine
 				String selectedTechnician = technicianComboBox.getValue();
 				int technicianId = selectedTechnician != null && technicianMap.containsKey(selectedTechnician)
 						? technicianMap.get(selectedTechnician).id()
@@ -186,11 +188,12 @@ public class MaintenancePlanningForm extends GridPane
 						? machineMap.get(selectedMachine).id()
 						: 0;
 
+				// Get status
 				MaintenanceStatus status = statusComboBox.getValue() != null
-						? Arrays.stream(MaintenanceStatus.values())
-								.filter(s -> s.toString().equals(statusComboBox.getValue())).findFirst().orElse(null)
+						? MaintenanceStatus.valueOf(statusComboBox.getValue())
 						: null;
 
+				// Use the controller to create the maintenance
 				if (maintenanceDTO == null)
 				{
 					mntcc.createMaintenance(execDate, startDateTime, endDateTime, technicianId, reasonField.getText(),
@@ -438,36 +441,46 @@ public class MaintenancePlanningForm extends GridPane
 		return pane;
 	}
 
-	private void handleInformationRequiredException(InformationRequiredExceptionMaintenance e)
+	private void handleInformationRequiredException(Exception e)
 	{
-		Map<String, Label> fieldToLabelMap = Map.of("executionDate", executionDateErrorLabel, "startDate",
-				startDateErrorLabel, "endDate", endDateErrorLabel, "machine", machineErrorLabel, "status",
-				statusErrorLabel, "reason", reasonErrorLabel, "technician", technicianErrorLabel);
-
-		e.getInformationRequired().forEach((field, requiredElement) ->
+		if (e instanceof InformationRequired)
 		{
-			String message = switch (requiredElement)
-			{
-			case EXECUTION_DATE_REQUIRED -> "Uitvoeringsdatum is verplicht";
-			case START_DATE_REQUIRED -> "Starttijdstip is verplicht";
-			case END_DATE_REQUIRED -> "Eindtijdstip is verplicht";
-			case MACHINE_REQUIRED -> "Machine is verplicht";
-			case MAINTENANCESTATUS_REQUIRED -> "Status is verplicht";
-			case REASON_REQUIRED -> "Reden is verplicht";
-			case TECHNICIAN_REQUIRED -> "Technieker is verplicht";
-			case END_DATE_BEFORE_START -> "Eindtijd mag niet voor starttijd liggen";
-			default -> "Verplicht veld";
-			};
+			InformationRequired exception = (InformationRequired) e;
+			exception.getRequiredElements().forEach((field, requiredElement) -> {
+				String errorMessage = requiredElement.getMessage();
+				showFieldError(field, errorMessage);
+			});
+		}
+	}
 
-			Label label = fieldToLabelMap.get(field);
-			if (label != null)
-			{
-				label.setText(message);
-			} else
-			{
-				errorLabel.setText("Er is een fout opgetreden: " + message);
-			}
-		});
+	private void showFieldError(String fieldName, String message)
+	{
+		switch (fieldName)
+		{
+		case "startDate":
+			startDateErrorLabel.setText(message);
+			break;
+		case "endDate":
+			endDateErrorLabel.setText(message);
+			break;
+		case "technician":
+			technicianErrorLabel.setText(message);
+			break;
+		case "reason":
+			reasonErrorLabel.setText(message);
+			break;
+		case "machine":
+			machineErrorLabel.setText(message);
+			break;
+		case "status":
+			statusErrorLabel.setText(message);
+			break;
+		case "executionDate":
+			executionDateErrorLabel.setText(message);
+			break;
+		default:
+			errorLabel.setText(message);
+		}
 	}
 
 	private void resetErrorLabels()

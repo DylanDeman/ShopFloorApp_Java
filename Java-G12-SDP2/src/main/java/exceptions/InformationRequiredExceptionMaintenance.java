@@ -3,12 +3,9 @@ package exceptions;
 import java.util.Collections;
 import java.util.Map;
 
-import javax.sound.midi.MidiDevice.Info;
-
 import util.RequiredElement;
-import util.RequiredElementMaintenance;
 
-public class InformationRequiredExceptionMaintenance extends InformationRequired 
+public class InformationRequiredExceptionMaintenance extends InformationRequired
 {
 
 	private static final long serialVersionUID = 1L;
@@ -25,8 +22,8 @@ public class InformationRequiredExceptionMaintenance extends InformationRequired
 
 	public Map<String, RequiredElement> getRequiredElements()
 	{
-        Map<String, RequiredElement> result = Collections.unmodifiableMap(informationRequired);
-        return result;
+		Map<String, RequiredElement> result = Collections.unmodifiableMap(informationRequired);
+		return result;
 	}
 
 }
