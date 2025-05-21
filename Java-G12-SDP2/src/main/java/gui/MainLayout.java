@@ -175,7 +175,8 @@ public class MainLayout
 
 	public void showEditMaintenance(MaintenanceDTO maintenanceDTO, MachineDTO machineDTO)
 	{
-		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMINISTRATOR))
+		if (!AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE) && !AuthenticationUtil.hasRole(Role.ADMINISTRATOR)
+				&& !AuthenticationUtil.hasRole(Role.TECHNIEKER))
 		{
 			showNotAllowedAlert();
 		} else
