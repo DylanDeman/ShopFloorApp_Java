@@ -59,8 +59,8 @@ public class AddReportForm extends AddOrEditAbstract
 
 		technicianComboBox = new ComboBox<>();
 		technicianComboBox.setPromptText("Selecteer een technieker");
-		technicianComboBox.getItems().addAll(
-				userController.getAllTechniekers().stream().map(user -> user.firstName()).collect(Collectors.toList()));
+		technicianComboBox.getItems().addAll(userController.getAllTechniekers().stream()
+				.map(user -> user.firstName() + " " + user.lastName()).collect(Collectors.toList()));
 
 		startDatePicker = new DatePicker();
 		startDatePicker.setPromptText("Kies startdatum");
@@ -306,7 +306,8 @@ public class AddReportForm extends AddOrEditAbstract
 		if (e instanceof InformationRequired)
 		{
 			InformationRequired exception = (InformationRequired) e;
-			exception.getRequiredElements().forEach((field, requiredElement) -> {
+			exception.getRequiredElements().forEach((field, requiredElement) ->
+			{
 				String errorMessage = requiredElement.getMessage();
 				showFieldError(field, errorMessage);
 			});
