@@ -1,5 +1,7 @@
 package util;
 
+import interfaces.RequiredElement;
+
 public enum RequiredElementUser implements RequiredElement
 {
 	FIRST_NAME_REQUIRED("Voornaam is verplicht!"), 

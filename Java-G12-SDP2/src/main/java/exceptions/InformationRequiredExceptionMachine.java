@@ -3,7 +3,7 @@ package exceptions;
 import java.util.Collections;
 import java.util.Map;
 
-import util.RequiredElement;
+import interfaces.RequiredElement;
 import util.RequiredElementMachine;
 
 public class InformationRequiredExceptionMachine extends InformationRequired

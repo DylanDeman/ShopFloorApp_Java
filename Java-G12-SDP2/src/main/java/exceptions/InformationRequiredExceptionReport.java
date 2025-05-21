@@ -2,7 +2,7 @@ package exceptions;
 
 import java.util.Map;
 
-import util.RequiredElement;
+import interfaces.RequiredElement;
 import util.RequiredElementReport;
 
 public class InformationRequiredExceptionReport extends InformationRequired

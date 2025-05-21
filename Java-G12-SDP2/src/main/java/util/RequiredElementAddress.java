@@ -1,5 +1,7 @@
 package util;
 
+import interfaces.RequiredElement;
+
 public enum RequiredElementAddress implements RequiredElement {
 	STREET_REQUIRED("Straat is verplicht!"), 
 	NUMBER_REQUIRED("Huisnummer is verplicht!"),

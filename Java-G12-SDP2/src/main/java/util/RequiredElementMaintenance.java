@@ -1,5 +1,7 @@
 package util;
 
+import interfaces.RequiredElement;
+
 public enum RequiredElementMaintenance implements RequiredElement {
     EXECUTION_DATE_REQUIRED("Execution date is required!"),
     START_DATE_REQUIRED("Start date is required!"),

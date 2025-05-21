@@ -1,5 +1,7 @@
 package util;
 
+import interfaces.RequiredElement;
+
 public enum RequiredElementSite implements RequiredElement
 {
 	SITE_NAME_REQUIRED("Sitenaam is verplicht!"),

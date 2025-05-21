@@ -2,7 +2,7 @@ package exceptions;
 
 import java.util.Map;
 
-import util.RequiredElement;
+import interfaces.RequiredElement;
 
 public abstract class InformationRequired extends IllegalArgumentException {
 

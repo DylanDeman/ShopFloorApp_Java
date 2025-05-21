@@ -1,5 +1,7 @@
 package util;
 
+import interfaces.RequiredElement;
+
 public enum RequiredElementReport implements RequiredElement
 {
 	MAINTENANCE_REQUIRED("Maintenance information is required"),

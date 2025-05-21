@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import exceptions.InformationRequiredExceptionAddress;
+import interfaces.RequiredElement;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,7 +16,6 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import util.RequiredElement;
 import util.RequiredElementAddress;
 import util.RequiredElementSite;
 

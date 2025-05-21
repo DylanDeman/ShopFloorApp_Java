@@ -3,7 +3,7 @@ package exceptions;
 import java.util.Collections;
 import java.util.Map;
 
-import util.RequiredElement;
+import interfaces.RequiredElement;
 
 public class InformationRequiredExceptionMaintenance extends InformationRequired
 {

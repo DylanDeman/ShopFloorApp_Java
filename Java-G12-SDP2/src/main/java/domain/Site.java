@@ -11,6 +11,7 @@ import exceptions.InformationRequiredExceptionAddress;
 import exceptions.InformationRequiredExceptionSite;
 import exceptions.InvalidInputException;
 import interfaces.Observer;
+import interfaces.RequiredElement;
 import interfaces.Subject;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -28,7 +29,6 @@ import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import util.RequiredElement;
 import util.RequiredElementSite;
 import util.Status;
 

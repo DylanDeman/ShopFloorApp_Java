@@ -1,7 +1,8 @@
 package exceptions;
 
 import java.util.Map;
-import util.RequiredElement;
+
+import interfaces.RequiredElement;
 
 public class InformationRequiredExceptionAddress extends InformationRequired {
     private static final long serialVersionUID = 1L;

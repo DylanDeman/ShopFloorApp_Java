@@ -1,5 +1,7 @@
 package util;
 
+import interfaces.RequiredElement;
+
 public enum RequiredElementMachine implements RequiredElement
 {
 	CODE_REQUIRED("Code is verplicht"),

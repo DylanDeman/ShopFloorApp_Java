@@ -8,6 +8,7 @@ import java.util.Map;
 
 import exceptions.InformationRequired;
 import exceptions.InformationRequiredExceptionReport;
+import interfaces.RequiredElement;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -20,7 +21,6 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import util.RequiredElement;
 import util.RequiredElementReport;
 
 /**
