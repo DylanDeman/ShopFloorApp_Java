@@ -128,7 +128,8 @@ public class MaintenanceListComponent extends VBox
 		if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR) || AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
 		{
 			CustomButton maintenancePlanBtn = new CustomButton("Onderhoud inplannen");
-			maintenancePlanBtn.setOnAction((e) -> {
+			maintenancePlanBtn.setOnAction((e) ->
+			{
 				if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR)
 						|| AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
 				{
@@ -159,7 +160,8 @@ public class MaintenanceListComponent extends VBox
 				editIcon.setIconSize(12);
 				editButton.setGraphic(editIcon);
 				editButton.setBackground(Background.EMPTY);
-				editButton.setOnAction(event -> {
+				editButton.setOnAction(event ->
+				{
 					MaintenanceDTO maintenance = getTableRow().getItem();
 					if (maintenance != null)
 					{
@@ -181,7 +183,8 @@ public class MaintenanceListComponent extends VBox
 				m -> m.startDate().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")).toString());
 		TableColumn<MaintenanceDTO, String> col3 = createColumn("Eindtijdstip",
 				m -> m.endDate().toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")).toString());
-		TableColumn<MaintenanceDTO, String> col4 = createColumn("Naam technieker", m -> {
+		TableColumn<MaintenanceDTO, String> col4 = createColumn("Naam technieker", m ->
+		{
 			if (m.technician() == null)
 				return "Onbekend";
 			String first = m.technician().firstName();
@@ -272,7 +275,8 @@ public class MaintenanceListComponent extends VBox
 		Stream.of(MaintenanceStatus.values()).map((s) -> s.toString()).forEach((s) -> statusFilter.getItems().add(s));
 		statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-		mainLayout.getServices().getUserController().getAllTechniekers().stream().map(u -> {
+		mainLayout.getServices().getUserController().getAllTechniekers().stream().map(u ->
+		{
 			String first = u.firstName();
 			String last = u.lastName();
 			String formattedLast = last.substring(0, 1).toUpperCase() + last.substring(1).toLowerCase();
@@ -337,7 +341,8 @@ public class MaintenanceListComponent extends VBox
 		String commentsQuery = commentsFilter.getText() != null ? commentsFilter.getText().toLowerCase().trim() : "";
 		String statusString = statusFilter.getValue() != null ? statusFilter.getValue().toLowerCase() : "";
 
-		filteredMaintenances = allMaintenances.stream().filter(m -> {
+		filteredMaintenances = allMaintenances.stream().filter(m ->
+		{
 			boolean matchesQuery = query.isEmpty() || (m.reason() != null && m.reason().toLowerCase().contains(query))
 					|| (m.comments() != null && m.comments().toLowerCase().contains(query))
 					|| (m.technician() != null && m.technician().firstName().toLowerCase().contains(query))
@@ -384,7 +389,8 @@ public class MaintenanceListComponent extends VBox
 		{
 			private final CustomButton btn = new CustomButton("Details", Pos.CENTER);
 			{
-				btn.setOnAction(e -> {
+				btn.setOnAction(e ->
+				{
 					if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR)
 							|| AuthenticationUtil.hasRole(Role.VERANTWOORDELIJKE))
 					{
@@ -419,11 +425,13 @@ public class MaintenanceListComponent extends VBox
 		{
 			private final CustomButton btn = new CustomButton("Rapport toevoegen", Pos.CENTER);
 			{
-				btn.setOnAction(e -> {
+				btn.setOnAction(e ->
+				{
 					if (AuthenticationUtil.hasRole(Role.ADMINISTRATOR) || AuthenticationUtil.hasRole(Role.TECHNIEKER))
 					{
 						MaintenanceDTO selectedMaintenance = getTableView().getItems().get(getIndex());
 						goToAddReport(mainLayout, selectedMaintenance);
+
 					} else
 					{
 						mainLayout.showNotAllowedAlert();
@@ -450,7 +458,8 @@ public class MaintenanceListComponent extends VBox
 		updateTotalPages();
 		Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
 		pagination.setPageFactory(this::createPage);
-		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) ->
+		{
 			currentPage = newIndex.intValue();
 			updateTableItems();
 		});

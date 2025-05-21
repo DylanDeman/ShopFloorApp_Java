@@ -8,6 +8,7 @@ import dto.MaintenanceDTO;
 import dto.ReportDTO;
 import dto.SiteDTOWithoutMachines;
 import dto.UserDTO;
+import exceptions.InformationRequiredExceptionReport;
 import exceptions.InvalidReportException;
 import repository.GenericDaoJpa;
 import util.DTOMapper;
@@ -74,7 +75,7 @@ public class ReportController
 	 */
 	public ReportDTO createReport(SiteDTOWithoutMachines site, MaintenanceDTO maintenance, UserDTO technician,
 			LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime, String reason,
-			String remarks) throws InvalidReportException
+			String remarks) throws InformationRequiredExceptionReport
 	{
 		try
 		{
