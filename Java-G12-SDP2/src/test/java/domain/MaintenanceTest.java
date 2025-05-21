@@ -27,99 +27,90 @@ import util.MaintenanceStatus;
 @ExtendWith(MockitoExtension.class)
 public class MaintenanceTest
 {
-    @Mock
-    private GenericDaoJpa<Maintenance> maintenanceRepo;
-	
-    @Mock
-    private MaintenanceController maintenanceController;
-    
-    @Mock
-    private UserController userController;
+	@Mock
+	private GenericDaoJpa<Maintenance> maintenanceRepo;
 
-    @Mock
-    private MachineController machineController;
+	@Mock
+	private MaintenanceController maintenanceController;
 
-    @Mock
-    private Machine machine;
+	@Mock
+	private UserController userController;
 
-    @Mock
-    private User technician;
-    
-    @Mock
-    private AppServices appServices;
+	@Mock
+	private MachineController machineController;
 
-    @Mock
-    private Site site;
+	@Mock
+	private Machine machine;
 
-    private Maintenance maintenance;
-    private List<MaintenanceDTO> maintenances;
+	@Mock
+	private User technician;
 
+	@Mock
+	private AppServices appServices;
 
-    @BeforeEach
-    void setUp() throws InformationRequiredExceptionMaintenance
-    {
+	@Mock
+	private Site site;
 
-        LocalDateTime now = LocalDateTime.now();
-        maintenance = new Maintenance(LocalDate.now(), now, now.plusDays(1).minusHours(2),
-                technician, "Test reason", "Test comments", MaintenanceStatus.IN_UITVOERING, machine);
-        maintenance.setId(1);
-        
-        MaintenanceDTO maintenanceDTO = new MaintenanceDTO(
-            maintenance.getId(),
-            maintenance.getExecutionDate(),
-            maintenance.getStartDate(),
-            maintenance.getEndDate(),
-            null,
-            maintenance.getReason(),
-            maintenance.getComments(),
-            maintenance.getStatus(),
-            null
-        );
+	private Maintenance maintenance;
+	private List<MaintenanceDTO> maintenances;
 
-        maintenances = new ArrayList<>();
-        maintenances.add(maintenanceDTO);
-    }
+	@BeforeEach
+	void setUp() throws InformationRequiredExceptionMaintenance
+	{
 
-    @Test
-    void getMaintenances_ShouldReturnListOfMaintenanceDTOs()
-    {
-        when(maintenanceController.getMaintenances()).thenReturn(maintenances);
+		LocalDateTime now = LocalDateTime.now();
 
-        List<MaintenanceDTO> result = maintenanceController.getMaintenances();
+		maintenance = new Maintenance.Builder().buildExecutionDate(LocalDate.now()).buildStartDate(now)
+				.buildEndDate(now.plusDays(1).minusHours(2)).buildTechnician(technician).buildReason("Test reason")
+				.buildComments("Test comments").buildMaintenanceStatus(MaintenanceStatus.IN_UITVOERING)
+				.buildMachine(machine).build();
 
-        assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(maintenance.getId(), result.get(0).id());
-    }
+		maintenance.setId(1);
 
-    @Test
-    void getMaintenance_ShouldReturnMaintenance()
-    {
-        when(maintenanceController.getMaintenance(1)).thenReturn(maintenance);
+		MaintenanceDTO maintenanceDTO = new MaintenanceDTO(maintenance.getId(), maintenance.getExecutionDate(),
+				maintenance.getStartDate(), maintenance.getEndDate(), null, maintenance.getReason(),
+				maintenance.getComments(), maintenance.getStatus(), null);
 
-        Maintenance result = maintenanceController.getMaintenance(1);
+		maintenances = new ArrayList<>();
+		maintenances.add(maintenanceDTO);
+	}
 
-        assertNotNull(result);
-        assertEquals(maintenance.getId(), result.getId());
-    }
+	@Test
+	void getMaintenances_ShouldReturnListOfMaintenanceDTOs()
+	{
+		when(maintenanceController.getMaintenances()).thenReturn(maintenances);
 
-    @ParameterizedTest
-    @CsvSource({ "2025-05-01T10:00,2025-05-01T09:00", "2025-05-02T15:00,2025-05-01T15:00" })
-    void build_withInvalidDates_throwsInformationRequiredException(String start, String end) {
-        LocalDateTime startDate = LocalDateTime.parse(start);
-        LocalDateTime endDate = LocalDateTime.parse(end);
+		List<MaintenanceDTO> result = maintenanceController.getMaintenances();
 
-        Maintenance.Builder builder = new Maintenance.Builder()
-            .buildExecutionDate(LocalDate.now())
-            .buildStartDate(startDate)
-            .buildEndDate(endDate)
-            .buildTechnician(technician)
-            .buildReason("Test reason")
-            .buildComments("Test comments")
-            .buildMaintenanceStatus(MaintenanceStatus.IN_UITVOERING)
-            .buildMachine(machine);
+		assertNotNull(result);
+		assertEquals(1, result.size());
+		assertEquals(maintenance.getId(), result.get(0).id());
+	}
 
-        assertThrows(InformationRequiredExceptionMaintenance.class, builder::build);
-    }
+	@Test
+	void getMaintenance_ShouldReturnMaintenance()
+	{
+		when(maintenanceController.getMaintenance(1)).thenReturn(maintenance);
+
+		Maintenance result = maintenanceController.getMaintenance(1);
+
+		assertNotNull(result);
+		assertEquals(maintenance.getId(), result.getId());
+	}
+
+	@ParameterizedTest
+	@CsvSource({ "2025-05-01T10:00,2025-05-01T09:00", "2025-05-02T15:00,2025-05-01T15:00" })
+	void build_withInvalidDates_throwsInformationRequiredException(String start, String end)
+	{
+		LocalDateTime startDate = LocalDateTime.parse(start);
+		LocalDateTime endDate = LocalDateTime.parse(end);
+
+		Maintenance.Builder builder = new Maintenance.Builder().buildExecutionDate(LocalDate.now())
+				.buildStartDate(startDate).buildEndDate(endDate).buildTechnician(technician).buildReason("Test reason")
+				.buildComments("Test comments").buildMaintenanceStatus(MaintenanceStatus.IN_UITVOERING)
+				.buildMachine(machine);
+
+		assertThrows(InformationRequiredExceptionMaintenance.class, builder::build);
+	}
 
 }

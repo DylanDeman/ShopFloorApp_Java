@@ -2,6 +2,7 @@ package domain;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,7 +25,6 @@ import util.ProductionStatus;
 public class MachineController implements Subject
 {
 	private GenericDaoJpa<Machine> machineRepo;
-	private SiteController siteController;
 	private List<Observer> observers = new ArrayList<>();
 
 	/**
@@ -34,7 +34,6 @@ public class MachineController implements Subject
 	public MachineController()
 	{
 		machineRepo = new GenericDaoJpa<Machine>(Machine.class);
-		siteController = new SiteController();
 		addObserver(new NotificationObserver());
 	}
 
@@ -50,11 +49,7 @@ public class MachineController implements Subject
 		{
 			return List.of();
 		}
-
-		return machines.stream().map(machine -> {
-			SiteDTOWithoutMachines siteDTO = DTOMapper.toSiteDTOWithoutMachines(machine.getSite());
-			return DTOMapper.toMachineDTO(machine, siteDTO);
-		}).collect(Collectors.toUnmodifiableList());
+		return machines.stream().map(machine -> DTOMapper.toMachineDTO(machine)).toList();
 	}
 
 	/**
@@ -90,7 +85,7 @@ public class MachineController implements Subject
 	 */
 	public void addNewMachine(MachineDTO machineDTO)
 	{
-		Machine machine = convertDTOToMachine(machineDTO);
+		Machine machine = DTOMapper.toMachine(machineDTO);
 		addNewMachine(machine);
 	}
 
@@ -113,15 +108,15 @@ public class MachineController implements Subject
 			LocalDate futureMaintenance) throws InformationRequiredExceptionMachine
 	{
 
-		Site site = DTOMapper.toSite(siteDTO, null);
-		User technician = DTOMapper.toUser(technicianDTO, null);
+		Site site = DTOMapper.toSite(siteDTO);
+		User technician = DTOMapper.toUser(technicianDTO);
 
 		Machine machine = new Machine.Builder().buildSite(site).buildTechnician(technician).buildCode(code)
 				.buildMachineStatus(machineStatus).buildProductionStatus(productionStatus).buildLocation(location)
 				.buildProductInfo(productInfo).buildFutureMaintenance(futureMaintenance).build();
 
 		addNewMachine(machine);
-		return convertToMachineDTO(machine);
+		return DTOMapper.toMachineDTO(machine);
 	}
 
 	/**
@@ -145,8 +140,8 @@ public class MachineController implements Subject
 	{
 
 		Machine existingMachine = machineRepo.get(id);
-		Site site = DTOMapper.toSite(siteDTO, null);
-		User technician = DTOMapper.toUser(technicianDTO, null);
+		Site site = DTOMapper.toSite(siteDTO);
+		User technician = DTOMapper.toUser(technicianDTO);
 
 		Machine machine = new Machine.Builder().buildSite(site).buildTechnician(technician).buildCode(code)
 				.buildMachineStatus(machineStatus).buildProductionStatus(productionStatus).buildLocation(location)
@@ -154,7 +149,7 @@ public class MachineController implements Subject
 
 		machine.setId(existingMachine.getId());
 		updateMachine(machine);
-		return convertToMachineDTO(machine);
+		return DTOMapper.toMachineDTO(machine);
 	}
 
 	@Override
@@ -181,44 +176,56 @@ public class MachineController implements Subject
 	 * @param machineId the ID of the machine to retrieve
 	 * @return the Machine object, or null if not found
 	 */
-	public Machine getMachineById(int machineId)
+	public MachineDTO getMachineById(int machineId)
 	{
-		return machineRepo.get(machineId);
+		return DTOMapper.toMachineDTO(machineRepo.get(machineId));
 	}
 
 	/**
-	 * Converts a MachineDTO to a Machine domain object.
+	 * Retrieves all distinct production status values from sites.
 	 * 
-	 * @param dto the data transfer object to convert
-	 * @return the converted Machine object
+	 * @return List of unique status strings
 	 */
-	public Machine convertDTOToMachine(MachineDTO dto)
+	public Collection<? extends String> getAllProductionStatusses()
 	{
-		Machine machine = machineRepo.get(dto.id());
-		Site site = null;
-
-		if (dto.site() != null)
-		{
-			site = siteController.getSiteObject(dto.site().id());
-		}
-
-		return DTOMapper.toMachine(dto, machine, site);
+		List<MachineDTO> allMachines = getMachineList();
+		return allMachines.stream().map(m -> m.productionStatus().toString()).distinct().sorted()
+				.collect(Collectors.toList());
 	}
 
 	/**
-	 * Converts a Machine domain object to a MachineDTO.
+	 * Retrieves all distinct machine status values from sites.
 	 * 
-	 * @param machine the domain object to convert
-	 * @return the converted DTO, or null if input is null
+	 * @return List of unique status strings
 	 */
-	public MachineDTO convertToMachineDTO(Machine machine)
+	public Collection<? extends String> getAllMachineStatusses()
 	{
-		if (machine == null)
-		{
-			return null;
-		}
+		List<MachineDTO> allMachines = getMachineList();
+		return allMachines.stream().map(m -> m.machineStatus().toString()).distinct().sorted()
+				.collect(Collectors.toList());
+	}
 
-		SiteDTOWithoutMachines siteDTO = DTOMapper.toSiteDTOWithoutMachines(machine.getSite());
-		return DTOMapper.toMachineDTO(machine, siteDTO);
+	/**
+	 * Retrieves filtered machines based on multiple criteria.
+	 * 
+	 * @param searchFilter     general search term to filter by
+	 * @param selectedProdStat productionstatus to filter by
+	 * @param selectedMachStat machinestatus to filter by
+	 * @return List of filtered MachineDTOs
+	 */
+	public List<MachineDTO> getFilteredMachines(String searchFilter, String selectedProdStat, String selectedMachStat)
+	{
+		String lowerCaseSearchFilter = searchFilter == null ? "" : searchFilter.toLowerCase();
+
+		return getMachineList().stream()
+				.filter(machine -> selectedProdStat == null
+						|| machine.productionStatus().toString().equals(selectedProdStat))
+				.filter(machine -> selectedMachStat == null
+						|| machine.machineStatus().toString().equals(selectedMachStat))
+				.filter(machine -> machine.code().toLowerCase().contains(lowerCaseSearchFilter)
+						|| machine.location().toLowerCase().contains(lowerCaseSearchFilter)
+						|| machine.site().siteName().toLowerCase().contains(lowerCaseSearchFilter)
+						|| machine.productInfo().toLowerCase().contains(lowerCaseSearchFilter))
+				.collect(Collectors.toList());
 	}
 }

@@ -1,9 +1,13 @@
-package domain;
+package domain.needsRefactoring;
 import org.junit.jupiter.api.*;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import domain.Address;
+import domain.Site;
+import domain.User;
+import domain.Site.Builder;
 import exceptions.InformationRequiredExceptionSite;
 import jakarta.persistence.*;
 import util.Role;

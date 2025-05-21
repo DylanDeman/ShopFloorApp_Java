@@ -1,5 +1,6 @@
 package gui;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.kordamp.ikonli.javafx.FontIcon;
@@ -9,15 +10,19 @@ import dto.MachineDTO;
 import interfaces.Observer;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.collections.FXCollections;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
+import javafx.scene.control.Pagination;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -35,12 +40,23 @@ public class MachinesListComponent extends GridPane implements Observer
 	private MachineController machineController;
 	private final MainLayout mainLayout;
 
+	private TextField searchField;
+	private ComboBox<String> machStatFilter;
+	private ComboBox<String> prodStatFilter;
+
+	private List<MachineDTO> allMachines;
+	private List<MachineDTO> filteredMachines;
+
+	private int itemsPerPage = 10;
+	private int currentPage = 0;
+	private int totalPages = 0;
+	private Pagination pagination;
+
 	private Button addButton;
 
 	public MachinesListComponent(MainLayout mainLayout)
 	{
 		this.mainLayout = mainLayout;
-		this.machineTable = new TableView<>();
 		this.machineController = mainLayout.getServices().getMachineController();
 		initializeGUI();
 		loadMachines();
@@ -51,6 +67,9 @@ public class MachinesListComponent extends GridPane implements Observer
 		this.getStylesheets().add(getClass().getResource("/css/tablePane.css").toExternalForm());
 
 		this.getChildren().add(createTitleSection());
+
+		allMachines = machineController.getMachineList();
+		filteredMachines = allMachines;
 
 		machineTable = new TableView<>();
 		machineTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_ALL_COLUMNS);
@@ -74,15 +93,19 @@ public class MachinesListComponent extends GridPane implements Observer
 			add(addButton, 0, 0);
 		}
 
-		add(machineTable, 0, 1);
-
-		GridPane.setHgrow(machineTable, Priority.ALWAYS);
-		GridPane.setVgrow(machineTable, Priority.ALWAYS);
+		VBox tableWithFilters = buildColumns();
+		add(tableWithFilters, 0, 1);
+		GridPane.setHgrow(tableWithFilters, Priority.ALWAYS);
+		GridPane.setVgrow(tableWithFilters, Priority.ALWAYS);
 
 	}
 
-	private void buildColumns()
+	private VBox buildColumns()
 	{
+		machineTable.getColumns().clear();
+
+		HBox filterBox = createTableHeaders();
+
 		TableColumn<MachineDTO, String> idCol = new TableColumn<>("ID");
 		idCol.setCellValueFactory(data -> new SimpleStringProperty(String.valueOf(data.getValue().id())));
 
@@ -204,6 +227,98 @@ public class MachinesListComponent extends GridPane implements Observer
 
 		List<MachineDTO> dtos = machineController.getMachineList();
 		machineTable.getItems().setAll(dtos);
+
+		HBox paginationControls = new HBox(20);
+		pagination = createPagination();
+
+		paginationControls.getChildren().addAll(pagination);
+		paginationControls.setAlignment(Pos.CENTER);
+
+		VBox tableWithPagination = new VBox(10, machineTable, paginationControls);
+		VBox.setVgrow(machineTable, Priority.ALWAYS);
+
+		return new VBox(10, filterBox, tableWithPagination);
+	}
+
+	private Pagination createPagination()
+	{
+		updateTotalPages();
+		Pagination pagination = new Pagination(Math.max(1, totalPages), 0);
+		pagination.setPageFactory(this::createPage);
+		pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+			currentPage = newIndex.intValue();
+			updateTableItems();
+		});
+		return pagination;
+	}
+
+	private HBox createPage(int pageIndex)
+	{
+		return new HBox();
+	}
+
+	private HBox createTableHeaders()
+	{
+		searchField = new TextField();
+		searchField.setPromptText("Zoeken...");
+		searchField.setPrefWidth(300);
+		searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
+
+		machStatFilter = new ComboBox<>();
+		machStatFilter.setPromptText("Machine status");
+		machStatFilter.setPrefWidth(150);
+		machStatFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+
+		prodStatFilter = new ComboBox<>();
+		prodStatFilter.setPromptText("Productie status");
+		prodStatFilter.setPrefWidth(150);
+		prodStatFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
+
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+
+		HBox pageSelector = createPageSelector();
+
+		HBox filterBox = new HBox(10, searchField, machStatFilter, prodStatFilter, spacer, pageSelector);
+		filterBox.setAlignment(Pos.CENTER_LEFT);
+		return filterBox;
+	}
+
+	private HBox createPageSelector()
+	{
+		Label lblItemsPerPage = new Label("Aantal per pagina:");
+
+		ComboBox<Integer> comboItemsPerPage = new ComboBox<>(FXCollections.observableArrayList(10, 20, 50, 100));
+		comboItemsPerPage.setValue(itemsPerPage);
+		comboItemsPerPage.setOnAction(e -> {
+			int selectedValue = comboItemsPerPage.getValue();
+			updateItemsPerPage(selectedValue);
+		});
+
+		HBox pageSelector = new HBox(10, lblItemsPerPage, comboItemsPerPage);
+		pageSelector.setAlignment(Pos.CENTER_RIGHT);
+		return pageSelector;
+	}
+
+	private void updateItemsPerPage(int itemsPerPage)
+	{
+		this.itemsPerPage = itemsPerPage;
+		this.currentPage = 0;
+		updatePagination();
+		updateTableItems();
+	}
+
+	private void filterTable()
+	{
+		String searchQuery = searchField.getText().toLowerCase();
+		String selectedProdStat = prodStatFilter.getValue();
+		String selectedMachStat = machStatFilter.getValue();
+
+		filteredMachines = machineController.getFilteredMachines(searchQuery, selectedProdStat, selectedMachStat);
+
+		currentPage = 0;
+		updatePagination();
+		updateTableItems();
 	}
 
 	private VBox createTitleSection()
@@ -235,19 +350,71 @@ public class MachinesListComponent extends GridPane implements Observer
 
 	private void openAddMachineForm()
 	{
-		Parent addMachineForm = new AddOrEditMachineForm(mainLayout, null);
+		Parent addMachineForm = new AddOrEditMachineForm(mainLayout);
 		mainLayout.setContent(addMachineForm, true, false, CurrentPage.NONE);
 	}
 
 	private void openEditMachineForm(MachineDTO machine)
 	{
-		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machine);
+		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machine.id());
 		mainLayout.setContent(editMachineForm, true, false, CurrentPage.NONE);
 	}
 
 	private void loadMachines()
 	{
-		machineTable.getItems().setAll(machineController.getMachineList());
+		allMachines = machineController.getMachineList();
+		filteredMachines = allMachines;
+		updateFilterOptions();
+		updateTable(allMachines);
+	}
+
+	private void updateTable(List<MachineDTO> machines)
+	{
+		filteredMachines = machines;
+		currentPage = 0;
+		updatePagination();
+		updateTableItems();
+	}
+
+	private void updateTableItems()
+	{
+		int fromIndex = currentPage * itemsPerPage;
+		int toIndex = Math.min(fromIndex + itemsPerPage, filteredMachines.size());
+
+		if (filteredMachines.isEmpty())
+		{
+			machineTable.getItems().clear();
+		} else
+		{
+			List<MachineDTO> currentPageItems = fromIndex < toIndex ? filteredMachines.subList(fromIndex, toIndex)
+					: List.of();
+			machineTable.getItems().setAll(currentPageItems);
+		}
+	}
+
+	private void updatePagination()
+	{
+		updateTotalPages();
+		pagination.setPageCount(Math.max(1, totalPages));
+		pagination.setCurrentPageIndex(Math.min(currentPage, Math.max(0, totalPages - 1)));
+	}
+
+	private void updateTotalPages()
+	{
+		totalPages = (int) Math.ceil((double) filteredMachines.size() / itemsPerPage);
+	}
+
+	private void updateFilterOptions()
+	{
+		List<String> prodStats = new ArrayList<>();
+		prodStats.add(null);
+		prodStats.addAll(machineController.getAllProductionStatusses());
+		prodStatFilter.setItems(FXCollections.observableArrayList(prodStats));
+
+		List<String> machStats = new ArrayList<>();
+		machStats.add(null);
+		machStats.addAll(machineController.getAllMachineStatusses());
+		machStatFilter.setItems(FXCollections.observableArrayList(machStats));
 	}
 
 	@Override

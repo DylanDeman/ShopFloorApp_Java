@@ -26,11 +26,12 @@ import org.mockito.MockitoAnnotations;
 
 import dto.AddressDTO;
 import dto.UserDTO;
-import exceptions.InformationRequiredException;
+import exceptions.InformationRequiredExceptionUser;
 import exceptions.InvalidInputException;
 import interfaces.Observer;
 import repository.UserDao;
 import util.AuthenticationUtil;
+import util.DTOMapper;
 import util.Role;
 import util.Status;
 
@@ -115,22 +116,11 @@ class UserControllerTest
 				new AddressDTO(5, "Straat", 3, 1234, "Stad"), Role.TECHNIEKER, Status.ACTIEF, "password");
 		when(userRepo.getByEmail(dto.email())).thenReturn(existingUser);
 
-		User result = userController.convertToUser(dto);
+		User result = DTOMapper.toUser(dto);
 
 		assertEquals(dto.firstName(), result.getFirstName());
 		assertEquals(dto.lastName(), result.getLastName());
 		assertEquals(dto.email(), result.getEmail());
-	}
-
-	@Test
-	void getUserById_ReturnsCorrectUser()
-	{
-		User expectedUser = createTestUser(1, Role.VERANTWOORDELIJKE);
-		when(userRepo.get(1)).thenReturn(expectedUser);
-
-		User result = userController.getUserById(1);
-
-		assertEquals(expectedUser, result);
 	}
 
 	@Test
@@ -139,7 +129,7 @@ class UserControllerTest
 		User user = createTestUser(1, Role.VERANTWOORDELIJKE);
 		when(userRepo.get(1)).thenReturn(user);
 
-		UserDTO result = userController.getUserDTOById(1);
+		UserDTO result = userController.getUserById(1);
 
 		assertEquals(user.getId(), result.id());
 		assertEquals(user.getFirstName(), result.firstName());
@@ -204,20 +194,15 @@ class UserControllerTest
 	}
 
 	@Test
-	void createUser_ValidInput_CreatesAndReturnsUserDTO() throws InformationRequiredException
+	void createUser_ValidInput_CreatesAndReturnsUserDTO() throws InformationRequiredExceptionUser
 	{
-		Address address = new Address();
-		address.setStreet("Street");
-		address.setNumber(123);
-		address.setPostalcode(1000);
-		address.setCity("City");
 
-		User newUser = new User.Builder().withFirstName("John").withLastName("Doe").withEmail("john@example.com")
-				.withPhoneNumber("123456789").withBirthdate(LocalDate.now()).withAddress(address)
-				.withRole(Role.VERANTWOORDELIJKE).withStatus(Status.ACTIEF).build();
+		User newUser = new User.Builder().buildFirstName("John").buildLastName("Doe").buildEmail("john@example.com")
+				.buildPhoneNumber("123456789").buildBirthdate(LocalDate.now()).buildAddress("Street", 1, 1234, "City")
+				.buildRole(Role.VERANTWOORDELIJKE).buildStatus(Status.ACTIEF).build();
 
 		UserDTO result = userController.createUser("John", "Doe", "john@example.com", "123456789", LocalDate.now(),
-				"Street", "123", "1000", "City", Role.VERANTWOORDELIJKE);
+				"Street", "1", "1234", "City", Role.VERANTWOORDELIJKE);
 
 		assertNotNull(result);
 		assertEquals("John", result.firstName());
@@ -228,7 +213,7 @@ class UserControllerTest
 	}
 
 	@Test
-	void updateUser_ValidInput_UpdatesAndReturnsUserDTO() throws InformationRequiredException
+	void updateUser_ValidInput_UpdatesAndReturnsUserDTO() throws InformationRequiredExceptionUser
 	{
 		User existingUser = createTestUser(1, Role.VERANTWOORDELIJKE);
 		when(userRepo.get(1)).thenReturn(existingUser);

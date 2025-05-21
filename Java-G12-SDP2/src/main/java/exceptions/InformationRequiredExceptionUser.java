@@ -4,8 +4,9 @@ import java.util.Collections;
 import java.util.Map;
 
 import util.RequiredElement;
+import util.RequiredElementUser;
 
-public class InformationRequiredException extends Exception
+public class InformationRequiredExceptionUser extends InformationRequired
 {
 
 	private static final long serialVersionUID = 1L;
@@ -14,13 +15,13 @@ public class InformationRequiredException extends Exception
 
 	private Map<String, RequiredElement> informationRequired;
 
-	public InformationRequiredException(Map<String, RequiredElement> itemsRequired)
+	public InformationRequiredExceptionUser(Map<String, RequiredElement> itemsRequired)
 	{
 		super(MESSAGE);
 		informationRequired = itemsRequired;
 	}
 
-	public Map<String, RequiredElement> getInformationRequired()
+	public Map<String, RequiredElement> getRequiredElements() 
 	{
 		return Collections.unmodifiableMap(informationRequired);
 	}

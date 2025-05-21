@@ -533,13 +533,13 @@ public class SiteDetailsComponent extends VBox implements Observer
 
 	private void openAddMachineForm()
 	{
-		Parent addMachineForm = new AddOrEditMachineForm(mainLayout, null);
+		Parent addMachineForm = new AddOrEditMachineForm(mainLayout);
 		mainLayout.setContent(addMachineForm, true, false, CurrentPage.NONE);
 	}
 
 	private void openEditMachineForm(MachineDTO machine)
 	{
-		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machine);
+		Parent editMachineForm = new AddOrEditMachineForm(mainLayout, machine.id());
 		mainLayout.setContent(editMachineForm, true, false, CurrentPage.NONE);
 	}
 

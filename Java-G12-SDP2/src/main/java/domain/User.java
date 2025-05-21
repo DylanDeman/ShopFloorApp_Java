@@ -8,7 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import exceptions.InformationRequiredException;
+import exceptions.InformationRequiredExceptionAddress;
+import exceptions.InformationRequiredExceptionUser;
 import interfaces.Observer;
 import interfaces.Subject;
 import jakarta.persistence.CascadeType;
@@ -29,6 +30,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import util.RequiredElement;
+import util.RequiredElementUser;
 import util.Role;
 import util.Status;
 
@@ -64,7 +66,7 @@ public class User implements Serializable, Subject
 	private String password;
 	private LocalDate birthdate;
 
-	@ManyToOne(cascade = CascadeType.PERSIST)
+	@ManyToOne(cascade = CascadeType.ALL)
 	@JoinColumn(name = "address_id")
 	private Address address;
 
@@ -87,18 +89,18 @@ public class User implements Serializable, Subject
 	 * @param status      The user's system status
 	 * @param role        The user's system role
 	 */
-	public User(String firstName, String lastName, String email, String phoneNumber, String password,
-			LocalDate birthdate, Address address, Status status, Role role)
+	private User(Builder builder)
 	{
-		setFirstName(firstName);
-		setLastName(lastName);
-		setEmail(email);
-		setPhoneNumber(phoneNumber);
-		setPassword(password);
-		setBirthdate(birthdate);
-		setAddress(address);
-		setStatus(status);
-		setRole(role);
+		this.firstName = builder.firstName;
+		this.lastName = builder.lastName;
+		this.email = builder.email;
+		this.phoneNumber = builder.phoneNumber;
+		this.password = builder.password;
+		this.birthdate = builder.birthdate;
+		this.address = builder.address;
+		this.status = builder.status;
+		this.role = builder.role;
+		this.address = builder.address;
 	}
 
 	/**
@@ -109,21 +111,6 @@ public class User implements Serializable, Subject
 	public int getAge()
 	{
 		return Period.between(birthdate, LocalDate.now()).getYears();
-	}
-
-	/**
-	 * Returns a string representation of the user.
-	 * 
-	 * @return Formatted string containing all user fields
-	 */
-	@Override
-	public String toString()
-	{
-		return String.format("%s %s, %s, %s, %s, %s, %s, %s, %s", firstName != null ? firstName : "N/A",
-				lastName != null ? lastName : "N/A", email != null ? email : "N/A",
-				phoneNumber != null ? phoneNumber : "N/A", password != null ? password : "N/A",
-				birthdate != null ? birthdate.toString() : "N/A", address != null ? address.toString() : "N/A",
-				status != null ? status.toString() : "N/A", role != null ? role.toString() : "N/A");
 	}
 
 	/**
@@ -167,17 +154,12 @@ public class User implements Serializable, Subject
 		private String lastName;
 		private String email;
 		private String phoneNumber;
+		private String password;
 		private LocalDate birthdate;
 		private Role role;
 		private Status status;
 		private Address address;
-
-		public Builder()
-		{
-
-		}
-
-		protected User user;
+		Map<String, RequiredElement> requiredElements = new HashMap<>();
 
 		/**
 		 * Sets the user's first name.
@@ -185,7 +167,7 @@ public class User implements Serializable, Subject
 		 * @param firstName The first name to set
 		 * @return The builder instance for method chaining
 		 */
-		public Builder withFirstName(String firstName)
+		public Builder buildFirstName(String firstName)
 		{
 			this.firstName = firstName;
 			return this;
@@ -197,7 +179,7 @@ public class User implements Serializable, Subject
 		 * @param lastName The last name to set
 		 * @return The builder instance for method chaining
 		 */
-		public Builder withLastName(String lastName)
+		public Builder buildLastName(String lastName)
 		{
 			this.lastName = lastName;
 			return this;
@@ -209,7 +191,7 @@ public class User implements Serializable, Subject
 		 * @param email The email to set
 		 * @return The builder instance for method chaining
 		 */
-		public Builder withEmail(String email)
+		public Builder buildEmail(String email)
 		{
 			this.email = email;
 			return this;
@@ -221,7 +203,7 @@ public class User implements Serializable, Subject
 		 * @param phoneNumber The phone number to set
 		 * @return The builder instance for method chaining
 		 */
-		public Builder withPhoneNumber(String phoneNumber)
+		public Builder buildPhoneNumber(String phoneNumber)
 		{
 			this.phoneNumber = phoneNumber;
 			return this;
@@ -233,7 +215,7 @@ public class User implements Serializable, Subject
 		 * @param birthdate The birthdate to set
 		 * @return The builder instance for method chaining
 		 */
-		public Builder withBirthdate(LocalDate birthdate)
+		public Builder buildBirthdate(LocalDate birthdate)
 		{
 			this.birthdate = birthdate;
 			return this;
@@ -245,7 +227,7 @@ public class User implements Serializable, Subject
 		 * @param role The role to set
 		 * @return The builder instance for method chaining
 		 */
-		public Builder withRole(Role role)
+		public Builder buildRole(Role role)
 		{
 			this.role = role;
 			return this;
@@ -257,7 +239,7 @@ public class User implements Serializable, Subject
 		 * @param status The status to set
 		 * @return The builder instance for method chaining
 		 */
-		public Builder withStatus(Status status)
+		public Builder buildStatus(Status status)
 		{
 			this.status = status;
 			return this;
@@ -269,9 +251,23 @@ public class User implements Serializable, Subject
 		 * @param address The address to set
 		 * @return The builder instance for method chaining
 		 */
-		public Builder withAddress(Address address)
+		public Builder buildAddress(String street, int number, int postalcode, String city)
 		{
-			this.address = address;
+			try {
+				this.address = new Address.Builder()
+						.buildStreet(street)
+						.buildNumber(number)
+						.buildPostalcode(postalcode)
+						.buildCity(city)
+						.build();
+			} catch (InformationRequiredExceptionAddress ire) {
+				ire.getRequiredElements().forEach((k,v) -> requiredElements.put(k, v));
+			}
+			return this;
+		}
+		
+		public Builder buildPassword(String password) {
+			this.password = password;
 			return this;
 		}
 
@@ -282,21 +278,10 @@ public class User implements Serializable, Subject
 		 * @return The constructed User instance
 		 * @throws InformationRequiredException If any required fields are missing
 		 */
-		public User build() throws InformationRequiredException
+		public User build() throws InformationRequiredExceptionUser
 		{
 			validateRequiredFields();
-
-			user = new User();
-			user.setFirstName(firstName);
-			user.setLastName(lastName);
-			user.setEmail(email);
-			user.setPhoneNumber(phoneNumber);
-			user.setBirthdate(birthdate);
-			user.setAddress(address);
-			user.setRole(role);
-			user.setStatus(status);
-
-			return user;
+			return new User(this);
 		}
 
 		/**
@@ -304,64 +289,30 @@ public class User implements Serializable, Subject
 		 * 
 		 * @throws InformationRequiredException If any required fields are missing
 		 */
-		private void validateRequiredFields() throws InformationRequiredException
+		private void validateRequiredFields() throws InformationRequiredExceptionUser
 		{
-			Map<String, RequiredElement> requiredElements = new HashMap<>();
+			
 
 			if (firstName == null || firstName.isEmpty())
-			{
-				requiredElements.put("firstName", RequiredElement.FIRST_NAME_REQUIRED);
-			}
+				requiredElements.put("firstName", RequiredElementUser.FIRST_NAME_REQUIRED);
 
 			if (lastName == null || lastName.isEmpty())
-			{
-				requiredElements.put("lastName", RequiredElement.LAST_NAME_REQUIRED);
-			}
+				requiredElements.put("lastName", RequiredElementUser.LAST_NAME_REQUIRED);
 
 			if (email == null || email.isEmpty())
-			{
-				requiredElements.put("email", RequiredElement.EMAIL_REQUIRED);
-			}
-
+				requiredElements.put("email", RequiredElementUser.EMAIL_REQUIRED);
+			
 			if (birthdate == null)
-			{
-				requiredElements.put("birthDate", RequiredElement.BIRTH_DATE_REQUIRED);
-			}
-
-			if (address == null || address.getStreet() == null || address.getStreet().isEmpty())
-			{
-				requiredElements.put("street", RequiredElement.STREET_REQUIRED);
-			}
-
-			if (address == null || address.getNumber() == 0)
-			{
-				requiredElements.put("number", RequiredElement.NUMBER_REQUIRED);
-			}
-
-			if (address == null || address.getPostalcode() == 0)
-			{
-				requiredElements.put("postalCode", RequiredElement.POSTAL_CODE_REQUIRED);
-			}
-
-			if (address == null || address.getCity() == null || address.getCity().isEmpty())
-			{
-				requiredElements.put("city", RequiredElement.CITY_REQUIRED);
-			}
+				requiredElements.put("birthDate", RequiredElementUser.BIRTH_DATE_REQUIRED);
 
 			if (role == null)
-			{
-				requiredElements.put("role", RequiredElement.ROLE_REQUIRED);
-			}
+				requiredElements.put("role", RequiredElementUser.ROLE_REQUIRED);
 
 			if (status == null)
-			{
-				requiredElements.put("status", RequiredElement.STATUS_REQUIRED);
-			}
+				requiredElements.put("status", RequiredElementUser.STATUS_REQUIRED);
 
 			if (!requiredElements.isEmpty())
-			{
-				throw new InformationRequiredException(requiredElements);
-			}
+				throw new InformationRequiredExceptionUser(requiredElements);
 		}
 
 	}

@@ -1,8 +1,5 @@
 package util;
 
-public enum RequiredElement
-{
-	FIRST_NAME_REQUIRED, LAST_NAME_REQUIRED, EMAIL_REQUIRED, BIRTH_DATE_REQUIRED, STREET_REQUIRED, NUMBER_REQUIRED,
-	POSTAL_CODE_REQUIRED, CITY_REQUIRED, ROLE_REQUIRED, STATUS_REQUIRED,
-
+public interface RequiredElement {
+	String getMessage();
 }

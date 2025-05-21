@@ -1,4 +1,4 @@
-package domain.report;
+package domain.needsRefactoring;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -20,6 +20,7 @@ import domain.Site;
 import domain.User;
 import exceptions.InvalidReportException;
 import repository.GenericDaoJpa;
+import util.DTOMapper;
 import util.Role;
 
 public class ReportTest
@@ -71,7 +72,8 @@ public class ReportTest
 	public void createValidReport_success()
 	{
 		assertDoesNotThrow(() -> {
-			var dto = reportController.createReport(validSite, validMaintenance, validTechnician, validStartDate,
+			var dto = reportController.createReport(DTOMapper.toSiteDTOWithoutMachines(validSite),
+					DTOMapper.toMaintenanceDTO(validMaintenance), DTOMapper.toUserDTO(validTechnician), validStartDate,
 					validStartTime, validEndDate, validEndTime, validReason, validRemarks);
 			assertNotNull(dto);
 		});
@@ -81,7 +83,8 @@ public class ReportTest
 	public void createReport_missingTechnician_throwsException()
 	{
 		InvalidReportException exception = assertThrows(InvalidReportException.class,
-				() -> reportController.createReport(validSite, validMaintenance, null, validStartDate, validStartTime,
+				() -> reportController.createReport(DTOMapper.toSiteDTOWithoutMachines(validSite),
+						DTOMapper.toMaintenanceDTO(validMaintenance), null, validStartDate, validStartTime,
 						validEndDate, validEndTime, validReason, validRemarks));
 		assertTrue(exception.getMessage().contains("Technician"));
 	}
@@ -90,8 +93,9 @@ public class ReportTest
 	public void createReport_missingSite_throwsException()
 	{
 		InvalidReportException exception = assertThrows(InvalidReportException.class,
-				() -> reportController.createReport(null, validMaintenance, validTechnician, validStartDate,
-						validStartTime, validEndDate, validEndTime, validReason, validRemarks));
+				() -> reportController.createReport(null, DTOMapper.toMaintenanceDTO(validMaintenance),
+						DTOMapper.toUserDTO(validTechnician), validStartDate, validStartTime, validEndDate,
+						validEndTime, validReason, validRemarks));
 		assertTrue(exception.getMessage().contains("Site"));
 	}
 }

@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
+import exceptions.InformationRequired;
 import exceptions.InformationRequiredExceptionMaintenance;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -23,6 +24,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import util.MaintenanceStatus;
+import util.RequiredElement;
 import util.RequiredElementMaintenance;
 
 /**
@@ -99,17 +101,16 @@ public class Maintenance implements Serializable
 	 * @param status        the maintenance status
 	 * @param machine       the machine being maintained
 	 */
-	public Maintenance(LocalDate executionDate, LocalDateTime startDate, LocalDateTime endDate, User technician,
-			String reason, String comments, MaintenanceStatus status, Machine machine)
+	Maintenance(Builder builder)
 	{
-		this.executionDate = executionDate;
-		this.startDate = startDate;
-		this.endDate = endDate;
-		this.technician = technician;
-		this.reason = reason;
-		this.comments = comments;
-		this.status = status;
-		this.machine = machine;
+		this.executionDate = builder.executionDate;
+		this.startDate = builder.startDate;
+		this.endDate = builder.endDate;
+		this.technician = builder.technician;
+		this.reason = builder.reason;
+		this.comments = builder.comments;
+		this.status = builder.status;
+		this.machine = builder.machine;
 	}
 
 	/**
@@ -126,13 +127,7 @@ public class Maintenance implements Serializable
 		private String comments;
 		private MaintenanceStatus status;
 		private Machine machine;
-
 		protected Maintenance maintenance;
-
-		/** Default constructor for the Builder. */
-		public Builder()
-		{
-		}
 
 		/**
 		 * Sets the execution date for the maintenance.
@@ -240,18 +235,7 @@ public class Maintenance implements Serializable
 		public Maintenance build() throws InformationRequiredExceptionMaintenance
 		{
 			validateRequiredFields();
-
-			maintenance = new Maintenance();
-			maintenance.setExecutionDate(executionDate);
-			maintenance.setStartDate(startDate);
-			maintenance.setEndDate(endDate);
-			maintenance.setTechnician(technician);
-			maintenance.setReason(reason);
-			maintenance.setComments(comments);
-			maintenance.setStatus(status);
-			maintenance.setMachine(machine);
-
-			return maintenance;
+			return new Maintenance(this);
 		}
 
 		/**
@@ -260,9 +244,9 @@ public class Maintenance implements Serializable
 		 * @throws InformationRequiredExceptionMaintenance if required fields are
 		 *                                                 missing or invalid
 		 */
-		private void validateRequiredFields() throws InformationRequiredExceptionMaintenance
+		private void validateRequiredFields() throws InformationRequired
 		{
-			Map<String, RequiredElementMaintenance> requiredElements = new HashMap<>();
+			Map<String, RequiredElement> requiredElements = new HashMap<>();
 
 			if (executionDate == null)
 				requiredElements.put("executionDate", RequiredElementMaintenance.EXECUTION_DATE_REQUIRED);

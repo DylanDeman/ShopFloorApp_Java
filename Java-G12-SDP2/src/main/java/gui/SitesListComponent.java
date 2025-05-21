@@ -231,25 +231,21 @@ public class SitesListComponent extends VBox implements Observer
 		searchField.setPrefWidth(300);
 		searchField.textProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-		// Filtering for statussen
 		statusFilter = new ComboBox<>();
 		statusFilter.setPromptText("Statussen");
 		statusFilter.setPrefWidth(150);
 		statusFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-		// Filtering for naam
 		nameFilter = new ComboBox<>();
 		nameFilter.setPromptText("Site naam");
 		nameFilter.setPrefWidth(150);
 		nameFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-		// filtering for verantwoordelijke
 		verantwoordelijkeFilter = new ComboBox<>();
 		verantwoordelijkeFilter.setPromptText("Verantwoordelijke");
 		verantwoordelijkeFilter.setPrefWidth(200);
 		verantwoordelijkeFilter.valueProperty().addListener((obs, oldVal, newVal) -> filterTable());
 
-		// filtering for min max machine
 		minMachinesField = new TextField();
 		minMachinesField.setPromptText("Min Machines");
 		minMachinesField.setMaxWidth(100);

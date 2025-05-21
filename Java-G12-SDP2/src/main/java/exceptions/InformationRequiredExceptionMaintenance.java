@@ -3,25 +3,30 @@ package exceptions;
 import java.util.Collections;
 import java.util.Map;
 
+import javax.sound.midi.MidiDevice.Info;
+
+import util.RequiredElement;
 import util.RequiredElementMaintenance;
 
-public class InformationRequiredExceptionMaintenance extends Exception {
+public class InformationRequiredExceptionMaintenance extends InformationRequired 
+{
 
 	private static final long serialVersionUID = 1L;
 
 	private static final String MESSAGE = "Het onderhoud kan niet worden ingepland omdat niet alle info is ingevuld";
 
-	private Map<String, RequiredElementMaintenance> informationRequired;
+	private Map<String, RequiredElement> informationRequired;
 
-	public InformationRequiredExceptionMaintenance(Map<String, RequiredElementMaintenance> itemsRequired)
+	public InformationRequiredExceptionMaintenance(Map<String, RequiredElement> itemsRequired)
 	{
 		super(MESSAGE);
 		informationRequired = itemsRequired;
 	}
 
-	public Map<String, RequiredElementMaintenance> getInformationRequired()
+	public Map<String, RequiredElement> getRequiredElements()
 	{
-		return Collections.unmodifiableMap(informationRequired);
+        Map<String, RequiredElement> result = Collections.unmodifiableMap(informationRequired);
+        return result;
 	}
 
 }
