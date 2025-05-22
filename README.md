@@ -34,7 +34,7 @@
     <class>util.ProductionStatusConverter</class>
     
     <properties>
-      <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/sdp2_2425_db_g12?serverTimezone=UTC"/>
+      <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/{DataBaseName}?serverTimezone=UTC"/>
       <property name="jakarta.persistence.jdbc.user" value="{username}"/> 
       <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
       <property name="jakarta.persistence.jdbc.password" value="{password}"/>  
@@ -44,4 +44,4 @@
 </persistence>
 ```
 
-This project uses the seeding from the [JS backend](https://github.com/DylanDeman/ShopFloorApp_JS_BE), so it is important to run the migration in that first.
+This project uses the seeding from the [JS backend](https://github.com/DylanDeman/ShopFloorApp_JS_BE), so it is important to run the migration in that first. Because of this, use the same database as in the Javascript application.
